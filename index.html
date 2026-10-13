@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-13 02:16 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-13 02:25 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -65,7 +65,7 @@ td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
 #top{display:flex;gap:.6rem;align-items:center;padding:.7rem 1.2rem;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;flex-wrap:wrap}
 #view{padding:1.2rem;max-width:1400px;margin:0 auto}
 #burger{display:none}
-.rubrow{border:1px solid var(--line,#e6e0d2);border-radius:14px;padding:.6rem .8rem;margin:.5rem 0}.rubhead{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}.rubhead .sp{flex:1 1 10rem;min-width:0;overflow-wrap:anywhere}.rubbody{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:flex-end;margin-top:.5rem}.rublbl{display:flex;flex-direction:column;font-size:.78rem;gap:.15rem;flex:1 1 9rem;min-width:8rem;margin:0}.rublbl input{width:100%}.rubchk{margin:0;white-space:nowrap}
+.rubrow{border:1px solid var(--line,#e6e0d2);border-radius:14px;padding:.6rem .8rem;margin:.5rem 0}.rubhead{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}.rubhead .btn{min-height:44px;min-width:44px}.rubhead .sp{flex:1 1 10rem;min-width:0;overflow-wrap:anywhere}.rubbody{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:flex-end;margin-top:.5rem}.rublbl{display:flex;flex-direction:column;font-size:.78rem;gap:.15rem;flex:1 1 9rem;min-width:8rem;margin:0}.rublbl input{width:100%}.rubchk{margin:0;white-space:nowrap}
 .demo-b{background:#e8e4ff;color:#3b2f9e;border-radius:99px;padding:.1rem .6rem;font-size:.72rem;font-weight:700}
 @media(max-width:900px){#side{position:fixed;left:0;top:0;z-index:30;transform:translateX(-105%);transition:transform .2s}#side.open{transform:none}#burger{display:inline-flex}#view{padding:.8rem}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
@@ -880,7 +880,7 @@ A.padj=el=>{const p=prod(el.dataset.id);const w=modal('Ajustar stock · '+p.name
 
 /* ===== Caja ===== */
 reg('caja','Caja','cash','cash_mov',()=>{const s=openSess();
- if(!s)return `<h1>Caja</h1><div class="card" style="max-width:480px"><p>No hay caja abierta.</p><label for="ap">Efectivo inicial (apertura) $</label>${numIn('ap',0,'0')}<button class="btn gold" style="margin-top:.8rem" data-act="openCaja">Abrir caja ${S.tenant.caja}</button></div>${S.sessions.length?'':'<p class="mut sm">Tip: en Configuración podés cargar la jornada de ejemplo del 6/10 para ver el arqueo completo.</p>'}`;
+ if(!s)return `<h1>Caja</h1><div class="card" style="max-width:480px"><p>No hay caja abierta.</p><label for="ap">Efectivo inicial (apertura) $</label>${numIn('ap',0,'0')}<button class="btn gold" style="margin-top:.8rem" data-act="openCaja">Abrir caja ${S.tenant.caja}</button></div>${S.sessions.length||IS_CLIENT?'':'<p class="mut sm">Tip: en Configuración podés cargar la jornada de ejemplo del 6/10 para ver el arqueo completo.</p>'}`;
  const inp=arqInputs(s),a=arqueoCalc(s,inp),ms=S.movs.filter(m=>m.sessId===s.id);
  const old=dkey(s.openedAt)!==dkey(now());
  return `<div class="row"><h1 class="sp">Caja ${S.tenant.caja}</h1>${expBar('movimientos')}<button class="btn gold" data-act="nav" data-id="arqueo">Arqueo y cierre →</button></div>
