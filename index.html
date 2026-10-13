@@ -1837,7 +1837,7 @@ const LEGAL_CHECK=[
  ['Botón de arrepentimiento (10 días, Res. 424/2020)','Hecho: abre WhatsApp con el pedido redactado y queda registro','Confirmar que el mecanismo cumple lo exigido [VERIFICAR].'],
  ['Información de Defensa del Consumidor visible','Plantilla cargada','Completar datos oficiales de contacto [VERIFICAR].'],
  ['Ticket: "DOCUMENTO NO VÁLIDO COMO FACTURA" cuando no hay CAE','Hecho','—'],
- ['Facturación electrónica (ARCA): certificado, punto de venta y CAE',(CLOUD.on?'Implementado (servidor + WSAA/WSFE); falta probarlo en homologación con el certificado real del comercio':'En la demo es simulado; el sistema del cliente lo pide a ARCA desde el servidor y falta probarlo en homologación'),'Trámite de certificado y servicio WSFE con Clave Fiscal; probar contra homologación [VERIFICAR].'],
+ ['Facturación electrónica (ARCA): certificado, punto de venta y CAE',((window.RAVE_CLOUD&&window.RAVE_CLOUD.url)?'Implementado (servidor + WSAA/WSFE); falta probarlo en homologación con el certificado real del comercio':'En la demo es simulado; el sistema del cliente lo pide a ARCA desde el servidor y falta probarlo en homologación'),'Trámite de certificado y servicio WSFE con Clave Fiscal; probar contra homologación [VERIFICAR].'],
  ['CUIT y condición frente al IVA en el ticket','Campos vacíos para completar','El dueño los carga en Periféricos y ticket.'],
  ['Terceros en la web (Google Maps y Google Fonts)','Informado en la política de privacidad','Evaluar un aviso de cookies si se suma analítica o píxeles.'],
  ['Wi-Fi de invitados: red aislada y cartel','Texto de plantilla','Confirmar el cartel obligatorio [VERIFICAR Ley 25.891 u otra norma].'],
