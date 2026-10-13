@@ -1423,15 +1423,58 @@ const TPL={productos:['nombre','rubro','precio','costo','stock','unidad','codigo
 reg('impex','Importar / Exportar','file','impex',()=>`<h1>Importar / Exportar todo</h1>
  <div class="card"><h3>Exportar (CSV con ; y UTF-8 con BOM, o Excel)</h3><p class="sm mut">Las celdas que empiezan con = + - @ se neutralizan. Cada exportación queda en auditoría. También hay botones de exportar dentro de cada pantalla.</p>
  <div class="tw"><table><tbody>${Object.entries(EXPORTS).filter(([k,e])=>can(e.perm)).map(([k,e])=>`<tr><td>${esc(e.t)}</td><td class="r">${expBar(k)}</td></tr>`).join('')}</tbody></table></div></div>
- <div class="card" style="margin-top:1rem"><h3>Importar</h3><div class="grid g3"><div><label for="im-e">¿Qué importás?</label><select id="im-e">${Object.entries(IMP).map(([k,v])=>`<option value="${k}">${esc(v.t)}</option>`).join('')}</select></div><div><label for="im-f">Archivo CSV</label><input type="file" id="im-f" accept=".csv,.txt,.tsv"></div><div><label>&nbsp;</label><button class="btn" data-act="impTpl">Descargar plantilla</button></div></div>
- <p class="sm mut">Se reconocen separadores ; , y tabulación, y codificación UTF-8 o ANSI. Máximo 20.000 filas / 15 MB. <b>Excel (.xlsx): pendiente en esta demo</b>, guardalo como CSV desde Excel.</p><div id="im-body"></div></div>
+ <div class="card" style="margin-top:1rem"><h3>Importar</h3><div class="grid g3"><div><label for="im-e">¿Qué importás?</label><select id="im-e">${Object.entries(IMP).map(([k,v])=>`<option value="${k}">${esc(v.t)}</option>`).join('')}</select></div><div><label for="im-f">Archivo CSV o Excel (.xlsx)</label><input type="file" id="im-f" accept=".csv,.txt,.tsv,.xlsx"></div><div><label>&nbsp;</label><button class="btn" data-act="impTpl">Descargar plantilla</button></div></div>
+ <p class="sm mut">Se reconocen separadores ; , y tabulación, y codificación UTF-8 o ANSI. Máximo 20.000 filas / 15 MB. Excel <b>.xlsx</b> se lee directo (primera hoja; las fechas y los números se convierten solos). El formato viejo <b>.xls</b> no: guardalo como .xlsx o CSV.</p><div id="im-body"></div></div>
  <div class="card" style="margin-top:1rem"><h3>Último lote importado</h3>${S.batches.length?`<p class="sm">${fmtDT(S.batches[S.batches.length-1].ts)} · ${esc(S.batches[S.batches.length-1].ent)} · ${esc(S.batches[S.batches.length-1].file)} · ${S.batches[S.batches.length-1].created.length} nuevos / ${S.batches[S.batches.length-1].updated.length} actualizados ${S.batches[S.batches.length-1].undone?'<span class="tag">deshecho</span>':''}</p><button class="btn sm red" data-act="impUndo" ${S.batches[S.batches.length-1].undone?'disabled':''}>Deshacer último lote</button>`:'<p class="mut sm">Todavía no importaste nada.</p>'}</div>`,
  ()=>{$('#im-f').addEventListener('change',impLoad);},'Datos');
 A.impTpl=()=>{const e=val('im-e');download('plantilla-'+e+'.csv',toCSV(TPL[e],e==='productos'?[['Ejemplo','Almacén',1500,1000,10,'und','779000000','no']]:[['Ejemplo',2500,'Mostrador','1234']]),'text/csv;charset=utf-8');};
-async function impLoad(ev){const f=ev.target.files[0];if(!f)return;const b=$('#im-body');if(/\.xlsx?$/i.test(f.name)){b.innerHTML='<div class="errbox">Excel (.xlsx) todavía no se lee en esta demo. Guardalo como CSV desde Excel (Archivo → Guardar como → CSV) y volvé a subirlo.</div>';return;}
+/* lector de .xlsx sin librerías: zip + XML (DecompressionStream del navegador) */
+async function xlsxRows(buf){
+ const u8=new Uint8Array(buf),dv=new DataView(buf);let e=-1;
+ for(let i=u8.length-22;i>=Math.max(0,u8.length-66000);i--){if(dv.getUint32(i,true)===0x06054b50){e=i;break;}}
+ if(e<0)throw new Error('El archivo no es un .xlsx válido.');
+ const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const files={};
+ for(let i=0;i<n;i++){if(p+46>u8.length||dv.getUint32(p,true)!==0x02014b50)break;
+  const meth=dv.getUint16(p+10,true),csz=dv.getUint32(p+20,true),usz=dv.getUint32(p+24,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cm=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
+  files[new TextDecoder().decode(u8.subarray(p+46,p+46+nl))]={meth,csz,usz,lo};p+=46+nl+el+cm;}
+ const get=async name=>{const f=files[name];if(!f)return null;if(f.usz>80*1024*1024)throw new Error('El archivo es demasiado grande descomprimido.');
+  const nl=dv.getUint16(f.lo+26,true),el=dv.getUint16(f.lo+28,true),st=f.lo+30+nl+el,d=u8.subarray(st,st+f.csz);
+  if(f.meth===0)return new TextDecoder().decode(d);
+  if(f.meth!==8)throw new Error('Compresión de .xlsx no soportada.');
+  if(typeof DecompressionStream==='undefined')throw new Error('Este navegador no puede abrir .xlsx: guardalo como CSV.');
+  const out=await new Response(new Blob([d]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer();
+  return new TextDecoder().decode(out);};
+ const xml=t=>new DOMParser().parseFromString(t,'application/xml');
+ const wbT=await get('xl/workbook.xml');if(!wbT)throw new Error('El archivo no es un .xlsx válido.');
+ let sheetPath='xl/worksheets/sheet1.xml';
+ try{const wb=xml(wbT),sh=wb.getElementsByTagName('sheet')[0];const rid=sh&&(sh.getAttribute('r:id')||sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id'));
+  const relT=await get('xl/_rels/workbook.xml.rels');if(rid&&relT){for(const r of xml(relT).getElementsByTagName('Relationship')){if(r.getAttribute('Id')===rid){let t=r.getAttribute('Target')||'';t=t.replace(/^\//,'');sheetPath=t.startsWith('xl/')?t:'xl/'+t;}}}}catch(x){}
+ const shT=await get(sheetPath);if(!shT)throw new Error('No se encontró la primera hoja del Excel.');
+ const ss=[];const ssT=await get('xl/sharedStrings.xml');
+ if(ssT){for(const si of xml(ssT).getElementsByTagName('si')){let t='';const walk=nd=>{for(const c of nd.childNodes){if(c.nodeName==='t')t+=c.textContent;else if(c.nodeName==='r')walk(c);}};walk(si);ss.push(t);}}
+ const dateFmt=new Set();const xfDate=[];const stT=await get('xl/styles.xml');
+ if(stT){const sd=xml(stT);const custom={};for(const nf of sd.getElementsByTagName('numFmt'))custom[nf.getAttribute('numFmtId')]=nf.getAttribute('formatCode')||'';
+  const isD=id=>{if((id>=14&&id<=22)||(id>=45&&id<=47))return true;const f=custom[id];if(!f)return false;return /[dmyh]/i.test(f.replace(/"[^"]*"|\[[^\]]*\]|\\./g,''))&&!/general/i.test(f);};
+  const cx=sd.getElementsByTagName('cellXfs')[0];if(cx)for(const xf of cx.getElementsByTagName('xf'))xfDate.push(isD(xf.getAttribute('numFmtId')));}
+ const col=ref=>{let c=0;for(const ch of ref.replace(/[0-9]/g,''))c=c*26+ch.charCodeAt(0)-64;return c-1;};
+ const rows=[];
+ for(const row of xml(shT).getElementsByTagName('row')){const r=[];
+  for(const c of row.getElementsByTagName('c')){const ref=c.getAttribute('r')||'';const ci=ref?col(ref):r.length;const t=c.getAttribute('t');const vN=c.getElementsByTagName('v')[0];let v=vN?vN.textContent:'';
+   if(t==='s')v=ss[+v]??'';else if(t==='inlineStr')v=Array.from(c.getElementsByTagName('t')).map(x=>x.textContent).join('');
+   else if(t==='b')v=v==='1'?'1':'0';
+   else if(t==='n'||t==null||t===''){if(v!==''&&!isNaN(+v)){const sx=+c.getAttribute('s');if(xfDate[sx]){const d=new Date(Math.round((+v-25569)*86400000));v=String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+'/'+d.getUTCFullYear();}
+     else{let q=+v;v=/e/i.test(v)?q.toLocaleString('fullwide',{useGrouping:false,maximumFractionDigits:10}):v;v=v.replace('.',',');}}}
+   while(r.length<ci)r.push('');r[ci]=String(v).trim();}
+  rows.push(r);if(rows.length>20010)break;}
+ while(rows.length&&rows[rows.length-1].every(x=>x===''))rows.pop();
+ return rows;}
+async function impLoad(ev){const f=ev.target.files[0];if(!f)return;const b=$('#im-body');
+ if(/\.xls$/i.test(f.name)){b.innerHTML='<div class="errbox">El formato viejo .xls no se lee. En Excel: Archivo → Guardar como → «Libro de Excel (.xlsx)» o CSV, y volvé a subirlo.</div>';return;}
  if(f.size>15*1024*1024){b.innerHTML='<div class="errbox">El archivo supera 15 MB.</div>';return;}
- const buf=await f.arrayBuffer();let text;try{text=new TextDecoder('utf-8',{fatal:true}).decode(buf);}catch(e){text=new TextDecoder('windows-1252').decode(buf);}
- const rows=parseCSV(text);if(rows.length<2){b.innerHTML='<div class="errbox">El archivo está vacío o no tiene filas de datos.</div>';return;}if(rows.length>20001){b.innerHTML='<div class="errbox">Máximo 20.000 filas.</div>';return;}
+ const buf=await f.arrayBuffer();let rows;
+ if(/\.xlsx$/i.test(f.name)){try{rows=await xlsxRows(buf);}catch(x){b.innerHTML='<div class="errbox">'+esc(String(x.message||'No se pudo leer el Excel.'))+' Probá guardarlo como CSV.</div>';return;}}
+ else{let text;try{text=new TextDecoder('utf-8',{fatal:true}).decode(buf);}catch(e){text=new TextDecoder('windows-1252').decode(buf);}rows=parseCSV(text);}
+ if(rows.length<2){b.innerHTML='<div class="errbox">El archivo está vacío o no tiene filas de datos.</div>';return;}if(rows.length>20001){b.innerHTML='<div class="errbox">Máximo 20.000 filas.</div>';return;}
  const hi=detectHeader(rows);const ent=val('im-e');const headers=rows[hi];const map={};Object.entries(IMP[ent].fields).forEach(([k,fd])=>{const i=headers.findIndex(h=>fd.syn.includes(norm(h)));map[k]=i;});
  imp={ent,file:f.name,headers,data:rows.slice(hi+1),map,dup:'update',defRubro:''};impRender();}
 function impEval(){const I=imp,F=IMP[I.ent].fields,out=[];const seen=new Set();let n=0,u=0,o=0,er=0;
@@ -1898,9 +1941,9 @@ class ApiErr extends Error{constructor(m,st,body){super(m);this.status=st;this.b
 async function hreq(path,o={}){const h={apikey:CLOUD.key,'Content-Type':'application/json'};
  if(o.auth!==false){const t=await accessToken();if(!t)throw new ApiErr('Sesión vencida: volvé a ingresar',401);h.Authorization='Bearer '+t;}
  Object.assign(h,o.headers||{});let r;
- try{r=await fetch(CLOUD.url+path,{method:o.method||'GET',headers:h,body:o.body!==undefined?JSON.stringify(o.body):undefined});}catch(e){cl.online=false;throw new NetErr();}
- cl.online=true;let j=null;const txt=await r.text();try{j=txt?JSON.parse(txt):null;}catch(e){j=txt;}
- if(r.status===502||r.status===503||r.status===504){if(r.status===502&&j&&typeof j==='object'&&j.etapa)throw new ApiErr(String(j.error||'ARCA no respondió'),502,j);cl.online=false;throw new NetErr();}
+ try{r=await fetch(CLOUD.url+path,{method:o.method||'GET',headers:h,body:o.body!==undefined?JSON.stringify(o.body):undefined});}catch(e){if(!o.fn)cl.online=false;throw new NetErr();}
+ if(!o.fn)cl.online=true;let j=null;const txt=await r.text();try{j=txt?JSON.parse(txt):null;}catch(e){j=txt;}
+ if(r.status===502||r.status===503||r.status===504){if(r.status===502&&j&&typeof j==='object'&&j.etapa)throw new ApiErr(String(j.error||'ARCA no respondió'),502,j);if(!o.fn)cl.online=false;throw new NetErr();}
  if(!r.ok){const m=(j&&(j.message||j.msg||j.error_description||j.error))||('Error '+r.status);throw new ApiErr(typeof m==='string'?m:'Error '+r.status,r.status,j);}
  return j;}
 const rpc=(fn,args,o)=>hreq('/rest/v1/rpc/'+fn,{method:'POST',body:args||{},...(o||{})});
@@ -2323,7 +2366,7 @@ const arcaSleep=ms=>new Promise(r=>setTimeout(r,ms));
 function arcaCuitOk(s){s=String(s||'').replace(/\D/g,'');if(s.length!==11)return false;const w=[5,4,3,2,7,6,5,4,3,2];let t=0;for(let i=0;i<10;i++)t+=w[i]*(+s[i]);let d=11-(t%11);if(d===11)d=0;if(d===10)return false;return d===+s[10];}
 const arcaCuitFmt=s=>{s=String(s||'').replace(/\D/g,'');return s.length===11?s.slice(0,2)+'-'+s.slice(2,10)+'-'+s[10]:s;};
 const arcaFecha=f=>String(f||'').split('-').reverse().join('/');
-const arcaCall=(accion,extra)=>hreq('/functions/v1/arca',{method:'POST',body:Object.assign({accion,comercio:cl.comercio.id,ambiente:arcaAmb()},extra||{})});
+const arcaCall=(accion,extra)=>hreq('/functions/v1/arca',{method:'POST',fn:true,body:Object.assign({accion,comercio:cl.comercio.id,ambiente:arcaAmb()},extra||{})});
 async function arcaEstado(force){if(!arcaOn())return null;if(!force&&ARC.st&&Date.now()-ARC.stAt<60000&&ARC.st._amb===arcaAmb())return ARC.st;
  try{const r=await arcaCall('estado');r._amb=arcaAmb();ARC.st=r;ARC.stAt=Date.now();return r;}catch(e){return ARC.st&&ARC.st._amb===arcaAmb()?ARC.st:null;}}
 
@@ -2404,7 +2447,7 @@ async function arcaPostSale(sale,stamp){
 
 /* ---------- reintentos automáticos (se llama desde cada sincronización) ---------- */
 function arcaPendientes(){return S.sales.filter(s=>s.doc==='factura_pendiente_cae'&&s.status==='ok'&&!(s.arca&&s.arca.cae));}
-async function arcaTick(){if(!arcaOn()||ARC.tickBusy)return;const st=await arcaEstado();if(!st||!st.config||!st.config.activo)return;
+async function arcaTick(){if(!arcaOn()||ARC.tickBusy)return;if(!arcaPendientes().length)return;const st=await arcaEstado();if(!st||!st.config||!st.config.activo)return;
  ARC.tickBusy=true;
  try{
   const mine=arcaPendientes().filter(s=>s.caja===S.tenant.caja&&!ARC.blocked.has(s.id)&&!(s.arca&&s.arca.estado==='rechazado')&&!ARC.inflight.has(s.id)).slice(0,3);
