@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-18 17:46 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-18 21:54 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -151,6 +151,38 @@ table.inv tr.st-neg td{background:#fdecea}
 #as-dock .as-w{display:block;font-size:.72rem;color:#7a7060;margin-bottom:.1rem}
 #as-dock .as-in{margin-top:.5rem;flex-wrap:nowrap}#as-dock .as-in input{flex:1;min-width:0;min-height:48px}#as-dock .as-in .btn{min-height:48px;min-width:48px}
 @media print{#as-dock{display:none!important}}
+
+/* ===== Proveedores y compras (neumórfico) ===== */
+.cmp{--nm-l:#fff;--nm-d:#d8d2c7;--nm-bg:#f6f3ee}
+.cmp .cmp-card,.cmp fieldset.cmp-card{background:var(--nm-bg);border:0;border-radius:20px;padding:1rem 1.1rem;box-shadow:8px 8px 18px var(--nm-d),-8px -8px 18px var(--nm-l);margin:0 0 1rem;min-width:0}
+.cmp fieldset.cmp-card legend{font-family:Georgia,serif;font-weight:700;padding:0 .4rem;font-size:1rem;color:var(--ink)}
+.cmp .cmp-kpis{margin:1rem 0}
+.cmp .kpi span{font-size:.8rem;color:var(--mut);font-weight:600}.cmp .kpi b{font-size:1.7rem;overflow-wrap:anywhere}
+.cmp .cmp-in,.cmp input,.cmp select{background:var(--nm-bg);border:0;border-radius:14px;box-shadow:inset 3px 3px 7px var(--nm-d),inset -3px -3px 7px var(--nm-l);min-height:48px}
+.cmp input[type=radio],.cmp input[type=checkbox]{box-shadow:none;min-height:22px}
+.cmp .btn{min-height:48px;border:0;background:var(--nm-bg);box-shadow:5px 5px 11px var(--nm-d),-5px -5px 11px var(--nm-l);color:var(--ink)}
+.cmp .btn:active{box-shadow:inset 3px 3px 7px var(--nm-d),inset -3px -3px 7px var(--nm-l)}
+.cmp .btn.gold{background:var(--gold);color:#1b1100}.cmp .btn.dark{background:var(--ink);color:#fff}.cmp .btn.ghost{background:transparent;box-shadow:none;border:1px solid var(--line)}
+.cmp .btn.danger,.btn.danger{color:var(--red)}.cmp .btn.sm{min-height:44px}
+.cmp .btn[disabled]{opacity:.45;box-shadow:none}
+.cmp .cmp-big{min-height:56px;padding:.6rem 1.4rem;font-size:1rem}
+.cmp-tabs{display:flex;gap:.6rem;flex-wrap:wrap;margin:.2rem 0 1rem}
+.cmp-tab{min-height:48px;padding:.5rem 1.1rem;border:0;border-radius:14px;background:var(--nm-bg,#f6f3ee);box-shadow:5px 5px 11px #d8d2c7,-5px -5px 11px #fff;font-weight:700;cursor:pointer;color:var(--ink);font:inherit;font-weight:700}
+.cmp-tab.on{box-shadow:inset 3px 3px 7px #d8d2c7,inset -3px -3px 7px #fff;color:var(--gold2)}
+.cmp-tab b{background:var(--gold);color:#1b1100;border-radius:99px;padding:0 .45rem;font-size:.78rem;margin-left:.2rem}
+.cmp-panel{background:var(--nm-bg);border-radius:22px;padding:1rem;box-shadow:8px 8px 18px var(--nm-d),-8px -8px 18px var(--nm-l);min-width:0}
+.cmp-table th{white-space:nowrap}.cmp-table td{vertical-align:top}.cmp-table td.acts{white-space:nowrap}
+.cmp-table tr.arch td{opacity:.65}
+.cmp-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(88px,1fr) minmax(120px,1.2fr) minmax(104px,1fr) 48px;gap:.6rem;align-items:start;padding:.5rem 0;border-bottom:1px dashed var(--line)}
+.cmp-row output{display:block;min-height:48px;line-height:48px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.cmp-row .r-del{align-self:end}.cmp-row .r-note{display:block;min-height:1.1em;margin-top:.15rem;font-size:.75rem}
+.cmp-total{font-size:1.1rem}.cmp-total b{font-family:Georgia,serif;font-size:1.5rem}
+.cmp-note{min-height:48px;display:flex;align-items:center;padding:.2rem .4rem;font-size:.9rem}
+.cmp-acct{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;margin-top:1rem}
+.cmp-res ul{margin:.3rem 0 .6rem 1.1rem}
+@media(max-width:760px){.cmp-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 48px;}.cmp-row .fp{grid-column:1/-1}.cmp-row .fs{grid-column:1/3}.cmp-row .fq,.cmp-row .fc{grid-column:auto}.cmp-row .r-del{grid-column:3}.cmp .cmp-panel{padding:.7rem}.cmp-table{font-size:.82rem}}
+@media(max-width:620px){.cmp-table .hm{display:none}.cmp-table td.acts{white-space:normal}.cmp-table td.acts .btn{margin:.15rem .15rem .15rem 0}}
+@media(max-width:420px){.cmp-row{grid-template-columns:minmax(0,1fr) 48px}.cmp-row .fq,.cmp-row .fc,.cmp-row .fs{grid-column:1/2}.cmp-row .r-del{grid-column:2;grid-row:1}}
 </style>
 </head>
 <body>
@@ -557,7 +589,7 @@ const dowOfKey=k=>new Date(k+'T12:00:00Z').getUTCDay();
 const addDays=(k,n)=>{const d=new Date(k+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
 
 /* ---------- Estado + persistencia (IndexedDB; demo sin cifrado) ---------- */
-const PERMS={sell:'Vender',cash_mov:'Ingresos/egresos de caja',close_cash:'Arqueo y cierre de caja',view_cost:'Ver costos y ganancias',edit_products:'Editar inventario',void:'Anular ventas',impex:'Importar / exportar',staff:'Personal y fichaje (admin)',tasks:'Tareas del personal',integrations:'Integraciones',audit:'Ver auditoría',roles:'Usuarios y permisos',menu_admin:'Administrar menú público',config:'Configuración',customers:'Clientes, fidelización y cupones',devices:'Periféricos y ticket'};
+const PERMS={sell:'Vender',cash_mov:'Ingresos/egresos de caja',close_cash:'Arqueo y cierre de caja',view_cost:'Ver costos y ganancias',edit_products:'Editar inventario',void:'Anular ventas',impex:'Importar / exportar',staff:'Personal y fichaje (admin)',tasks:'Tareas del personal',integrations:'Integraciones',audit:'Ver auditoría',roles:'Usuarios y permisos',menu_admin:'Administrar menú público',config:'Configuración',customers:'Clientes, fidelización y cupones',devices:'Periféricos y ticket',purchases:'Proveedores y compras'};
 const SEED_RUBROS=[
  {id:'promo',name:'Combos y promos',owner:'',reparte:false,alcohol:true,kind:'rubro',color:'#c9963e',mNom:'Promos',mTitle:'Menú de Promos de Bebidas',mHint:'',layout:'grid'},
  {id:'vino',name:'Vinos',owner:'',reparte:false,alcohol:true,kind:'rubro',color:'#7b2d3b',mNom:'Vinos',mTitle:'Vinos',mHint:'Por bodega y variedad',layout:'bodegas'},
@@ -581,6 +613,7 @@ const DEF0=()=>({v:3,
  cfg:{cashProfile:'simple',negStock:true,tax:{promo:3000000,vino:3000000},fee:{qr:0,modo:0,debito:0,credito:0,pedidosya:0},movAffectProfit:true,payFromCash:true,scaleMode:'peso',ticket:{w:80,msg:'¡Gracias por tu compra! Seguinos en Instagram @rave_licoreria',showLogo:true,legal:true}},
  products:seedProducts(),
  sales:[],sessions:[],movs:[],closures:[],seq:{},
+ suppliers:[],pOrders:[],receipts:[],supLedger:[],
  employees:[{id:'e1',name:'Empleado 1',puestoId:'pu_most',rate:250000,pin:'1234',active:true},{id:'e2',name:'Empleado 2',puestoId:'pu_most',rate:250000,pin:'4321',active:true}],
  punches:[],
  puestos:[{id:'pu_soc',name:'Socios / dueños',parent:'',holders:''},{id:'pu_most',name:'Mostrador',parent:'pu_soc',holders:''},{id:'pu_dep',name:'Depósito y reposición',parent:'pu_soc',holders:''}],
@@ -592,7 +625,7 @@ const DEF0=()=>({v:3,
   {id:'t5',title:'Limpieza profunda de freezer',puestoId:'pu_dep',freq:'monthly',dom:1,active:true}],
  taskLogs:[],
  users:[{id:'u1',name:'ADMIN',role:'admin',pin:'1234'},{id:'u2',name:'Supervisor',role:'supervisor',pin:'1111'},{id:'u3',name:'Mostrador',role:'mostrador',pin:'0000'}],
- roles:{admin:Object.keys(PERMS),supervisor:['sell','cash_mov','close_cash','view_cost','edit_products','void','impex','tasks','audit','customers','devices'],mostrador:['sell','cash_mov','tasks','customers'],operador:['sell']},
+ roles:{admin:Object.keys(PERMS),supervisor:['sell','cash_mov','close_cash','view_cost','edit_products','void','impex','tasks','audit','customers','devices','purchases'],mostrador:['sell','cash_mov','tasks','customers'],operador:['sell']},
  audit:[],arqDraft:{},batches:[],
  pya:[],events:[],seenEvents:{},simOffline:false,
  arcaRcp:{},
@@ -626,7 +659,9 @@ const DBNAME=(typeof window!=='undefined'&&window.RAVE_BUILD&&window.RAVE_BUILD.
 function idb(){return new Promise((res,rej)=>{if(typeof indexedDB==='undefined')return rej();const r=indexedDB.open(DBNAME,1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
 async function loadState(){try{const db=await idb();return await new Promise(res=>{const q=db.transaction('kv').objectStore('kv').get('state');q.onsuccess=()=>res(q.result);q.onerror=()=>res(null);});}catch(e){return null;}}
 let saveT;function save(){if(CLOUD_HOOK){CLOUD_HOOK.persist();return;}clearTimeout(saveT);saveT=setTimeout(async()=>{try{const db=await idb();db.transaction('kv','readwrite').objectStore('kv').put(JSON.parse(JSON.stringify(S)),'state');}catch(e){}},300);}
-function mergeDefaults(st){const d=DEF();for(const k of Object.keys(d)){if(st[k]===undefined)st[k]=d[k];}return st;}
+/* "Proveedores y compras" es un permiso nuevo: si ningún rol lo tiene todavía (datos anteriores), lo reciben administrador y supervisor; si ya existe, se respeta lo que el dueño decidió */
+function rolesMigrate(r){if(!r)return r;const any=Object.values(r).some(a=>Array.isArray(a)&&a.includes('purchases'));if(!any){if(Array.isArray(r.supervisor))r.supervisor.push('purchases');if(Array.isArray(r.admin))r.admin.push('purchases');}return r;}
+function mergeDefaults(st){const d=DEF();for(const k of Object.keys(d)){if(st[k]===undefined)st[k]=d[k];}rolesMigrate(st.roles);return st;}
 
 /* ---------- Permisos, auditoría ---------- */
 const can=p=>!!user&&(user.role==='admin'||(S.roles[user.role]||[]).includes(p));
@@ -712,7 +747,7 @@ function route(){const h=location.hash||'#menu';
  else{showMenu();}}
 window.addEventListener('hashchange',route);
 
-const NAV=[['inicio','Resumen'],['vender','Operación'],['pedidos','Operación'],['caja','Operación'],['cajasx','Operación'],['arqueo','Operación'],['cierres','Operación'],['inventario','Operación'],
+const NAV=[['inicio','Resumen'],['vender','Operación'],['pedidos','Operación'],['caja','Operación'],['cajasx','Operación'],['arqueo','Operación'],['cierres','Operación'],['inventario','Operación'],['proveedores','Operación'],
  ['clientes','Clientes y fidelización'],['fidel','Clientes y fidelización'],['cupones','Clientes y fidelización'],
  ['personal','Equipo'],['tareas','Equipo'],['menuadmin','Menú y web'],['legal','Menú y web'],
  ['nube','Sistema'],['dispositivos','Sistema'],['impex','Sistema'],['integ','Sistema'],['roles','Sistema'],['auditoria','Sistema'],['config','Sistema']];
@@ -977,6 +1012,7 @@ const INV_HOOK={online:null,preview:null};
 function prodRefsLocal(p){const r=[];const n=S.sales.reduce((a,s)=>a+((s.items||[]).some(i=>i.pid===p.id)?1:0),0);if(n)r.push(n+' venta'+(n===1?'':'s'));
  const has=(a)=>{try{return JSON.stringify(a||[]).includes('"'+p.id+'"');}catch(e){return false;}};
  if(has(S.orderReqs))r.push('pedidos del menú');if(has(S.pya))r.push('pedidos PedidosYa');if(has(S.coupons)||has(S.plans))r.push('cupones o planes');
+ if(has(S.pOrders)||has(S.receipts))r.push('órdenes de compra o ingresos de mercadería');
  if(p.hist)r.push('ajustes o movimientos de stock');return r;}
 async function delPreview(ids){
  const items=ids.map(id=>{const p=prod(id);if(!p)return{id,name:'(no existe)',estado:'bloqueado',motivo:'ya no existe'};const refs=prodRefsLocal(p);
@@ -2210,6 +2246,545 @@ function loadExample(){if(openSess())return 'Ya hay una caja abierta: cerrala an
  S.arqDraft[sess.id]={taxes:{},empId:'e1',hours:'8',gastos:'4500',merienda:''};audit('EJEMPLO_CARGADO','jornada 6/10');save();return '';}
 A.loadEx=()=>{const e=loadExample();if(e)return toast(e,1);toast('Jornada de ejemplo cargada: andá a Arqueo');go('arqueo');};
 
+/* ===== Proveedores y Compras · motor (V26) =====
+   Un solo contrato (el de la API REST: pesos, nombres en snake_case) con dos motores que cumplen las mismas reglas:
+   · NUBE: funciones del servidor de 08-proveedores-compras.sql. Cada operación es una sola transacción en la base
+     (si algo falla se revierte TODO: stock, costo, deuda y caja). Requiere internet; nunca finge haber guardado.
+   · LOCAL (demo o equipo sin nube): mismas validaciones sobre el estado del equipo, con retroceso completo si algo falla.
+   En el estado del equipo el dinero va en centavos enteros (como el resto del sistema); en el contrato, en pesos. */
+const CMP_MEDIOS={efectivo:'Efectivo',transferencia:'Transferencia',cheque:'Cheque',tarjeta:'Tarjeta'};
+const CMP_IVA=['Responsable Inscripto','Monotributista','Exento'];
+const cmpCloud=()=>!!(CLOUD.on&&cl.ready&&cl.comercio);
+const c2p=c=>Math.round(c)/100;
+const p2c=p=>Math.round(Number(p)*100+(Number(p)<0?-1e-9:1e-9));
+const cmpKey=()=>'k'+uid()+uid();
+const cmpArr=k=>{if(!Array.isArray(S[k]))S[k]=[];return S[k];};
+const cmpProv=id=>cmpArr('suppliers').find(x=>x.id===id);
+class CmpErr extends Error{}
+const cmpFail=m=>{throw new CmpErr(m);};
+const cmpNum=x=>{if(typeof x==='number')return isFinite(x)?x:NaN;if(x===null||x===undefined||x==='')return NaN;const n=Number(x);return isFinite(n)?n:NaN;};
+const cmpR3=n=>Math.round(n*1000)/1000;
+const cmpTxt=v=>{const s=String(v??'').trim();return s?s:null;};
+
+/* ---------- reglas compartidas ---------- */
+function cmpItems(items){
+ if(!Array.isArray(items)||items.length<1||items.length>200)cmpFail('la lista de productos debe tener entre 1 y 200 renglones');
+ const seen=new Set(),out=[];let total=0;
+ for(const it of items){
+  const pid=String(it&&it.producto_id||'').trim();const q=cmpNum(it&&it.cantidad);
+  const pre=cmpNum(it&&(it.precio_costo!==undefined&&it.precio_costo!==null?it.precio_costo:it.precio_costo_pactado));
+  if(!pid)cmpFail('falta el producto de un renglón');
+  if(seen.has(pid))cmpFail('producto repetido en la lista ('+pid+'): sumá las cantidades en un solo renglón');seen.add(pid);
+  if(!(q>0)||q>1e6||Math.abs(q-cmpR3(q))>1e-9)cmpFail('cantidad inválida en '+pid+': mayor a cero, hasta 3 decimales');
+  if(!(pre>=0)||pre>1e9||Math.abs(pre*100-Math.round(pre*100))>1e-6)cmpFail('costo inválido en '+pid+': cero o más, hasta 2 decimales');
+  const p=S.products.find(x=>x.id===pid);if(!p)cmpFail('el producto '+pid+' no existe en este comercio');
+  if(p.archived)cmpFail('el producto '+p.name+' está archivado');
+  out.push({producto_id:pid,nombre:p.name,cantidad:q,precio:pre});total+=Math.round(q*p2c(pre)+1e-9);}
+ return{items:out,total};}
+function cmpKeyOk(k){if(!k||k.length<8||k.length>80)cmpFail('falta idempotency_key (8 a 80 caracteres) para no duplicar la carga');return k;}
+function cmpRubroEgreso(id,estricto){
+ if(!id){if(estricto)cmpFail('el rubro es obligatorio para todo movimiento de dinero');return;}
+ const r=rub(id);if(!r)cmpFail('el rubro elegido no existe en este comercio'+(estricto?' o no admite egresos':''));
+ if(r.kind==='cobr')cmpFail('ese rubro sólo admite ingresos');}
+function cmpTurnoAbierto(id){
+ if(!id)cmpFail('pago en efectivo: indicá la caja abierta de donde sale la plata');
+ const t=S.sessions.find(s=>s.id===id);if(!t)cmpFail('la caja indicada no existe en este equipo');
+ if(t.closedAt)cmpFail('la caja indicada ya está cerrada');return t;}
+function cmpMovCaja(turno,rubro,concepto,centavos,ref){
+ const m={id:uid(),ts:now(),sessId:turno,type:'egreso',rubro,rubroName:rubName(rubro),concept:String(concepto).slice(0,120),amount:centavos,user:user?user.name:'sistema',ref:String(ref||'').slice(0,80)};
+ S.movs.push(m);return m.id;}
+function cmpLedger(provId,tipo,montoC,saldoC,extra){
+ const e=Object.assign({id:uid(),seq:(S.supLedger.reduce((a,x)=>Math.max(a,x.seq||0),0))+1,provId,tipo,monto:montoC,saldo:saldoC,ts:now()},extra||{});
+ S.supLedger.push(e);return e;}
+
+/* ---------- motor LOCAL ---------- */
+function cmpSnap(){return JSON.stringify({su:S.suppliers,po:S.pOrders,re:S.receipts,le:S.supLedger,pr:S.products,mv:S.movs,sq:S.seq});}
+function cmpRestore(j){const o=JSON.parse(j);S.suppliers=o.su;S.pOrders=o.po;S.receipts=o.re;S.supLedger=o.le;S.products=o.pr;S.movs=o.mv;S.seq=o.sq;}
+function cmpAtomic(fn){const snap=cmpSnap();try{return fn();}catch(e){cmpRestore(snap);throw e;}}
+function cmpAcceso(){if(!user||!can('purchases'))cmpFail('no tenés permiso para operar con proveedores y compras');}
+
+const LOCAL={
+ async load(){cmpArr('suppliers');cmpArr('pOrders');cmpArr('receipts');cmpArr('supLedger');},
+ async supSave(p){cmpAcceso();return cmpAtomic(()=>{
+  const rs=String(p.razon_social||'').trim(),cuit=String(p.cuit||'').replace(/\D/g,''),iva=String(p.condicion_iva||''),email=cmpTxt(p.email);
+  if(rs.length<2||rs.length>120)cmpFail('la razón social es obligatoria (2 a 120 caracteres)');
+  if(!arcaCuitOk(cuit))cmpFail('el CUIT no es válido (11 dígitos con dígito verificador correcto)');
+  if(!CMP_IVA.includes(iva))cmpFail('condición de IVA inválida (Responsable Inscripto, Monotributista o Exento)');
+  if(email&&(email.length>120||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)))cmpFail('el correo no es válido');
+  const tel=cmpTxt(p.telefono),dir=cmpTxt(p.direccion);
+  if(tel&&tel.length>40)cmpFail('el teléfono es demasiado largo');if(dir&&dir.length>200)cmpFail('la dirección es demasiado larga');
+  const L=cmpArr('suppliers');let s=p.id?L.find(x=>x.id===p.id):null;
+  if(p.id&&!s)cmpFail('el proveedor no existe en este comercio');
+  if(L.some(x=>x.cuit===cuit&&(!s||x.id!==s.id)))cmpFail('ya existe un proveedor con ese CUIT en este comercio');
+  const nuevo=!s;if(nuevo){s={id:uid(),saldo:0,ts:now()};L.push(s);}
+  Object.assign(s,{razon:rs,cuit,iva,email:email||'',tel:tel||'',dir:dir||'',activo:p.activo===false?false:true});
+  audit(nuevo?'PROVEEDOR_ALTA':'PROVEEDOR_EDITAR',rs+' · CUIT '+cuit);save();
+  return{id:s.id,razon_social:rs,cuit,saldo_cuenta_corriente:c2p(s.saldo)};});},
+ async ocSave(p){cmpAcceso();return cmpAtomic(()=>{
+  const prov=cmpProv(p.proveedor_id);if(!prov)cmpFail('el proveedor no existe en este comercio');if(!prov.activo)cmpFail('el proveedor está archivado');
+  const estado=p.estado||'Borrador';if(!['Borrador','Solicitada'].includes(estado))cmpFail('una orden nueva nace como Borrador o Solicitada');
+  let oc=null;
+  if(p.id){oc=S.pOrders.find(x=>x.id===p.id);if(!oc)cmpFail('la orden no existe en este comercio');
+   if(oc.estado!=='Borrador')cmpFail('sólo se edita una orden en Borrador (esta está '+oc.estado+')');
+   if(oc.provId!==prov.id)cmpFail('no se cambia el proveedor de una orden: creá una nueva');}
+  else if(p.idempotency_key){const ex=S.pOrders.find(x=>x.key===p.idempotency_key);if(ex)return{id:ex.id,numero:ex.num,estado:ex.estado,total:c2p(ex.total),repetido:true};}
+  const calc=cmpItems(p.items);
+  if(calc.total<=0&&estado==='Solicitada')cmpFail('una orden solicitada necesita costos pactados (total mayor a cero)');
+  const items=calc.items.map(i=>({pid:i.producto_id,name:i.nombre,qty:i.cantidad,cost:p2c(i.precio)}));
+  const obs=(cmpTxt(p.observaciones)||'').slice(0,500);
+  if(!oc){S.seq.oc_compra=(S.seq.oc_compra||0)+1;oc={id:uid(),num:S.seq.oc_compra,provId:prov.id,estado,total:calc.total,fecha:now(),obs,items,key:p.idempotency_key||null,ts:now()};S.pOrders.push(oc);}
+  else{Object.assign(oc,{estado,total:calc.total,obs,items});}
+  audit('OC_'+(oc.estado==='Solicitada'?'SOLICITADA':'GUARDADA'),'OC-'+oc.num+' · '+prov.razon+' · '+money(oc.total));save();
+  return{id:oc.id,numero:oc.num,estado:oc.estado,total:c2p(oc.total),repetido:false};});},
+ async ocEstado(id,estado){cmpAcceso();return cmpAtomic(()=>{
+  if(!['Solicitada','Cancelada'].includes(estado))cmpFail('estado inválido: sólo se pasa a Solicitada o Cancelada (Recibida se logra recibiendo la mercadería)');
+  const oc=S.pOrders.find(x=>x.id===id);if(!oc)cmpFail('la orden no existe en este comercio');
+  if(oc.estado===estado)return{id:oc.id,estado};
+  if(!((oc.estado==='Borrador'&&['Solicitada','Cancelada'].includes(estado))||(oc.estado==='Solicitada'&&estado==='Cancelada')))cmpFail('no se puede pasar una orden de '+oc.estado+' a '+estado);
+  if(estado==='Solicitada'&&oc.total<=0)cmpFail('una orden solicitada necesita costos pactados (total mayor a cero)');
+  oc.estado=estado;audit('OC_'+estado.toUpperCase(),'OC-'+oc.num);save();return{id:oc.id,estado};});},
+ async recibir(p){cmpAcceso();return cmpAtomic(()=>{
+  const key=cmpKeyOk(cmpTxt(p.idempotency_key));
+  const prov=cmpProv(p.proveedor_id);if(!prov)cmpFail('el proveedor no existe en este comercio');
+  const ya=S.receipts.find(r=>r.key===key);if(ya)return Object.assign({},ya.res,{repetido:true});
+  if(!prov.activo)cmpFail('el proveedor está archivado');
+  const tipo=cmpTxt(p.tipo_comprobante),nro=cmpTxt(p.nro_comprobante);
+  if(!tipo||!['Factura','Remito'].includes(tipo))cmpFail('tipo de comprobante inválido (Factura o Remito)');
+  if(!nro||nro.length>40||!/^[A-Za-z0-9./ -]+$/.test(nro))cmpFail('el número de comprobante es obligatorio (letras, números, guión, barra y punto)');
+  if(S.receipts.some(r=>r.provId===prov.id&&r.tipo===tipo&&r.nro.toLowerCase()===nro.toLowerCase()))cmpFail('ese '+tipo.toLowerCase()+' ya fue cargado para este proveedor (duplicado)');
+  const cond=cmpTxt(p.condicion_pago)||'credito';if(!['credito','contado'].includes(cond))cmpFail('condición de pago inválida (credito o contado)');
+  let medio=cmpTxt(p.medio_pago),rubro=cmpTxt(p.rubro_id),turno=cmpTxt(p.turno_id);
+  if(cond==='contado'){
+   if(!medio||!CMP_MEDIOS[medio])cmpFail('al contado hay que indicar el medio de pago (efectivo, transferencia, cheque o tarjeta)');
+   cmpRubroEgreso(rubro,true);
+   if(medio==='efectivo')cmpTurnoAbierto(turno);
+  }else{medio=null;turno=null;cmpRubroEgreso(rubro,false);}
+  const hoy=dkey(now());let fecha=cmpTxt(p.fecha_recepcion);fecha=fecha&&/^\d{4}-\d{2}-\d{2}$/.test(fecha)?fecha:hoy;
+  if(fecha>addDays(hoy,1)||fecha<addDays(hoy,-400))cmpFail('la fecha de recepción no es razonable');
+  let oc=null;
+  if(p.orden_compra_id){oc=S.pOrders.find(x=>x.id===p.orden_compra_id);if(!oc)cmpFail('la orden de compra no existe en este comercio');
+   if(oc.provId!==prov.id)cmpFail('la orden pertenece a otro proveedor');
+   if(oc.estado!=='Solicitada')cmpFail('la orden está '+oc.estado+': sólo se recibe una orden Solicitada');}
+  const calc=cmpItems(p.items);
+  if(oc)for(const it of calc.items)if(!oc.items.some(x=>x.pid===it.producto_id))cmpFail('el producto '+it.nombre+' no está en la orden de compra');
+  if(calc.total<=0)cmpFail('el total del comprobante debe ser mayor a cero');
+  const decl=cmpNum(p.total_declarado);
+  if(!isNaN(decl)&&Math.abs(decl*100-calc.total)>0.9)cmpFail('el total declarado ('+decl+') no coincide con la suma de los renglones ('+c2p(calc.total)+')');
+  /* ---- se aplica todo ---- */
+  const ing={id:uid(),provId:prov.id,ocId:oc?oc.id:null,tipo,nro,fecha,cond,medio,rubro,turno,total:calc.total,obs:(cmpTxt(p.observaciones)||'').slice(0,500),ts:now(),key,items:[],movId:null};
+  const sal=[];
+  for(const it of calc.items.slice().sort((a,b)=>a.producto_id<b.producto_id?-1:1)){
+   const pr=S.products.find(x=>x.id===it.producto_id);const stAnt=+pr.stock||0,stNew=cmpR3(stAnt+it.cantidad);const coAnt=+pr.cost||0;
+   const coNew=it.precio>0?p2c(it.precio):coAnt;pr.stock=stNew;pr.cost=coNew;pr.costAt=now();
+   const row={pid:it.producto_id,name:it.nombre,qty:it.cantidad,cost:p2c(it.precio),stockAnt:stAnt,stockNew:stNew,costAnt:coAnt,costNew:coNew};ing.items.push(row);
+   sal.push({producto_id:it.producto_id,nombre:it.nombre,cantidad:it.cantidad,precio_costo:it.precio,stock_anterior:stAnt,stock_nuevo:stNew,costo_anterior:c2p(coAnt),costo_nuevo:c2p(coNew),
+    margen_pct:pr.price>0&&coNew>0?Math.round((pr.price-coNew)/pr.price*1000)/10:null});}
+  let saldo=prov.saldo+calc.total;
+  cmpLedger(prov.id,tipo,calc.total,saldo,{ref:nro,rubro,ingresoId:ing.id});
+  if(cond==='contado'){
+   if(medio==='efectivo')ing.movId=cmpMovCaja(turno,rubro,'Pago contado a '+prov.razon+' · '+tipo+' '+nro,calc.total,'ingreso:'+ing.id);
+   saldo-=calc.total;cmpLedger(prov.id,'Pago',calc.total,saldo,{ref:tipo+' '+nro,medio,rubro,ingresoId:ing.id,movId:ing.movId});}
+  prov.saldo=saldo;
+  const dif=[];
+  if(oc){oc.estado='Recibida';oc.recibidaAt=now();
+   for(const d of oc.items){const r=ing.items.find(x=>x.pid===d.pid);
+    if(!r||r.qty!==d.qty||r.cost!==d.cost)dif.push({producto_id:d.pid,nombre:d.name,cantidad_pedida:d.qty,cantidad_recibida:r?r.qty:0,costo_pactado:c2p(d.cost),costo_facturado:r?c2p(r.cost):null});}}
+  const res={ok:true,repetido:false,ingreso_id:ing.id,orden_compra_id:oc?oc.id:null,orden_estado:oc?'Recibida':null,proveedor_id:prov.id,tipo_comprobante:tipo,nro_comprobante:nro,
+   total:c2p(calc.total),condicion_pago:cond,medio_pago:medio,saldo_proveedor:c2p(saldo),movimiento_caja_id:ing.movId,items:sal,diferencias:dif};
+  ing.res=res;S.receipts.push(ing);
+  audit('COMPRA_RECEPCION',prov.razon+' · '+tipo+' '+nro+' · total '+money(calc.total)+' · '+cond+(oc?' · OC-'+oc.num:''));
+  if(ing.movId)emit('cash.movement',{type:'egreso',rubro,amount:calc.total});
+  save();return res;});},
+ async pagar(p){cmpAcceso();return cmpAtomic(()=>{
+  const key=cmpKeyOk(cmpTxt(p.idempotency_key));
+  const prov=cmpProv(p.proveedor_id);if(!prov)cmpFail('el proveedor no existe en este comercio');
+  const ya=S.supLedger.find(x=>x.key===key);if(ya)return{ok:true,repetido:true,movimiento_id:ya.id,monto:c2p(ya.monto),saldo_proveedor:c2p(prov.saldo)};
+  const monto=cmpNum(p.monto);const mc=p2c(monto);
+  if(!(monto>0)||monto>1e11||Math.abs(monto*100-mc)>1e-6)cmpFail('el monto debe ser mayor a cero, con hasta 2 decimales');
+  if(mc>prov.saldo)cmpFail('el pago ('+monto+') supera la deuda con el proveedor ('+c2p(prov.saldo)+')');
+  const medio=cmpTxt(p.medio_pago),rubro=cmpTxt(p.rubro_id),turno=cmpTxt(p.turno_id),ref=(cmpTxt(p.referencia)||'').slice(0,80);
+  if(!medio||!CMP_MEDIOS[medio])cmpFail('indicá el medio de pago (efectivo, transferencia, cheque o tarjeta)');
+  cmpRubroEgreso(rubro,true);
+  let mov=null;if(medio==='efectivo'){cmpTurnoAbierto(turno);mov=cmpMovCaja(turno,rubro,'Pago a proveedor '+prov.razon+(ref?' · '+ref:''),mc,'pago');}
+  prov.saldo-=mc;const e=cmpLedger(prov.id,'Pago',mc,prov.saldo,{ref,medio,rubro,movId:mov,key});
+  audit('PROVEEDOR_PAGO',prov.razon+' · '+money(mc)+' · '+medio);if(mov)emit('cash.movement',{type:'egreso',rubro,amount:mc});save();
+  return{ok:true,repetido:false,movimiento_id:e.id,monto,saldo_proveedor:c2p(prov.saldo),movimiento_caja_id:mov};});},
+ async nc(p){cmpAcceso();return cmpAtomic(()=>{
+  const key=cmpKeyOk(cmpTxt(p.idempotency_key));
+  const prov=cmpProv(p.proveedor_id);if(!prov)cmpFail('el proveedor no existe en este comercio');
+  const ya=S.supLedger.find(x=>x.key===key);if(ya)return{ok:true,repetido:true,movimiento_id:ya.id,monto:c2p(ya.monto),saldo_proveedor:c2p(prov.saldo)};
+  const monto=cmpNum(p.monto);const mc=p2c(monto);
+  if(!(monto>0)||monto>1e11||Math.abs(monto*100-mc)>1e-6)cmpFail('el monto debe ser mayor a cero, con hasta 2 decimales');
+  const ref=(cmpTxt(p.referencia)||'').slice(0,80),motivo=(cmpTxt(p.motivo)||'').slice(0,200);
+  if(!ref)cmpFail('indicá el número de la nota de crédito');if(motivo.length<3)cmpFail('indicá el motivo de la nota de crédito');
+  prov.saldo-=mc;const e=cmpLedger(prov.id,'Nota de Crédito',mc,prov.saldo,{ref,motivo,key});
+  audit('PROVEEDOR_NC',prov.razon+' · '+money(mc)+' · '+ref);save();
+  return{ok:true,repetido:false,movimiento_id:e.id,monto,saldo_proveedor:c2p(prov.saldo)};});}
+};
+
+/* ---------- motor NUBE (funciones del servidor) ---------- */
+function cmpErrMsg(e){if(e&&e.net)return'Sin conexión: esta operación necesita internet para no duplicar ni perder datos. No se guardó nada.';
+ if(e&&e.status===403&&/rol|permiso|acceso/i.test(String(e.message)))return'Tu rol no tiene acceso a Proveedores y Compras (sólo administrador y supervisor).';
+ return String((e&&e.message)||'error').replace(/^.*?ERROR:\s*/,'');}
+async function cmpSync(){for(let i=0;i<60&&cl.busy;i++)await new Promise(r=>setTimeout(r,200));await cloudSync(true);}
+async function cmpCall(fn,args){try{return await rpc(fn,Object.assign({p_comercio:cl.comercio.id},args));}catch(e){throw new CmpErr(cmpErrMsg(e));}}
+const cmpTs=v=>{const t=Date.parse(v);return isNaN(t)?0:t;};
+const CLOUDM={
+ async load(){const j=await cmpCall('compras_snapshot',{});
+  S.suppliers=(j.proveedores||[]).map(x=>({id:x.id,razon:x.razon_social,cuit:x.cuit,iva:x.condicion_iva,email:x.email||'',tel:x.telefono||'',dir:x.direccion||'',saldo:p2c(x.saldo_cuenta_corriente),activo:x.activo!==false,ts:cmpTs(x.created_at)}));
+  S.pOrders=(j.ordenes||[]).map(o=>({id:o.id,num:o.numero,provId:o.proveedor_id,estado:o.estado,total:p2c(o.total),fecha:cmpTs(o.fecha_emision),obs:o.observaciones||'',recibidaAt:cmpTs(o.recibida_at),
+   items:(o.items||[]).map(d=>({pid:d.producto_id,name:d.producto_nombre||d.producto_id,qty:+d.cantidad,cost:p2c(d.precio_costo_pactado)}))}));
+  S.receipts=(j.ingresos||[]).map(i=>({id:i.id,provId:i.proveedor_id,ocId:i.orden_compra_id||null,tipo:i.tipo_comprobante,nro:i.nro_comprobante_o_remito,fecha:i.fecha_recepcion,cond:i.condicion_pago,medio:i.medio_pago||null,rubro:i.rubro_id||null,turno:i.turno_id||null,
+   total:p2c(i.total),obs:i.observaciones||'',ts:cmpTs(i.created_at),movId:i.movimiento_caja_id||null,
+   items:(i.items||[]).map(d=>({pid:d.producto_id,name:d.producto_nombre||d.producto_id,qty:+d.cantidad,cost:p2c(d.precio_costo),stockAnt:d.stock_anterior,stockNew:d.stock_nuevo,costAnt:p2c(d.costo_anterior||0),costNew:p2c(d.costo_nuevo||0)}))}));
+  S.supLedger=(j.cuenta||[]).map(c=>({id:c.id,seq:+c.seq,provId:c.proveedor_id,tipo:c.tipo_movimiento,monto:p2c(c.monto),saldo:p2c(c.saldo_acumulado),ts:cmpTs(c.fecha),ref:c.referencia||'',medio:c.medio_pago||null,rubro:c.rubro_id||null,motivo:c.motivo||'',ingresoId:c.ingreso_id||null,movId:c.movimiento_caja_id||null}));
+  S.cmpAt=now();},
+ async supSave(p){return cmpCall('proveedor_guardar',{p});},
+ async ocSave(p){await cmpSync();return cmpCall('orden_compra_guardar',{p});},
+ async ocEstado(id,estado){return cmpCall('orden_compra_estado',{p_orden:id,p_estado:estado});},
+ async recibir(p){await cmpSync();const r=await cmpCall('procesar_recepcion',{p});try{await cloudSync(true);}catch(e){}return r;},
+ async pagar(p){await cmpSync();const r=await cmpCall('proveedor_pago_registrar',{p});try{await cloudSync(true);}catch(e){}return r;},
+ async nc(p){return cmpCall('proveedor_nota_credito',{p});}
+};
+
+/* ---------- API del módulo (la usa la pantalla) ---------- */
+const CMP={
+ mode:()=>cmpCloud()?'nube':'local',
+ eng:()=>cmpCloud()?CLOUDM:LOCAL,
+ async load(){return CMP.eng().load();},
+ async supSave(p){const r=await CMP.eng().supSave(p);await CMP.load();return r;},
+ async ocSave(p){const r=await CMP.eng().ocSave(p);await CMP.load();return r;},
+ async ocEstado(id,e){const r=await CMP.eng().ocEstado(id,e);await CMP.load();return r;},
+ async recibir(p){const r=await CMP.eng().recibir(p);await CMP.load();return r;},
+ async pagar(p){const r=await CMP.eng().pagar(p);await CMP.load();return r;},
+ async nc(p){const r=await CMP.eng().nc(p);await CMP.load();return r;}
+};
+/* totales para el tablero */
+const cmpDeuda=()=>cmpArr('suppliers').filter(s=>s.activo!==false||s.saldo>0).reduce((a,s)=>a+Math.max(0,s.saldo),0);
+const cmpAFavor=()=>cmpArr('suppliers').reduce((a,s)=>a+Math.max(0,-s.saldo),0);
+const cmpPend=()=>cmpArr('pOrders').filter(o=>o.estado==='Solicitada');
+
+/* ---------- exportaciones (CSV con fórmulas neutralizadas) ---------- */
+EXPORTS.proveedores={t:'Proveedores y saldos',perm:'purchases',h:()=>['razon_social','cuit','condicion_iva','email','telefono','direccion','saldo_cuenta_corriente','estado'],
+ rows:()=>cmpArr('suppliers').map(s=>[s.razon,s.cuit,s.iva,s.email,s.tel,s.dir,s.saldo/100,s.activo===false?'archivado':'activo'])};
+EXPORTS.ordenes_compra={t:'Órdenes de compra',perm:'purchases',h:()=>['numero','proveedor','estado','fecha','total','renglones'],
+ rows:()=>cmpArr('pOrders').map(o=>[o.num,(cmpProv(o.provId)||{}).razon||'',o.estado,fmtDT(o.fecha),o.total/100,o.items.length])};
+EXPORTS.ingresos_mercaderia={t:'Ingresos de mercadería (una fila por producto)',perm:'purchases',h:()=>['fecha','proveedor','comprobante','numero','condicion','medio','producto','cantidad','costo_unitario','subtotal','costo_anterior'],
+ rows:()=>cmpArr('receipts').flatMap(r=>r.items.map(i=>[r.fecha,(cmpProv(r.provId)||{}).razon||'',r.tipo,r.nro,r.cond,r.medio||'',i.name,i.qty,i.cost/100,Math.round(i.qty*i.cost)/100,can('view_cost')?i.costAnt/100:'']))};
+EXPORTS.cuenta_proveedores={t:'Cuenta corriente de proveedores',perm:'purchases',h:()=>['fecha','proveedor','movimiento','referencia','monto','saldo','medio','motivo'],
+ rows:()=>cmpArr('supLedger').slice().sort((a,b)=>(a.seq||0)-(b.seq||0)).map(c=>[fmtDT(c.ts),(cmpProv(c.provId)||{}).razon||'',c.tipo,c.ref||'',c.monto/100,c.saldo/100,c.medio||'',c.motivo||''])};
+
+/* ===== Proveedores y Compras · pantalla (V26) =====
+   Tablero (deuda y órdenes pendientes), proveedores ordenables, órdenes de compra, carga de remito y cuenta corriente.
+   Todo el cálculo y las reglas están en el motor (p4c-compras.js); acá sólo se captura, se muestra y se confirma. */
+IC.truck='M3 6h11v9H3zM14 9h4l3 3v3h-7M7 18.5a1.5 1.5 0 1 0 0-.01M17 18.5a1.5 1.5 0 1 0 0-.01';
+let cmpS={tab:'prov',q:'',est:'todos',oest:'pend',cc:'',loadedAt:0,loading:false,err:''};
+let crS=null;   /* carga de remito en curso */
+let ocS=null;   /* orden de compra que se está armando */
+const cmpTag=(t,c)=>`<span class="tag ${c||''}">${esc(t)}</span>`;
+const cmpSaldoTag=s=>s>0?cmpTag('Debemos '+money(s),'bad'):(s<0?cmpTag('A favor '+money(-s),'warn'):cmpTag('Al día','ok'));
+const cmpOcTag=e=>cmpTag(e,{Borrador:'',Solicitada:'warn',Recibida:'ok',Cancelada:'bad'}[e]||'');
+const cmpHoy=()=>dkey(now());
+const cmpOcName=o=>'OC-'+String(o.num).padStart(4,'0');
+const cmpProvName=id=>(cmpProv(id)||{razon:'(proveedor eliminado)'}).razon;
+const cmpErrText=e=>esc((e&&e.message)||String(e));
+
+/* ---------- catálogo para los renglones ---------- */
+function cmpProdIndex(){const byLabel=new Map(),labelOf=new Map(),seen={};
+ for(const p of S.products){if(!p||p.archived)continue;let l=p.name+(p.sub?' · '+p.sub:'');if(seen[l])l+=' ['+(p.barcode||String(p.id).slice(-4))+']';seen[l]=1;byLabel.set(l,p);labelOf.set(p.id,l);}
+ return{byLabel,labelOf};}
+function cmpDatalist(){let dl=document.getElementById('cmp-dl');if(!dl){dl=document.createElement('datalist');dl.id='cmp-dl';document.body.appendChild(dl);}
+ dl.innerHTML=[...cmpProdIndex().byLabel.keys()].map(l=>`<option value="${esc(l)}"></option>`).join('');}
+const cmpBlankRow=()=>({pid:'',txt:'',qty:'',cost:''});
+function cmpRowsHtml(rows,mode){const ix=cmpProdIndex();
+ return rows.map((r,i)=>{const p=r.pid?S.products.find(x=>x.id===r.pid):null;const pre=mode+'-'+i;
+  return `<div class="cmp-row" data-i="${i}">
+   <div class="fp"><label for="${pre}-p">Producto</label><input id="${pre}-p" class="r-prod" list="cmp-dl" autocomplete="off" placeholder="Buscar producto…" value="${esc(p?(ix.labelOf.get(p.id)||p.name):(r.txt||''))}"><small class="r-note mut"></small></div>
+   <div class="fq"><label for="${pre}-q">Cantidad</label><input id="${pre}-q" class="r-qty" inputmode="decimal" autocomplete="off" placeholder="Ej.: 12" value="${esc(r.qty||'')}"></div>
+   <div class="fc"><label for="${pre}-c">${mode==='oc'?'Costo pactado ($)':'Costo unitario ($)'}</label><input id="${pre}-c" class="r-cost" inputmode="decimal" autocomplete="off" placeholder="Ej.: 1.250,50" value="${esc(r.cost||'')}"></div>
+   <div class="fs"><label>Subtotal</label><output class="r-sub">—</output></div>
+   <button type="button" class="btn ghost r-del" data-act="cmpRowDel" data-mode="${mode}" data-i="${i}" aria-label="Quitar el renglón ${i+1}">✕</button></div>`;}).join('');}
+const cmpRowsOf=m=>m==='oc'?(ocS&&ocS.rows):(crS&&crS.rows);
+function cmpRowCalc(mode,rowEl,r){if(!rowEl)return;const q=parseNum(r.qty),c=parseNum(r.cost);
+ const sub=rowEl.querySelector('.r-sub');sub.textContent=(q>0&&c>=0)?money(Math.round(q*Math.round(c*100)+1e-9)):'—';
+ const note=rowEl.querySelector('.r-note');if(!note)return;const p=r.pid?S.products.find(x=>x.id===r.pid):null;const t=[];
+ if(p){t.push('Stock actual: '+stockTxt(p));
+  if(mode==='rc'&&c>=0&&can('view_cost')){const cur=+p.cost||0,nw=Math.round(c*100);
+   if(cur>0&&nw>0&&nw!==cur)t.push('Costo '+money(cur)+' → '+money(nw)+' ('+(nw>cur?'+':'')+(Math.round((nw-cur)/cur*1000)/10).toString().replace('.',',')+' %)');
+   else if(cur>0&&nw===cur)t.push('Costo sin cambios');
+   if(p.price>0&&nw>0)t.push('margen '+(Math.round((p.price-nw)/p.price*1000)/10).toString().replace('.',',')+' %');}
+  if(r.ped!==undefined)t.push('Pedido: '+String(r.ped).replace('.',',')+(r.pact!==undefined?' a '+money(r.pact):''));}
+ note.textContent=t.join(' · ');}
+function cmpTotals(mode){const rows=cmpRowsOf(mode)||[];let tot=0;
+ for(const r of rows){const q=parseNum(r.qty),c=parseNum(r.cost);if(q>0&&c>=0)tot+=Math.round(q*Math.round(c*100)+1e-9);}
+ const el=document.getElementById(mode==='oc'?'oc-total':'cr-total');if(el)el.textContent=money(tot);
+ if(mode==='rc'){const dec=cmpNum(parseNum(crS.decl));const w=document.getElementById('cr-declwarn');
+  if(w)w.textContent=(crS.decl&&!isNaN(dec)&&Math.abs(dec*100-tot)>0.9)?'El total declarado no coincide con la suma de los renglones ('+money(tot)+').':'';}
+ return tot;}
+function cmpBuildItems(rows,key){const out=[],seen=new Set();
+ rows.forEach((r,i)=>{if(!r.pid&&!r.qty&&!r.cost&&!r.txt)return;const n='Renglón '+(i+1)+': ';
+  if(!r.pid)throw new CmpErr(n+'elegí un producto de la lista');
+  const q=parseNum(r.qty);if(!(q>0))throw new CmpErr(n+'cargá la cantidad');
+  const c=parseNum(r.cost);if(isNaN(c)||c<0)throw new CmpErr(n+'cargá el costo (0 si viene bonificado)');
+  if(seen.has(r.pid))throw new CmpErr(n+'ese producto está repetido: sumá las cantidades en un solo renglón');seen.add(r.pid);
+  out.push({producto_id:r.pid,cantidad:q,[key]:c});});
+ if(!out.length)throw new CmpErr('Agregá al menos un producto');return out;}
+function cmpRowInput(mode,i,t){const rows=cmpRowsOf(mode);const r=rows&&rows[i];if(!r)return;const rowEl=t.closest('.cmp-row');
+ if(t.classList.contains('r-prod')){const p=cmpProdIndex().byLabel.get(t.value);
+  if(p){if(r.pid!==p.id){r.pid=p.id;if(!String(r.cost||'').trim()&&p.cost>0){r.cost=pesosStr(p.cost);rowEl.querySelector('.r-cost').value=r.cost;}}r.txt=t.value;}
+  else{r.pid='';r.txt=t.value;}}
+ else if(t.classList.contains('r-qty'))r.qty=t.value;else if(t.classList.contains('r-cost'))r.cost=t.value;
+ cmpRowCalc(mode,rowEl,r);cmpTotals(mode);}
+function cmpRowsPaint(mode){const box=document.querySelector('[data-rows="'+mode+'"]');if(!box)return;const rows=cmpRowsOf(mode);
+ box.innerHTML=cmpRowsHtml(rows,mode);box.querySelectorAll('.cmp-row').forEach((el,i)=>cmpRowCalc(mode,el,rows[i]));cmpTotals(mode);}
+document.addEventListener('input',e=>{const t=e.target;if(!t.closest)return;const row=t.closest('.cmp-row');
+ if(row){const box=row.closest('[data-rows]');if(box)cmpRowInput(box.dataset.rows,+row.dataset.i,t);return;}
+ if(t.dataset&&t.dataset.cr&&crS){crS[t.dataset.cr]=t.value;if(t.dataset.cr==='q')cmpProvOptions();if(t.dataset.cr==='decl')cmpTotals('rc');}});
+document.addEventListener('change',e=>{const t=e.target;if(!t.closest)return;const row=t.closest('.cmp-row');
+ if(row){const box=row.closest('[data-rows]');if(box)cmpRowInput(box.dataset.rows,+row.dataset.i,t);return;}
+ if(t.dataset&&t.dataset.cr&&crS){const k=t.dataset.cr;crS[k]=t.value;
+  if(k==='prov'){crS.oc='';crS.rows=[cmpBlankRow()];crS.res=null;crS.err='';cmpRemitoPaint();}
+  else if(k==='oc'){cmpPickOc(t.value);}
+  else if(k==='cond'||k==='medio')cmpRemitoPaint();}});
+A.cmpRowAdd=el=>{const rows=cmpRowsOf(el.dataset.mode);if(!rows)return;rows.push(cmpBlankRow());cmpRowsPaint(el.dataset.mode);const n=document.querySelectorAll('[data-rows="'+el.dataset.mode+'"] .r-prod');n.length&&n[n.length-1].focus();};
+A.cmpRowDel=el=>{const rows=cmpRowsOf(el.dataset.mode);if(!rows)return;rows.splice(+el.dataset.i,1);if(!rows.length)rows.push(cmpBlankRow());cmpRowsPaint(el.dataset.mode);};
+
+/* ---------- carga y repintado ---------- */
+function cmpEnsure(force){if(CMP.mode()==='local'){cmpS.loadedAt=now();return;}
+ if(cmpS.loading||(!force&&cmpS.loadedAt&&now()-cmpS.loadedAt<20000))return;cmpS.loading=true;cmpS.err='';
+ CMP.load().then(()=>{cmpS.loadedAt=now();},e=>{cmpS.err=(e&&e.message)||'error';}).finally(()=>{cmpS.loading=false;
+  if(curScreen==='proveedores'&&cmpS.tab!=='remito'&&!document.querySelector('#modal-root .ov'))cmpRepaint();});}
+function cmpRepaint(){if(curScreen!=='proveedores'||$('#panel').hidden)return;$('#view').innerHTML=cmpRender();cmpAfter(true);}
+async function cmpAfterOp(){cmpS.loadedAt=now();cmpRepaint();}
+
+/* ---------- pantalla ---------- */
+function cmpKpis(){const deuda=cmpDeuda(),fav=cmpAFavor(),pend=cmpPend();const nDeb=cmpArr('suppliers').filter(s=>s.saldo>0).length;
+ const pendTot=pend.reduce((a,o)=>a+o.total,0);const act=cmpArr('suppliers').filter(s=>s.activo!==false).length;
+ return `<div class="grid g3 cmp-kpis" role="group" aria-label="Indicadores de compras">
+  <div class="cmp-card kpi"><span>Total deuda a proveedores</span><b class="${deuda>0?'neg':''}" id="k-deuda">${money(deuda)}</b><small class="mut">${nDeb} proveedor${nDeb===1?'':'es'} con saldo${fav>0?' · a favor '+money(fav):''}</small></div>
+  <div class="cmp-card kpi"><span>Órdenes pendientes de recepción</span><b id="k-pend">${pend.length}</b><small class="mut">${pend.length?'Por '+money(pendTot)+' · esperando mercadería':'No hay órdenes esperando mercadería'}</small></div>
+  <div class="cmp-card kpi"><span>Proveedores activos</span><b>${act}</b><small class="mut">${cmpArr('receipts').length} ingreso${cmpArr('receipts').length===1?'':'s'} de mercadería cargado${cmpArr('receipts').length===1?'':'s'}</small></div></div>`;}
+function cmpTabs(){const T=[['prov','Proveedores'],['oc','Órdenes de compra'],['remito','Carga de remito'],['cuenta','Cuenta corriente']];
+ return `<div class="cmp-tabs" role="tablist" aria-label="Secciones de compras">${T.map(([k,t])=>`<button type="button" role="tab" class="cmp-tab ${cmpS.tab===k?'on':''}" aria-selected="${cmpS.tab===k}" data-act="cmpTab" data-tab="${k}">${t}${k==='oc'&&cmpPend().length?` <b>${cmpPend().length}</b>`:''}</button>`).join('')}</div>`;}
+function cmpRender(){
+ const cloud=CMP.mode()==='nube';
+ const banner=cloud?(cmpS.err?`<div class="errbox" role="alert">No pude actualizar desde la nube: ${esc(cmpS.err)}. Se muestran los últimos datos conocidos${S.cmpAt?' ('+fmtDT(S.cmpAt)+')':''}; para guardar cambios hace falta conexión.</div>`:(cmpS.loading&&!cmpS.loadedAt?'<div class="warnbox" role="status">Cargando proveedores desde la nube…</div>':'')):'';
+ let body='';if(cmpS.tab==='prov')body=cmpProvTab();else if(cmpS.tab==='oc')body=cmpOcTab();else if(cmpS.tab==='remito')body=cmpRemitoTab();else body=cmpCuentaTab();
+ return `<div class="cmp"><div class="row"><h1 class="sp">Proveedores y compras</h1>${cloud?cmpTag('☁ En la nube','ok'):cmpTag('Este equipo (sin nube)','')}
+  <button class="btn gold" data-act="cmpSupEdit" data-id="">+ Proveedor</button><button class="btn" data-act="cmpOcNew">+ Orden de compra</button><button class="btn dark" data-act="cmpTab" data-tab="remito">Cargar remito</button></div>
+  ${banner}${cmpKpis()}${cmpTabs()}<div class="cmp-panel" role="tabpanel">${body}</div>
+  <p class="sm mut">Al cargar un remito se suma el stock, se actualiza el costo del producto (el margen se recalcula solo) y, según elijas, queda como deuda con el proveedor o sale de la caja o banco. Si algo falla, no se guarda nada. ${cloud?'En la nube el cálculo lo hace el servidor.':'Sin nube, el cálculo se hace en este equipo.'}</p></div>`;}
+
+/* --- proveedores --- */
+function cmpProvList(){const q=cmpS.q.trim().toLowerCase();
+ return cmpArr('suppliers').filter(s=>{
+  if(cmpS.est==='archivados'?s.activo!==false:s.activo===false)return false;
+  if(cmpS.est==='deuda'&&!(s.saldo>0))return false;if(cmpS.est==='aldia'&&s.saldo!==0)return false;
+  return !q||s.razon.toLowerCase().includes(q)||s.cuit.includes(q.replace(/\D/g,'')||'§')||(s.email||'').toLowerCase().includes(q);});}
+function cmpProvTab(){const L=cmpProvList();
+ const rows=L.map(s=>`<tr class="${s.activo===false?'arch':''}"><td data-sv="${esc(s.razon)}"><b>${esc(s.razon)}</b>${s.activo===false?' '+cmpTag('archivado','bad'):''}<br><span class="mut sm">CUIT ${esc(arcaCuitFmt(s.cuit))}</span></td>
+  <td class="hm">${esc(s.iva)}</td><td class="sm hm">${s.tel?esc(s.tel)+'<br>':''}${s.email?esc(s.email):'<span class="mut">—</span>'}</td>
+  <td class="r" data-sv="${s.saldo}">${cmpSaldoTag(s.saldo)}</td>
+  <td class="acts"><button class="btn sm" data-act="cmpCuenta" data-id="${s.id}">Cuenta</button> <button class="btn sm" data-act="cmpPay" data-id="${s.id}" ${s.saldo>0?'':'disabled'}>Pagar</button> <button class="btn sm ghost" data-act="cmpSupEdit" data-id="${s.id}">Editar</button></td></tr>`).join('');
+ return `<div class="row"><input id="cp-q" class="cmp-in" placeholder="Buscar por nombre, CUIT o correo…" value="${esc(cmpS.q)}" style="max-width:320px" aria-label="Buscar proveedor">
+  <select id="cp-est" class="cmp-in" style="max-width:200px" aria-label="Filtrar por estado de cuenta">${[['todos','Activos'],['deuda','Con deuda'],['aldia','Al día'],['archivados','Archivados']].map(([k,t])=>`<option value="${k}" ${cmpS.est===k?'selected':''}>${t}</option>`).join('')}</select>
+  <span class="sp"></span>${expBar('proveedores')}</div>
+  <div class="tw"><table class="cmp-table"><thead><tr><th>Proveedor</th><th class="hm">Condición IVA</th><th class="hm">Contacto</th><th class="r">Saldo</th><th data-nosort></th></tr></thead>
+  <tbody>${rows||`<tr><td colspan="5" class="mut">${cmpArr('suppliers').length?'Ningún proveedor coincide con el filtro.':'Todavía no cargaste proveedores. Tocá “+ Proveedor”.'}</td></tr>`}</tbody></table></div>
+  <p class="sm mut">Tocá el título de una columna para ordenar (▲ ascendente · ▼ descendente), por ejemplo por nombre o por saldo.</p>`;}
+
+/* --- órdenes de compra --- */
+function cmpOcTab(){const f=cmpS.oest;
+ const L=cmpArr('pOrders').filter(o=>f==='todas'||(f==='pend'?o.estado==='Solicitada':o.estado===f)).slice().sort((a,b)=>b.num-a.num);
+ const rows=L.map(o=>`<tr><td data-sv="${o.num}"><b>${cmpOcName(o)}</b></td><td>${esc(cmpProvName(o.provId))}</td><td class="hm" data-sv="${o.fecha}">${esc(fmtDT(o.fecha).slice(0,8))}</td><td>${cmpOcTag(o.estado)}</td><td class="r hm">${o.items.length}</td><td class="r" data-sv="${o.total}">${money(o.total)}</td>
+  <td class="acts"><button class="btn sm ghost" data-act="cmpOcView" data-id="${o.id}">Ver</button>
+  ${o.estado==='Borrador'?`<button class="btn sm" data-act="cmpOcEdit" data-id="${o.id}">Editar</button> <button class="btn sm gold" data-act="cmpOcEst" data-id="${o.id}" data-e="Solicitada">Solicitar</button> `:''}
+  ${o.estado==='Solicitada'?`<button class="btn sm gold" data-act="cmpOcRecibir" data-id="${o.id}">Recibir</button> `:''}
+  ${o.estado==='Borrador'||o.estado==='Solicitada'?`<button class="btn sm danger" data-act="cmpOcEst" data-id="${o.id}" data-e="Cancelada">Cancelar</button>`:''}</td></tr>`).join('');
+ return `<div class="row"><select id="co-est" class="cmp-in" style="max-width:240px" aria-label="Filtrar órdenes">${[['pend','Pendientes de recepción'],['todas','Todas'],['Borrador','Borradores'],['Recibida','Recibidas'],['Cancelada','Canceladas']].map(([k,t])=>`<option value="${k}" ${f===k?'selected':''}>${t}</option>`).join('')}</select><span class="sp"></span>${expBar('ordenes_compra')}<button class="btn gold" data-act="cmpOcNew">+ Orden de compra</button></div>
+  <div class="tw"><table class="cmp-table"><thead><tr><th>Orden</th><th>Proveedor</th><th class="hm">Emitida</th><th>Estado</th><th class="r hm">Renglones</th><th class="r">Total</th><th data-nosort></th></tr></thead>
+  <tbody>${rows||'<tr><td colspan="7" class="mut">No hay órdenes con este filtro.</td></tr>'}</tbody></table></div>`;}
+
+/* --- cuenta corriente --- */
+function cmpCuentaTab(){const L=cmpArr('suppliers').filter(s=>s.activo!==false||s.saldo!==0).slice().sort((a,b)=>a.razon.localeCompare(b.razon,'es'));
+ if(!cmpS.cc||!cmpProv(cmpS.cc))cmpS.cc=(L[0]||{}).id||'';const s=cmpProv(cmpS.cc);
+ const opts=L.map(x=>`<option value="${x.id}" ${x.id===cmpS.cc?'selected':''}>${esc(x.razon)}</option>`).join('');
+ if(!s)return '<p class="mut">Cargá un proveedor para ver su cuenta corriente.</p>';
+ const led=cmpArr('supLedger').filter(x=>x.provId===s.id).slice().sort((a,b)=>(b.seq||0)-(a.seq||0));
+ const lrows=led.map(c=>`<tr><td data-sv="${c.ts}">${esc(fmtDT(c.ts))}</td><td>${esc(c.tipo)}</td><td>${esc(c.ref||'—')}${c.motivo?'<br><span class="mut sm">'+esc(c.motivo)+'</span>':''}</td><td class="r ${c.tipo==='Pago'||c.tipo==='Nota de Crédito'?'':'neg'}" data-sv="${c.monto*(c.tipo==='Pago'||c.tipo==='Nota de Crédito'?-1:1)}">${c.tipo==='Pago'||c.tipo==='Nota de Crédito'?'− ':'+ '}${money(c.monto)}</td><td class="r" data-sv="${c.saldo}">${money(c.saldo)}</td></tr>`).join('');
+ const rcp=cmpArr('receipts').filter(r=>r.provId===s.id).slice().sort((a,b)=>b.ts-a.ts);
+ const rrows=rcp.map(r=>`<tr><td data-sv="${r.ts}">${esc(dmy(r.fecha))}</td><td>${esc(r.tipo)} ${esc(r.nro)}</td><td class="r">${r.items.length}</td><td>${r.cond==='contado'?'Contado'+(r.medio?' · '+esc(CMP_MEDIOS[r.medio]||r.medio):''):'Cuenta corriente'}</td><td class="r" data-sv="${r.total}">${money(r.total)}</td><td><button class="btn sm ghost" data-act="cmpRcView" data-id="${r.id}">Ver detalle</button></td></tr>`).join('');
+ return `<div class="row"><label for="cc-prov" class="sr">Proveedor</label><select id="cc-prov" class="cmp-in" style="max-width:340px">${opts}</select><span class="sp"></span>${expBar('cuenta_proveedores')}</div>
+  <div class="cmp-card cmp-acct"><div><span class="mut sm">${esc(s.iva)} · CUIT ${esc(arcaCuitFmt(s.cuit))}</span><h3 style="margin:.1rem 0">${esc(s.razon)}</h3>${cmpSaldoTag(s.saldo)}</div>
+  <div class="row"><button class="btn gold" data-act="cmpPay" data-id="${s.id}" ${s.saldo>0?'':'disabled'}>Registrar pago</button><button class="btn" data-act="cmpNc" data-id="${s.id}">Nota de crédito</button><button class="btn dark" data-act="cmpRemitoFor" data-id="${s.id}">Cargar remito</button></div></div>
+  <h3>Movimientos</h3><div class="tw"><table class="cmp-table"><thead><tr><th>Fecha</th><th>Movimiento</th><th>Referencia</th><th class="r">Importe</th><th class="r">Saldo</th></tr></thead><tbody>${lrows||'<tr><td colspan="5" class="mut">Sin movimientos todavía.</td></tr>'}</tbody></table></div>
+  <h3>Ingresos de mercadería</h3><div class="tw"><table class="cmp-table"><thead><tr><th>Fecha</th><th>Comprobante</th><th class="r">Productos</th><th>Pago</th><th class="r">Total</th><th data-nosort></th></tr></thead><tbody>${rrows||'<tr><td colspan="6" class="mut">Sin ingresos cargados.</td></tr>'}</tbody></table></div>
+  ${expBar('ingresos_mercaderia')}`;}
+
+/* --- carga de remito --- */
+function cmpNewRemito(provId){crS={prov:provId||'',q:'',oc:'',tipo:'Factura',nro:'',fecha:cmpHoy(),cond:'credito',medio:'efectivo',rubro:'',decl:'',obs:'',rows:[cmpBlankRow()],key:cmpKey(),busy:false,res:null,err:''};}
+function cmpProvOptions(){const sel=document.getElementById('cr-prov');if(!sel||!crS)return;const q=(crS.q||'').trim().toLowerCase();const qd=q.replace(/\D/g,'');
+ const L=cmpArr('suppliers').filter(s=>s.activo!==false&&(!q||s.razon.toLowerCase().includes(q)||(qd&&s.cuit.includes(qd)))).sort((a,b)=>a.razon.localeCompare(b.razon,'es'));
+ sel.innerHTML=L.map(s=>`<option value="${s.id}" ${s.id===crS.prov?'selected':''}>${esc(s.razon)} · ${esc(arcaCuitFmt(s.cuit))}${s.saldo>0?' · debemos '+esc(money(s.saldo)):''}</option>`).join('');
+ sel.size=Math.max(2,Math.min(5,L.length));const n=document.getElementById('cr-provn');if(n)n.textContent=L.length?L.length+' coincidencia'+(L.length===1?'':'s'):'Ningún proveedor coincide';}
+function cmpPickOc(id){if(!crS)return;crS.oc=id;crS.res=null;crS.err='';
+ if(id){const o=cmpArr('pOrders').find(x=>x.id===id);if(o){crS.rows=o.items.map(i=>({pid:i.pid,txt:'',qty:String(i.qty).replace('.',','),cost:pesosStr(i.cost),ped:i.qty,pact:i.cost}));toast('Cargué los productos de '+cmpOcName(o)+': ajustá lo realmente recibido y el costo facturado');}}
+ else crS.rows=[cmpBlankRow()];cmpRemitoPaint();}
+function cmpRemitoTab(){if(!crS)cmpNewRemito('');return `<div id="cr-box">${cmpRemitoInner()}</div>`;}
+function cmpRemitoInner(){const c=crS;
+ if(c.res)return cmpRemitoResult(c.res);
+ const prov=cmpProv(c.prov);const ocs=prov?cmpArr('pOrders').filter(o=>o.provId===prov.id&&o.estado==='Solicitada').sort((a,b)=>b.num-a.num):[];
+ const sess=openSess();const rubs=S.rubros.filter(r=>r.kind!=='cobr');
+ const contado=c.cond==='contado';
+ return `<div class="cmp-form" id="cr-form" role="group" aria-label="Carga de remito">
+  <fieldset class="cmp-card"><legend>1 · Proveedor y orden de compra</legend>
+   <label for="cr-qin">Buscar proveedor (nombre o CUIT)</label><input id="cr-qin" class="cmp-in" data-cr="q" autocomplete="off" placeholder="Escribí para filtrar la lista" value="${esc(c.q)}">
+   <label for="cr-prov">Proveedor <span class="mut" id="cr-provn"></span></label><select id="cr-prov" class="cmp-in" data-cr="prov" size="4" aria-describedby="cr-provn"></select>
+   <label for="cr-oc">Orden de compra pendiente</label><select id="cr-oc" class="cmp-in" data-cr="oc" ${prov?'':'disabled'}><option value="">${prov?(ocs.length?'Sin orden (compra directa)':'Sin órdenes pendientes: compra directa'):'Elegí primero un proveedor'}</option>${ocs.map(o=>`<option value="${o.id}" ${o.id===c.oc?'selected':''}>${cmpOcName(o)} · ${esc(fmtDT(o.fecha).slice(0,8))} · ${esc(money(o.total))}</option>`).join('')}</select></fieldset>
+  <fieldset class="cmp-card"><legend>2 · Comprobante</legend><div class="grid g3">
+   <div><label for="cr-tipo">Tipo</label><select id="cr-tipo" class="cmp-in" data-cr="tipo"><option ${c.tipo==='Factura'?'selected':''}>Factura</option><option ${c.tipo==='Remito'?'selected':''}>Remito</option></select></div>
+   <div><label for="cr-nro">Número (ej.: 0001-00004521)</label><input id="cr-nro" class="cmp-in" data-cr="nro" maxlength="40" autocomplete="off" value="${esc(c.nro)}"></div>
+   <div><label for="cr-fecha">Fecha de recepción</label><input id="cr-fecha" type="date" class="cmp-in" data-cr="fecha" max="${esc(addDays(cmpHoy(),1))}" value="${esc(c.fecha)}"></div></div></fieldset>
+  <fieldset class="cmp-card"><legend>3 · Productos recibidos y costo actualizado</legend>
+   <div data-rows="rc">${cmpRowsHtml(c.rows,'rc')}</div>
+   <div class="row" style="margin-top:.6rem"><button type="button" class="btn" data-act="cmpRowAdd" data-mode="rc">+ Agregar producto</button><span class="sp"></span><span class="cmp-total">Total: <b id="cr-total">$ 0</b></span></div>
+   <div class="grid g2"><div><label for="cr-decl">Total del comprobante (opcional, para controlar)</label><input id="cr-decl" class="cmp-in" inputmode="decimal" data-cr="decl" autocomplete="off" placeholder="Ej.: 125.400,50" value="${esc(c.decl)}"><small id="cr-declwarn" class="errtxt" role="status"></small></div>
+   <div><label for="cr-obs">Observaciones</label><input id="cr-obs" class="cmp-in" data-cr="obs" maxlength="500" autocomplete="off" value="${esc(c.obs)}"></div></div></fieldset>
+  <fieldset class="cmp-card"><legend>4 · Cómo se paga</legend>
+   <div class="row"><label class="chk"><input type="radio" name="cr-cond" data-cr="cond" value="credito" ${contado?'':'checked'}> A cuenta corriente (queda como deuda con el proveedor)</label>
+   <label class="chk"><input type="radio" name="cr-cond" data-cr="cond" value="contado" ${contado?'checked':''}> Al contado (sale de caja o banco)</label></div>
+   ${contado?`<div class="grid g3"><div><label for="cr-medio">Medio de pago</label><select id="cr-medio" class="cmp-in" data-cr="medio">${Object.entries(CMP_MEDIOS).map(([k,t])=>`<option value="${k}" ${c.medio===k?'selected':''}>${t}</option>`).join('')}</select></div>
+    <div><label for="cr-rubro">Rubro del egreso (obligatorio)</label><select id="cr-rubro" class="cmp-in" data-cr="rubro"><option value="">— Elegí un rubro —</option>${rubs.map(r=>`<option value="${esc(r.id)}" ${c.rubro===r.id?'selected':''}>${esc(r.name)}</option>`).join('')}</select></div>
+    <div><label>Caja</label><div class="cmp-note">${c.medio==='efectivo'?(sess?'Sale del efectivo de la caja '+esc(S.tenant.caja)+' (abierta)':'<b class="errtxt">No hay caja abierta: abrila en Caja o elegí otro medio</b>'):'No mueve el efectivo de la caja'}</div></div></div>`:'<p class="sm mut">Se registra la factura o el remito en la cuenta corriente del proveedor. El pago se registra después desde “Cuenta”.</p>'}</fieldset>
+  <div class="errbox" id="cr-err" role="alert" ${c.err?'':'hidden'}>${esc(c.err)}</div>
+  <div class="row"><button type="button" class="btn gold cmp-big" data-act="cmpRemitoGo" ${c.busy?'disabled':''}>Revisar y confirmar ingreso</button><button type="button" class="btn ghost" data-act="cmpRemitoReset">Limpiar formulario</button></div></div>`;}
+function cmpRemitoPaint(){const box=document.getElementById('cr-box');if(!box||!crS)return;box.innerHTML=cmpRemitoInner();cmpRemitoAfter();}
+function cmpRemitoAfter(){if(!crS||crS.res)return;cmpDatalist();cmpProvOptions();
+ const rows=crS.rows;document.querySelectorAll('[data-rows="rc"] .cmp-row').forEach((el,i)=>cmpRowCalc('rc',el,rows[i]));cmpTotals('rc');}
+function cmpRemitoResult(r){
+ const rows=r.items.map(i=>`<tr><td>${esc(i.nombre)}</td><td class="r">${esc(String(i.cantidad).replace('.',','))}</td><td class="r">${esc(String(i.stock_anterior).replace('.',','))} → <b>${esc(String(i.stock_nuevo).replace('.',','))}</b></td>${can('view_cost')?`<td class="r">${esc(money(p2c(i.costo_anterior)))} → <b>${esc(money(p2c(i.costo_nuevo)))}</b></td><td class="r">${i.margen_pct===null||i.margen_pct===undefined?'—':esc(String(i.margen_pct).replace('.',','))+' %'}</td>`:''}</tr>`).join('');
+ const dif=(r.diferencias||[]).map(d=>`<li>${esc(d.nombre)}: pedido ${esc(String(d.cantidad_pedida).replace('.',','))}, recibido ${esc(String(d.cantidad_recibida).replace('.',','))}; costo pactado ${esc(money(p2c(d.costo_pactado)))} vs. facturado ${d.costo_facturado===null?'—':esc(money(p2c(d.costo_facturado)))}</li>`).join('');
+ return `<div class="cmp-card cmp-res" role="status"><h3>${r.repetido?'Este comprobante ya estaba registrado (no se duplicó nada)':'Ingreso de mercadería registrado'}</h3>
+  <p>${esc(r.tipo_comprobante)} <b>${esc(r.nro_comprobante)}</b> · ${esc(cmpProvName(r.proveedor_id))} · total <b>${esc(money(p2c(r.total)))}</b> · ${r.condicion_pago==='contado'?'pagado al contado ('+esc(CMP_MEDIOS[r.medio_pago]||r.medio_pago)+')':'cargado a la cuenta corriente'}${r.orden_estado?' · la orden quedó <b>Recibida</b>':''}.</p>
+  <p>Saldo actual con el proveedor: <b>${esc(money(p2c(r.saldo_proveedor)))}</b>${r.movimiento_caja_id?' · egreso registrado en la caja':''}.</p>
+  <div class="tw"><table class="cmp-table"><thead><tr><th>Producto</th><th class="r">Cant.</th><th class="r">Stock</th>${can('view_cost')?'<th class="r">Costo</th><th class="r">Margen</th>':''}</tr></thead><tbody>${rows}</tbody></table></div>
+  ${dif?`<div class="warnbox"><b>Diferencias contra la orden de compra</b><ul>${dif}</ul></div>`:''}
+  <div class="row"><button class="btn gold cmp-big" data-act="cmpRemitoReset">Cargar otro remito</button><button class="btn" data-act="cmpTab" data-tab="cuenta">Ver cuenta corriente</button></div></div>`;}
+
+/* ---------- acciones: navegación ---------- */
+function cmpAfter(){cmpDatalist();
+ const q=$('#cp-q');if(q){q.addEventListener('input',e=>{cmpS.q=e.target.value;const p=e.target.selectionStart;cmpRepaint();const n=$('#cp-q');if(n){n.focus();try{n.setSelectionRange(p,p);}catch(_){}}});}
+ const fe=$('#cp-est');if(fe)fe.addEventListener('change',e=>{cmpS.est=e.target.value;cmpRepaint();});
+ const oe=$('#co-est');if(oe)oe.addEventListener('change',e=>{cmpS.oest=e.target.value;cmpRepaint();});
+ const cc=$('#cc-prov');if(cc)cc.addEventListener('change',e=>{cmpS.cc=e.target.value;cmpRepaint();});
+ if(cmpS.tab==='remito')cmpRemitoAfter();
+ if(arguments[0]!==true)cmpEnsure(true);}
+A.cmpTab=el=>{cmpS.tab=el.dataset.tab;if(cmpS.tab==='remito'&&crS&&crS.res)cmpNewRemito('');if(location.hash!=='#panel/proveedores')go('proveedores');else cmpRepaint();};
+A.cmpCuenta=el=>{cmpS.cc=el.dataset.id;cmpS.tab='cuenta';cmpRepaint();};
+A.cmpRemitoFor=el=>{cmpNewRemito(el.dataset.id);cmpS.tab='remito';cmpRepaint();};
+A.cmpRemitoReset=()=>{cmpNewRemito(crS?crS.prov:'');cmpRepaint();};
+A.cmpOcRecibir=el=>{const o=cmpArr('pOrders').find(x=>x.id===el.dataset.id);if(!o)return;cmpNewRemito(o.provId);cmpS.tab='remito';cmpRepaint();cmpPickOc(o.id);};
+reg('proveedores','Proveedores y compras','truck','purchases',cmpRender,cmpAfter,'Operación');
+
+/* ---------- proveedores: alta, edición y archivo ---------- */
+A.cmpSupEdit=el=>{if(!can('purchases'))return toast('Sin permiso',1);const s=el.dataset.id?cmpProv(el.dataset.id):null;
+ const w=modal(s?'Editar proveedor':'Nuevo proveedor',`<div class="cmp">
+  <label for="sp-rs">Razón social</label><input id="sp-rs" class="cmp-in" maxlength="120" autocomplete="off" value="${esc(s?s.razon:'')}">
+  <div class="grid g2"><div><label for="sp-cuit">CUIT (11 dígitos)</label><input id="sp-cuit" class="cmp-in" inputmode="numeric" maxlength="13" autocomplete="off" placeholder="30-12345678-1" value="${esc(s?arcaCuitFmt(s.cuit):'')}"></div>
+  <div><label for="sp-iva">Condición frente al IVA</label><select id="sp-iva" class="cmp-in">${CMP_IVA.map(x=>`<option ${s&&s.iva===x?'selected':''}>${x}</option>`).join('')}</select></div></div>
+  <div class="grid g2"><div><label for="sp-em">Correo</label><input id="sp-em" class="cmp-in" type="email" maxlength="120" autocomplete="off" value="${esc(s?s.email:'')}"></div>
+  <div><label for="sp-tel">Teléfono / WhatsApp</label><input id="sp-tel" class="cmp-in" inputmode="tel" maxlength="40" autocomplete="off" value="${esc(s?s.tel:'')}"></div></div>
+  <label for="sp-dir">Dirección</label><input id="sp-dir" class="cmp-in" maxlength="200" autocomplete="off" value="${esc(s?s.dir:'')}">
+  ${s?`<label class="chk"><input type="checkbox" id="sp-act" ${s.activo!==false?'checked':''}> Proveedor activo (si lo desmarcás se archiva: no se le cargan compras nuevas, el historial queda)</label><p class="sm mut">Saldo actual: ${cmpSaldoTag(s.saldo)} — el saldo sólo cambia con remitos, pagos y notas de crédito.</p>`:''}</div>`,
+  {okText:'Guardar proveedor',onOk:async w=>{
+   const cuit=val('sp-cuit').replace(/\D/g,'');if(!arcaCuitOk(cuit)){w._err('El CUIT no es válido: revisá los 11 dígitos (el último es un dígito verificador).');return false;}
+   try{const r=await CMP.supSave({id:s?s.id:undefined,razon_social:val('sp-rs'),cuit,condicion_iva:val('sp-iva'),email:val('sp-em'),telefono:val('sp-tel'),direccion:val('sp-dir'),activo:s?$('#sp-act').checked:true});
+    toast(s?'Proveedor actualizado':'Proveedor creado');cmpAfterOp();}catch(e){w._err(e.message);return false;}}});};
+
+/* ---------- órdenes de compra ---------- */
+function cmpOcOpen(o){if(!can('purchases'))return toast('Sin permiso',1);
+ const provs=cmpArr('suppliers').filter(s=>s.activo!==false);
+ if(!provs.length){toast('Primero cargá un proveedor',1);return;}
+ ocS=o?{id:o.id,prov:o.provId,obs:o.obs||'',rows:o.items.map(i=>({pid:i.pid,txt:'',qty:String(i.qty).replace('.',','),cost:pesosStr(i.cost)})),key:null}
+    :{id:'',prov:(cmpS.cc&&cmpProv(cmpS.cc)&&cmpProv(cmpS.cc).activo!==false)?cmpS.cc:provs[0].id,obs:'',rows:[cmpBlankRow()],key:cmpKey()};
+ cmpDatalist();
+ const w=modal(o?'Editar '+cmpOcName(o):'Nueva orden de compra',`<div class="cmp">
+  <label for="oc-prov">Proveedor</label><select id="oc-prov" class="cmp-in" ${o?'disabled':''}>${provs.map(s=>`<option value="${s.id}" ${s.id===ocS.prov?'selected':''}>${esc(s.razon)}</option>`).join('')}</select>
+  <div data-rows="oc">${cmpRowsHtml(ocS.rows,'oc')}</div>
+  <div class="row" style="margin-top:.6rem"><button type="button" class="btn" data-act="cmpRowAdd" data-mode="oc">+ Agregar producto</button><span class="sp"></span><span class="cmp-total">Total: <b id="oc-total">$ 0</b></span></div>
+  <label for="oc-obs">Observaciones</label><input id="oc-obs" class="cmp-in" maxlength="500" autocomplete="off" value="${esc(ocS.obs)}">
+  <p class="sm mut">“Solicitar” deja la orden esperando mercadería (se recibe desde Carga de remito). “Guardar borrador” te deja editarla después.</p>
+  <div class="row"><button type="button" class="btn" data-act="cmpOcDraft">Guardar borrador</button></div></div>`,
+  {wide:true,okText:'Guardar y solicitar',onOk:w=>cmpOcSave(w,'Solicitada')});
+ w.querySelectorAll('.cmp-row').forEach((el,i)=>cmpRowCalc('oc',el,ocS.rows[i]));cmpTotals('oc');return w;}
+async function cmpOcSave(w,estado){if(!ocS)return false;
+ try{const items=cmpBuildItems(ocS.rows,'precio_costo_pactado');
+  if(estado==='Solicitada'&&items.some(i=>!(i.precio_costo_pactado>0)))throw new CmpErr('Para solicitar la orden cargá el costo pactado de todos los productos (o guardala como borrador).');
+  await CMP.ocSave({id:ocS.id||undefined,proveedor_id:val('oc-prov')||ocS.prov,estado,observaciones:val('oc-obs'),items,idempotency_key:ocS.id?undefined:ocS.key});
+  toast(estado==='Solicitada'?'Orden solicitada':'Borrador guardado');ocS=null;cmpAfterOp();return true;}
+ catch(e){w._err(e.message);return false;}}
+A.cmpOcNew=()=>{cmpS.tab=cmpS.tab==='prov'||cmpS.tab==='oc'||cmpS.tab==='cuenta'?cmpS.tab:'oc';cmpOcOpen(null);};
+A.cmpOcEdit=el=>{const o=cmpArr('pOrders').find(x=>x.id===el.dataset.id);if(o&&o.estado==='Borrador')cmpOcOpen(o);};
+A.cmpOcDraft=async el=>{const w=el.closest('.ov');if(!w)return;if(await cmpOcSave(w,'Borrador'))w.remove();};
+A.cmpOcEst=el=>{const o=cmpArr('pOrders').find(x=>x.id===el.dataset.id);if(!o)return;const e=el.dataset.e;
+ const go2=async()=>{try{await CMP.ocEstado(o.id,e);toast(e==='Solicitada'?'Orden solicitada':'Orden cancelada');cmpAfterOp();}catch(err){toast(err.message,1);}};
+ if(e==='Cancelada')confirmBox('Cancelar orden de compra','¿Cancelás la '+esc(cmpOcName(o))+' de '+esc(cmpProvName(o.provId))+'? No se puede reactivar.',go2,'Cancelar orden');else go2();};
+A.cmpOcView=el=>{const o=cmpArr('pOrders').find(x=>x.id===el.dataset.id);if(!o)return;
+ modal(cmpOcName(o)+' · '+cmpProvName(o.provId),`<div class="cmp"><p>${cmpOcTag(o.estado)} Emitida ${esc(fmtDT(o.fecha))}${o.recibidaAt?' · recibida '+esc(fmtDT(o.recibidaAt)):''}</p>
+  <div class="tw"><table class="cmp-table"><thead><tr><th>Producto</th><th class="r">Cantidad</th><th class="r">Costo pactado</th><th class="r">Subtotal</th></tr></thead><tbody>${o.items.map(i=>`<tr><td>${esc(i.name)}</td><td class="r">${esc(String(i.qty).replace('.',','))}</td><td class="r">${money(i.cost)}</td><td class="r">${money(Math.round(i.qty*i.cost))}</td></tr>`).join('')}</tbody></table></div>
+  <p><b>Total ${money(o.total)}</b></p>${o.obs?'<p class="mut">'+esc(o.obs)+'</p>':''}</div>`,{wide:true,ok:false,cancelText:'Cerrar'});};
+A.cmpRcView=el=>{const r=cmpArr('receipts').find(x=>x.id===el.dataset.id);if(!r)return;const cv=can('view_cost');
+ modal(r.tipo+' '+r.nro+' · '+cmpProvName(r.provId),`<div class="cmp"><p>Recibido el ${esc(dmy(r.fecha))} · ${r.cond==='contado'?'Contado'+(r.medio?' ('+esc(CMP_MEDIOS[r.medio]||r.medio)+')':''):'Cuenta corriente'}${r.obs?' · '+esc(r.obs):''}</p>
+  <div class="tw"><table class="cmp-table"><thead><tr><th>Producto</th><th class="r">Cantidad</th><th class="r">Costo</th>${cv?'<th class="r">Costo anterior</th>':''}<th class="r">Stock</th></tr></thead><tbody>${r.items.map(i=>`<tr><td>${esc(i.name)}</td><td class="r">${esc(String(i.qty).replace('.',','))}</td><td class="r">${money(i.cost)}</td>${cv?`<td class="r">${money(i.costAnt)}</td>`:''}<td class="r">${i.stockAnt===null||i.stockAnt===undefined?'—':esc(String(i.stockAnt).replace('.',','))+' → '+esc(String(i.stockNew).replace('.',','))}</td></tr>`).join('')}</tbody></table></div>
+  <p><b>Total ${money(r.total)}</b></p></div>`,{wide:true,ok:false,cancelText:'Cerrar'});};
+
+/* ---------- confirmar ingreso de mercadería ---------- */
+A.cmpRemitoGo=()=>{if(!crS||crS.busy)return;if(!can('purchases'))return toast('Sin permiso',1);const c=crS;const err=m=>{c.err=m;const e=document.getElementById('cr-err');if(e){e.textContent=m;e.hidden=false;e.scrollIntoView({block:'nearest'});}};
+ let payload,tot;
+ try{const prov=cmpProv(c.prov);if(!prov)throw new CmpErr('Elegí el proveedor de la lista.');
+  const nro=String(c.nro||'').trim();if(!nro)throw new CmpErr('Cargá el número del comprobante.');
+  const items=cmpBuildItems(c.rows,'precio_costo');tot=cmpTotals('rc');
+  payload={idempotency_key:c.key,proveedor_id:prov.id,orden_compra_id:c.oc||undefined,tipo_comprobante:c.tipo,nro_comprobante:nro,fecha_recepcion:c.fecha||undefined,condicion_pago:c.cond,observaciones:c.obs||undefined,items};
+  const dec=parseNum(c.decl);if(String(c.decl||'').trim()){if(isNaN(dec))throw new CmpErr('El total del comprobante no es un número válido.');if(Math.abs(dec*100-tot)>0.9)throw new CmpErr('El total del comprobante ('+money(Math.round(dec*100))+') no coincide con la suma de los renglones ('+money(tot)+'). Revisá cantidades y costos.');payload.total_declarado=dec;}
+  if(c.cond==='contado'){if(!c.rubro)throw new CmpErr('Elegí el rubro del egreso: es obligatorio en todo movimiento de dinero.');
+   payload.medio_pago=c.medio;payload.rubro_id=c.rubro;
+   if(c.medio==='efectivo'){const s=openSess();if(!s)throw new CmpErr('Para pagar en efectivo tiene que haber una caja abierta (Caja → Abrir caja), o elegí otro medio de pago.');payload.turno_id=s.id;}}
+  c.err='';const e0=document.getElementById('cr-err');if(e0)e0.hidden=true;
+ }catch(e){err(e.message);return;}
+ const unidades=payload.items.reduce((a,i)=>a+i.cantidad,0);const prov=cmpProv(c.prov);
+ const impacto=[`Entran <b>${esc(String(Math.round(unidades*1000)/1000).replace('.',','))}</b> unidades en <b>${payload.items.length}</b> producto${payload.items.length===1?'':'s'} (se suman al stock).`,
+  `El costo de cada producto pasa a ser el que cargaste (cuando es mayor a cero) y el margen se recalcula.`,
+  c.cond==='contado'?`Se paga <b>${esc(money(tot))}</b> al contado por <b>${esc(CMP_MEDIOS[c.medio])}</b>${c.medio==='efectivo'?' y sale del efectivo de la caja abierta':''}. La deuda con el proveedor no cambia.`:`Se suman <b>${esc(money(tot))}</b> a lo que le debés a ${esc(prov.razon)} (hoy: ${esc(money(prov.saldo))}).`,
+  c.oc?`La orden de compra pasa a <b>Recibida</b>.`:'No está vinculado a una orden de compra.'];
+ modal('Confirmar ingreso de mercadería',`<div class="cmp"><p><b>${esc(c.tipo)} ${esc(payload.nro_comprobante)}</b> · ${esc(prov.razon)} · total <b>${esc(money(tot))}</b></p><ul>${impacto.map(x=>`<li>${x}</li>`).join('')}</ul><p class="sm mut">Se guarda todo junto o no se guarda nada.</p></div>`,
+  {okText:'Confirmar ingreso',onOk:async w=>{if(c.busy)return false;c.busy=true;
+   try{const r=await CMP.recibir(payload);c.res=r;c.key=cmpKey();c.busy=false;toast(r.repetido?'Ese comprobante ya estaba registrado':'Mercadería ingresada');cmpS.loadedAt=now();cmpRepaint();return true;}
+   catch(e){c.busy=false;w._err(e.message);return false;}}});};
+
+/* ---------- pagos y notas de crédito ---------- */
+A.cmpPay=el=>{if(!can('purchases'))return toast('Sin permiso',1);const s=cmpProv(el.dataset.id);if(!s)return;if(!(s.saldo>0)){toast('Este proveedor no tiene deuda',1);return;}
+ const key=cmpKey();const rubs=S.rubros.filter(r=>r.kind!=='cobr');const sess=openSess();
+ modal('Pago a '+s.razon,`<div class="cmp"><p>Deuda actual: <b class="neg">${money(s.saldo)}</b></p>
+  <label for="pg-m">Importe ($)</label>${numIn('pg-m',0,'Ej.: 15.000','class="cmp-in"')}
+  <label for="pg-med">Medio de pago</label><select id="pg-med" class="cmp-in">${Object.entries(CMP_MEDIOS).map(([k,t])=>`<option value="${k}">${t}</option>`).join('')}</select>
+  <label for="pg-r">Rubro del egreso (obligatorio)</label><select id="pg-r" class="cmp-in"><option value="">— Elegí un rubro —</option>${rubs.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</select>
+  <label for="pg-ref">Referencia (recibo, cheque, transferencia)</label><input id="pg-ref" class="cmp-in" maxlength="80" autocomplete="off">
+  <p class="sm mut">${sess?'Si pagás en efectivo, sale de la caja '+esc(S.tenant.caja)+' (abierta).':'No hay caja abierta: el pago en efectivo no se puede registrar hasta abrirla.'}</p></div>`,
+  {okText:'Registrar pago',onOk:async w=>{const m=parseNum(val('pg-m'));if(!(m>0)){w._err('Cargá un importe mayor a cero.');return false;}
+   if(Math.round(m*100)>s.saldo){w._err('El pago no puede superar la deuda ('+money(s.saldo)+').');return false;}
+   const p={idempotency_key:key,proveedor_id:s.id,monto:m,medio_pago:val('pg-med'),rubro_id:val('pg-r'),referencia:val('pg-ref')};
+   if(!p.rubro_id){w._err('Elegí el rubro del egreso: es obligatorio.');return false;}
+   if(p.medio_pago==='efectivo'){if(!sess){w._err('No hay caja abierta. Abrila en Caja o elegí otro medio.');return false;}p.turno_id=sess.id;}
+   try{const r=await CMP.pagar(p);toast(r.repetido?'Ese pago ya estaba registrado':'Pago registrado');cmpAfterOp();}catch(e){w._err(e.message);return false;}}});};
+A.cmpNc=el=>{if(!can('purchases'))return toast('Sin permiso',1);const s=cmpProv(el.dataset.id);if(!s)return;const key=cmpKey();
+ modal('Nota de crédito de '+s.razon,`<div class="cmp"><p>Saldo actual: ${cmpSaldoTag(s.saldo)}</p>
+  <label for="nc-m">Importe ($)</label>${numIn('nc-m',0,'Ej.: 4.500','class="cmp-in"')}
+  <label for="nc-ref">Número de la nota de crédito</label><input id="nc-ref" class="cmp-in" maxlength="80" autocomplete="off">
+  <label for="nc-mot">Motivo</label><input id="nc-mot" class="cmp-in" maxlength="200" autocomplete="off" placeholder="Ej.: devolución de mercadería, bonificación">
+  <p class="sm mut">Reduce lo que le debés. No mueve caja ni stock: si devolvés mercadería, ajustá el stock en Inventario.</p></div>`,
+  {okText:'Registrar nota de crédito',onOk:async w=>{const m=parseNum(val('nc-m'));if(!(m>0)){w._err('Cargá un importe mayor a cero.');return false;}
+   try{const r=await CMP.nc({idempotency_key:key,proveedor_id:s.id,monto:m,referencia:val('nc-ref'),motivo:val('nc-mot')});toast(r.repetido?'Esa nota ya estaba registrada':'Nota de crédito registrada');cmpAfterOp();}catch(e){w._err(e.message);return false;}}});};
+
 /* =====================================================================
    VENTAS ONLINE (V26 · 4.18) y WALLET / AVISOS (V26 · 4.19)
    Paneles de configuración HONESTOS: dejan preparado el modo de venta y los
@@ -2727,7 +3302,7 @@ async function applyRec(r){const c=r.coleccion,id=r.id,key=c+'|'+id;
   if(id==='clubkey'){if(d&&d.priv&&d.pub&&cl.dek){try{cl.clubPriv={pub:d.pub,priv:d.priv,jwk:await openJ(d.priv,cl.dek,'clubkey|'+cl.comercio.id)};}catch(e){}}return;}
   const h=cyrb(canon(d));const loc=cfgWire(id);if(cl.fp[key]!==undefined&&cyrb(canon(loc))!==cl.fp[key])return; // cambio local sin subir: gana el local
   if(id==='tenant'){const caja=S.tenant.caja,regId=S.tenant.regId;S.tenant=Object.assign({},d,{caja,regId});}
-  else if(id==='cfg')S.cfg=d;else if(id==='menu')S.menu=d;else if(id==='roles')S.roles=d;else if(id==='integ')S.integ=d;else if(id==='legal')S.legal=d;
+  else if(id==='cfg')S.cfg=d;else if(id==='menu')S.menu=d;else if(id==='roles')S.roles=rolesMigrate(d);else if(id==='integ')S.integ=d;else if(id==='legal')S.legal=d;
   else if(id==='loyalty'){S.loyalty.goal=d.goal;S.loyalty.reward=d.reward;}
   cl.fp[key]=h;return;}
  const col=BYC[c];if(!col)return;const arr=arrOf(col);
