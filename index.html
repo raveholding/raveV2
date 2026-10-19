@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-19 22:24 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-19 23:37 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -86,8 +86,9 @@ td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
 /* POS */
 .pos{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr);gap:1rem;align-items:start}
 @media(max-width:1000px){.pos{grid-template-columns:1fr}}
-.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem;margin-top:.7rem}
+.pgrid{align-items:start;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem;margin-top:.7rem}
 .pbtn{min-height:84px;text-align:left;padding:.6rem;border-radius:14px;border:1px solid var(--line);background:#fff;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;gap:.2rem}
+.pw{display:flex;flex-direction:column;gap:.25rem}.pchips{display:flex;flex-direction:column;gap:.25rem}.pchips .btn{display:block;width:100%;height:auto;min-height:48px;padding:.3rem .55rem;font-size:.8rem;line-height:1.2;text-align:left;white-space:normal;overflow-wrap:anywhere}.pchips .btn span{display:block;color:var(--mut);font-size:.72rem}.wplv{border:1px solid var(--line);border-radius:12px;padding:.6rem .7rem;margin:.45rem 0}.wpg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem}.wpg label{font-size:.74rem}
 .pbtn:hover{border-color:var(--gold)}.pbtn b{font-size:.9rem}.pbtn span{font-size:.78rem;color:var(--mut)}
 .rdot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:.3rem}
 .cline{border-bottom:1px solid var(--line);padding:.5rem 0}
@@ -603,17 +604,22 @@ const BUILD_VER=(typeof window!=='undefined'&&window.RAVE_BUILD&&window.RAVE_BUI
 const IS_CLIENT=!!(typeof window!=='undefined'&&window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente');
 const DEF=()=>{const d=DEF0();return IS_CLIENT?clientClean(d):wsDemoSeed(d);};
 /* DEMO: canal mayorista encendido con datos rotulados «ejemplo» (el sistema del cliente nace apagado y sin esto) */
-function wsDemoSeed(d){d.cfg=d.cfg||{};if(!d.cfg.wholesale)d.cfg.wholesale={on:true,example:true,allowClub:false,grace:0,lists:[]};
- const ok=d.products.filter(p=>p.unit==='u'&&p.rubro!=='tabaco'&&!p.archived&&p.price>0);const r100=x=>Math.round(x/100)*100;
- const a=ok[0],b=ok[1],c=ok[2],e=ok[3];
- if(a&&!a.prices){a.prices={L2:r100(a.price*0.9)};a.tiers=[{list:'L2',from:6,to:11,price:r100(a.price*0.85),pct:0},{list:'L2',from:12,to:0,price:r100(a.price*0.8),pct:0}];a.packs=[{id:'pk-a6',name:'Caja ×6',qty:6,barcode:'',mode:'ambas',fixed:0,pct:5}];}
- if(b&&!b.prices){b.prices={L2:r100(b.price*0.9)};b.packs=[{id:'pk-b12',name:'Caja ×12',qty:12,barcode:'',mode:'bulto_cerrado',fixed:12*r100(b.price*0.84),pct:0}];}
- if(c&&!c.prices){c.prices={L2:r100(c.price*0.9),L5:r100(c.price*0.82)};c.floor=r100(c.price*0.7);}
- if(e&&!e.prices){e.prices={L2:r100(e.price*0.92)};e.wsEx=1;}
- return wsDemoCust(d);}
+function wsDemoSeed(d){d.cfg=d.cfg||{};if(!d.cfg.wholesale)d.cfg.wholesale={on:true,example:true,allowClub:false,grace:0,levels:[{id:'d',name:'Display'},{id:'f',name:'Fardo'},{id:'p',name:'Pallet'}]};
+ wsDemoPres(d.products);d.cfg.wholesale.seeded=1;return wsDemoCust(d);}
+/* presentaciones de ejemplo: Display ×6, Fardo ×24 y Pallet ×480 con precio por unidad decreciente (sólo productos por unidad, sin tabaco) */
+function wsDemoPres(prods){const el=(prods||[]).filter(p=>p.unit==='u'&&p.rubro!=='tabaco'&&!p.archived&&p.price>0);const ok=el.filter(p=>p.rubro==='vino').concat(el.filter(p=>p.rubro!=='vino'&&p.rubro!=='promo'),el.filter(p=>p.rubro==='promo'));const r100=x=>Math.round(x/100)*100;
+ ok.slice(0,4).forEach((p,i)=>{if(p.pres)return;
+  p.pres=[{lv:'d',qty:6,unit:r100(p.price*0.92),barcode:''},{lv:'f',qty:24,unit:r100(p.price*0.85),barcode:''},{lv:'p',qty:480,unit:r100(p.price*0.78),barcode:''}];
+  if(i===2)p.floor=r100(p.price*0.7);if(i===3)p.wsEx=1;});}
+/* modelo anterior (listas L1–L5, escalones, bultos) → presentaciones */
+function wsMigrate(st){if(!st.cfg||!st.cfg.wholesale)return;const w=st.cfg.wholesale;
+ if(w.lists!==undefined)delete w.lists;if(!Array.isArray(w.levels))w.levels=[{id:'d',name:'Display'},{id:'f',name:'Fardo'},{id:'p',name:'Pallet'}];
+ (st.products||[]).forEach(p=>{if(p.prices!==undefined)delete p.prices;if(p.tiers!==undefined)delete p.tiers;if(p.packs!==undefined)delete p.packs;});
+ (st.customers||[]).forEach(c=>{if(c.list!==undefined)delete c.list;});
+ if(w.example&&!IS_CLIENT&&!w.seeded){wsDemoPres(st.products);w.seeded=1;}}
 /* cliente y acuerdo de ejemplo (la demo recrea sus clientes al sembrar, por eso va aparte) */
 function wsDemoCust(d){const r100=x=>Math.round(x/100)*100;
- d.customers=d.customers||[];if(!d.customers.some(x=>x.example)){const t=now();d.customers.push({id:'cw-ejemplo-demo',num:d.customers.reduce((m,x)=>Math.max(m,x.num||0),0)+1,name:'Distribuidora',last:'Ejemplo (demo)',birth:'1980-01-01',wa:'+5493875550100',dni:'',cards:[],cardSecrets:{},origin:'ejemplo',consent:{club:true,comm:false,analytics:false,version:'v1-2026-demo',ts:t},ts:t,status:'activo',limit:50000000,secret:'demo-secret-ejemplo-0000',notes:'Cliente de ejemplo del canal mayorista',channel:'mayorista',list:'L2',taxid:'20123456786',term:15,zone:'Salta capital',seller:'',example:true});}
+ d.customers=d.customers||[];if(!d.customers.some(x=>x.example)){const t=now();d.customers.push({id:'cw-ejemplo-demo',num:d.customers.reduce((m,x)=>Math.max(m,x.num||0),0)+1,name:'Distribuidora',last:'Ejemplo (demo)',birth:'1980-01-01',wa:'+5493875550100',dni:'',cards:[],cardSecrets:{},origin:'ejemplo',consent:{club:true,comm:false,analytics:false,version:'v1-2026-demo',ts:t},ts:t,status:'activo',limit:50000000,secret:'demo-secret-ejemplo-0000',notes:'Cliente de ejemplo del canal mayorista',channel:'mayorista',taxid:'20123456786',term:15,zone:'Salta capital',seller:'',example:true});}
  d.agreements=d.agreements||[];const e=d.products.find(p=>p.wsEx===1);if(e&&!d.agreements.some(x=>x.example)){d.agreements.push({id:'ag-ejemplo-demo',cust:'cw-ejemplo-demo',pid:e.id,price:r100(e.price*0.8),pct:0,from:'',to:'',active:true,by:'ejemplo',ts:now(),example:true});}
  return d;}
 /* La copia del CLIENTE nace limpia: sin costos ni stock inventados, sin usuarios/PIN de prueba, sin cupones, planes, Wi-Fi ni redes "de ejemplo". */
@@ -676,7 +682,7 @@ async function loadState(){try{const db=await idb();return await new Promise(res
 let saveT;function save(){if(CLOUD_HOOK){CLOUD_HOOK.persist();return;}clearTimeout(saveT);saveT=setTimeout(async()=>{try{const db=await idb();db.transaction('kv','readwrite').objectStore('kv').put(JSON.parse(JSON.stringify(S)),'state');}catch(e){}},300);}
 /* "Proveedores y compras" es un permiso nuevo: si ningún rol lo tiene todavía (datos anteriores), lo reciben administrador y supervisor; si ya existe, se respeta lo que el dueño decidió */
 function rolesMigrate(r){if(!r)return r;for(const perm of['purchases','price_lists','credit_ov']){const any=Object.values(r).some(a=>Array.isArray(a)&&a.includes(perm));if(!any){if(Array.isArray(r.supervisor))r.supervisor.push(perm);if(Array.isArray(r.admin))r.admin.push(perm);}}return r;}
-function mergeDefaults(st){const d=DEF();for(const k of Object.keys(d)){if(st[k]===undefined)st[k]=d[k];}rolesMigrate(st.roles);if(!IS_CLIENT&&st.cfg&&st.cfg.wholesale===undefined)wsDemoSeed(st);return st;}
+function mergeDefaults(st){const d=DEF();for(const k of Object.keys(d)){if(st[k]===undefined)st[k]=d[k];}rolesMigrate(st.roles);if(!IS_CLIENT&&st.cfg&&st.cfg.wholesale===undefined)wsDemoSeed(st);wsMigrate(st);return st;}
 
 /* ---------- Permisos, auditoría ---------- */
 const can=p=>!!user&&(user.role==='admin'||(S.roles[user.role]||[]).includes(p));
@@ -964,9 +970,9 @@ reg('inventario','Inventario','box','edit_products',()=>{
  const negN=S.products.filter(p=>p.stock<0&&!p.archived).length;const cd=canDelItems();const nArch=S.products.filter(p=>p.archived).length;
  const vis=new Set(L.map(p=>p.id));[...invSel].forEach(id=>{if(!vis.has(id))invSel.delete(id);});
  const row=p=>{const r=rub(p.rubro);const col=safeColor(r&&r.color);const st=prodStatus(p);
-  return `<tr class="st-${st}" style="--rc:${col}">${cd?`<td class="ck"><input type="checkbox" class="isel" data-id="${p.id}" ${invSel.has(p.id)?'checked':''} aria-label="Seleccionar ${esc(p.name)}"></td>`:''}<td class="rb" data-sv="${esc(p.name)}"><b>${esc(p.name)}</b>${p.sub?` <span class="mut sm">${esc(p.sub)}</span>`:''}${p.archived?' <span class="tag bad">archivado</span>':(p.active?'':' <span class="tag bad">inactivo</span>')}${p.needStock?' <span class="tag warn" title="No se vende sin stock">exige stock</span>':''}${p.demo?' <span class="tag sim" title="Costo y stock de ejemplo">ej.</span>':''}</td><td><span class="rchip" style="--rc:${col}"><i class="rdot" style="background:${col}"></i>${esc(rubName(p.rubro))}</span></td><td class="r">${money(p.price)}${p.unit!=='u'?' <span class="mut sm">/ '+unitLbl(p.unit)+'</span>':''}</td>${cv?`<td class="r">${money(p.cost)}</td><td class="r">${p.price&&p.cost>0?numAR((p.price-p.cost)/p.price*100,1)+' %':'—'}</td>`:''}<td class="r">${st==='neg'?`<span class="tag bad" title="Se vendió sin stock">${esc(stockTxt(p))}</span>`:st==='zero'?`<span class="tag bad">0 ${esc(unitLbl(p.unit))}</span>`:st==='low'?`<span class="tag warn">${esc(stockTxt(p))}</span>`:esc(stockTxt(p))}</td><td>${p.menu?'<span class="tag ok">publicado</span>':'—'}</td><td class="r">${p.archived?(cd?`<button class="btn sm" data-act="prest" data-id="${p.id}">Restaurar</button>`:''):`<button class="btn sm" data-act="pedit" data-id="${p.id}">Editar</button> <button class="btn sm" data-act="padj" data-id="${p.id}">Stock</button>${typeof wsRowBtn==='function'?wsRowBtn(p):''}${cd?` <button class="btn sm danger" data-act="pdel" data-id="${p.id}" aria-label="Eliminar ${esc(p.name)}">Eliminar</button>`:''}`}</td></tr>`;};
- const head=`<thead><tr>${cd?'<th class="ck" data-nosort><input type="checkbox" id="isel-all" aria-label="Seleccionar todos los artículos visibles"></th>':''}<th>Producto</th><th>Rubro</th><th class="r">Precio</th>${cv?'<th class="r">Costo</th><th class="r">Margen</th>':''}<th class="r">Stock</th><th>Menú</th><th></th></tr></thead>`;
- const colspan=(cv?8:6)+(cd?1:0);
+  return `<tr class="st-${st}" style="--rc:${col}">${cd?`<td class="ck"><input type="checkbox" class="isel" data-id="${p.id}" ${invSel.has(p.id)?'checked':''} aria-label="Seleccionar ${esc(p.name)}"></td>`:''}<td class="rb" data-sv="${esc(p.name)}"><b>${esc(p.name)}</b>${p.sub?` <span class="mut sm">${esc(p.sub)}</span>`:''}${p.archived?' <span class="tag bad">archivado</span>':(p.active?'':' <span class="tag bad">inactivo</span>')}${p.needStock?' <span class="tag warn" title="No se vende sin stock">exige stock</span>':''}${p.demo?' <span class="tag sim" title="Costo y stock de ejemplo">ej.</span>':''}</td><td><span class="rchip" style="--rc:${col}"><i class="rdot" style="background:${col}"></i>${esc(rubName(p.rubro))}</span></td><td class="r">${money(p.price)}${p.unit!=='u'?' <span class="mut sm">/ '+unitLbl(p.unit)+'</span>':''}</td>${wsInvTd(p)}${cv?`<td class="r">${money(p.cost)}</td><td class="r">${p.price&&p.cost>0?numAR((p.price-p.cost)/p.price*100,1)+' %':'—'}</td>`:''}<td class="r">${st==='neg'?`<span class="tag bad" title="Se vendió sin stock">${esc(stockTxt(p))}</span>`:st==='zero'?`<span class="tag bad">0 ${esc(unitLbl(p.unit))}</span>`:st==='low'?`<span class="tag warn">${esc(stockTxt(p))}</span>`:esc(stockTxt(p))}${wsStockSub(p)}</td><td>${p.menu?'<span class="tag ok">publicado</span>':'—'}</td><td class="r">${p.archived?(cd?`<button class="btn sm" data-act="prest" data-id="${p.id}">Restaurar</button>`:''):`<button class="btn sm" data-act="pedit" data-id="${p.id}">Editar</button> <button class="btn sm" data-act="padj" data-id="${p.id}">Stock</button>${cd?` <button class="btn sm danger" data-act="pdel" data-id="${p.id}" aria-label="Eliminar ${esc(p.name)}">Eliminar</button>`:''}`}</td></tr>`;};
+ const head=`<thead><tr>${cd?'<th class="ck" data-nosort><input type="checkbox" id="isel-all" aria-label="Seleccionar todos los artículos visibles"></th>':''}<th>Producto</th><th>Rubro</th><th class="r">Precio</th>${wsInvTh()}${cv?'<th class="r">Costo</th><th class="r">Margen</th>':''}<th class="r">Stock</th><th>Menú</th><th></th></tr></thead>`;
+ const colspan=(cv?8:6)+(cd?1:0)+wsInvCols();
  let body='';
  if(invF.group&&!invF.rub){R.forEach(r=>{const l=L.filter(p=>p.rubro===r.id);if(!l.length)return;const col=safeColor(r.color);
    body+=`<tr class="rgroup" style="--rc:${col}"><td colspan="${colspan}"><i class="rdot" style="background:${col}"></i><b>${esc(r.name)}</b> <span class="mut sm">${l.length} producto${l.length===1?'':'s'}${r.menuOn===false?' · fuera del menú':''}${r.age?' · +18':''}${r.alcohol?' · alcohol':''}</span> <button class="btn sm" data-act="rubEdit" data-id="${r.id}">Editar rubro</button></td></tr>`+l.map(row).join('');});
@@ -1004,6 +1010,7 @@ A.pedit=el=>{const p=S.products.find(x=>x.id===el.dataset.id)||null;const cv=can
  ${cv?`<div class="grid g3"><div><label for="pm-c">Costo ($)</label>${numIn('pm-c',p?p.cost:0)}</div><div><label for="pm-t">Cálculo</label><select id="pm-t"><option value="recargo">Recargo sobre costo</option><option value="margen">Margen bruto sobre precio</option></select></div><div><label for="pm-p">Porcentaje (%)</label><input id="pm-p" inputmode="decimal" placeholder="30" autocomplete="off"></div></div><p id="pm-s" class="sm mut">Ingresá costo y porcentaje para ver el precio sugerido.</p>`:''}
  <label for="pm-f">Precio final de venta ($)</label>${numIn('pm-f',p?p.price:0)}<p id="pm-x" class="sm mut"></p>
  <div class="grid g2"><div><label for="pm-st">Stock (<span id="pm-ul">und</span>)</label><input id="pm-st" inputmode="decimal" placeholder="0" value="${p?esc(String(p.stock).replace('.',',')):''}" autocomplete="off"></div><div><label for="pm-b">Código de barras</label><input id="pm-b" value="${esc(p?p.barcode:'')}"></div></div>
+ ${wsProdBlock(p)}
  <div class="grid g3"><div><label for="pm-sub">Presentación (ej. 750 ml)</label><input id="pm-sub" maxlength="40" value="${esc(p&&p.sub?p.sub:'')}"></div><div><label for="pm-gr">Grupo / bodega (menú)</label><input id="pm-gr" maxlength="40" value="${esc(p&&p.grupo?p.grupo:'')}"></div><div><label for="pm-plu">PLU de balanza (si es por peso)</label><input id="pm-plu" inputmode="numeric" maxlength="5" value="${esc(p&&p.plu?p.plu:'')}"></div></div>
  <label for="pm-d">Descripción (menú)</label><input id="pm-d" value="${esc(p?p.desc:'')}" maxlength="120"><label for="pm-e">Nombre en inglés (opcional)</label><input id="pm-e" value="${esc(p&&p.en?p.en:'')}" maxlength="80">
  <label class="chk"><input type="checkbox" id="pm-m" ${p&&p.menu?'checked':''}> Publicar en menú digital</label><label class="chk"><input type="checkbox" id="pm-a" ${!p||p.active?'checked':''}> Activo</label><label class="chk"><input type="checkbox" id="pm-ns" ${p&&p.needStock?'checked':''}> Exigir stock (no permitir vender sin stock este producto)</label>`,
@@ -1011,14 +1018,16 @@ A.pedit=el=>{const p=S.products.find(x=>x.id===el.dataset.id)||null;const cv=can
   if(!name)return w._err('Falta el nombre.'),false;if(!rubro||!rub(rubro))return w._err('Elegí el rubro del producto.'),false;if(!(pr>0))return w._err('El precio de venta debe ser mayor a cero.'),false;if(isNaN(st)||(st<0&&!(p&&st===p.stock)&&!negOK()))return w._err('Stock inválido (no puede ser negativo).'),false;
   const bc=val('pm-b').trim();if(bc&&S.products.some(x=>x.barcode===bc&&(!p||x.id!==p.id)))return w._err('Ya existe otro producto con ese código de barras.'),false;
   const plu=val('pm-plu').trim();if(plu&&!/^\d{1,5}$/.test(plu))return w._err('El PLU son hasta 5 números.'),false;if(plu&&S.products.some(x=>x.plu&&String(+x.plu)===String(+plu)&&(!p||x.id!==p.id)))return w._err('Ese PLU ya lo usa otro producto.'),false;
+  const W=wsProdRead(p,pr,bc,cost);if(W&&W.err)return w._err(W.err),false;
   const d={name,sub:val('pm-sub').trim(),grupo:val('pm-gr').trim(),plu,rubro,unit:val('pm-u'),price:pr,cost,stock:st,barcode:bc,desc:val('pm-d').trim(),en:val('pm-e').trim(),menu:$('#pm-m',w).checked,active:$('#pm-a',w).checked,needStock:$('#pm-ns',w).checked};
+  if(W){if(JSON.stringify(W.pres)!==JSON.stringify((p&&p.pres)||[])||W.floor!==((p&&p.floor)||0))audit('PRESENTACIONES_PRODUCTO',name+' · '+(W.pres.map(k=>wsLvName(k.lv)+' ×'+k.qty+' '+money(k.unit)+'/u').join(' · ')||'sin presentaciones')+(W.floor?' · piso '+money(W.floor):''));d.pres=W.pres;d.floor=W.floor;if(W.warns.length)setTimeout(()=>toast('Ojo: '+W.warns.join('; ')+'.',1),400);}
   if(p&&p.stock!==st)d.hist=true;
   if(p){if(p.price!==pr||p.cost!==cost)audit('PRECIO_PRODUCTO',p.name+': precio '+money(p.price)+' → '+money(pr)+(p.cost!==cost?' · costo '+money(p.cost)+' → '+money(cost):''));Object.assign(p,d);audit('EDITAR_PRODUCTO',name);}
   else{S.products.push(Object.assign({id:uid()},d));audit('ALTA_PRODUCTO',name+' · '+rubName(rubro));}save();rerender();toast('Producto guardado');}});
  const upd=()=>{const ul=$('#pm-ul',w);if(ul)ul.textContent=unitLbl(val('pm-u'));if(!cv)return;const c=cents(val('pm-c')),pc=parseNum(val('pm-p')),sg=sugPrice(c,val('pm-t'),pc);const s=$('#pm-s',w);
   if(val('pm-p')==='')s.textContent='Ingresá costo y porcentaje para ver el precio sugerido.';else if(isNaN(sg))s.textContent=val('pm-t')==='margen'?'El margen debe estar entre 0 y menos de 100 %.':'Porcentaje o costo inválido.';else s.innerHTML='Precio sugerido: <b>'+money(sg)+'</b> <button class="btn sm" type="button" id="pm-use">Usar sugerido</button>';
   const f=cents(val('pm-f'));const x=$('#pm-x',w);if(!isNaN(f)&&!isNaN(c)&&c>0){x.textContent='Con ese precio: recargo '+numAR((f-c)/c*100,1)+' % · margen bruto '+numAR((f-c)/f*100,1)+' %';}else x.textContent='';};
- w.addEventListener('input',upd);w.addEventListener('change',upd);w.addEventListener('click',e=>{if(e.target.id==='pm-use'){const sg=sugPrice(cents(val('pm-c')),val('pm-t'),parseNum(val('pm-p')));if(!isNaN(sg)){$('#pm-f',w).value=pesosStr(sg);upd();}}});upd();};
+ wsProdBind(w,cv);w.addEventListener('input',upd);w.addEventListener('change',upd);w.addEventListener('click',e=>{if(e.target.id==='pm-use'){const sg=sugPrice(cents(val('pm-c')),val('pm-t'),parseNum(val('pm-p')));if(!isNaN(sg)){$('#pm-f',w).value=pesosStr(sg);upd();}}});upd();};
 /* ===== V26 · 4.16 Eliminación protegida de artículos (sólo Administrador) =====
    · Borrado físico SOLO si no hay ventas, movimientos ni otras referencias; con historial se ARCHIVA (borrado lógico).
    · El servidor vuelve a validar todo (06-v26.sql): ocultar el botón no es seguridad.
@@ -1074,9 +1083,12 @@ A.prest=el=>{if(!canDelItems())return toast('Sólo el Administrador',1);const p=
  const dup=p.barcode&&S.products.some(x=>x!==p&&!x.archived&&x.barcode===p.barcode);if(dup)return toast('No se puede restaurar: otro artículo usa el mismo código de barras.',1);
  const dp=p.plu&&S.products.some(x=>x!==p&&!x.archived&&x.plu&&String(+x.plu)===String(+p.plu));if(dp)return toast('No se puede restaurar: otro artículo usa el mismo PLU.',1);
  p.archived=false;p.active=true;delete p.archivedAt;audit('INV_RESTAURAR',p.name);save();rerender();toast('Artículo restaurado');};
-A.padj=el=>{const p=prod(el.dataset.id);const w=modal('Ajustar stock · '+p.name,`<p>Stock actual: <b class="${p.stock<0?'negs':''}">${esc(stockTxt(p))}</b></p><label for="aj-d">Cantidad a sumar o restar (use - para restar)</label><input id="aj-d" inputmode="decimal" placeholder="0" autocomplete="off"><label for="aj-m">Motivo</label><input id="aj-m" maxlength="100">`,
- {onOk:w=>{const d=parseNum(val('aj-d'));if(isNaN(d)||d===0)return w._err('Ingresá una cantidad distinta de cero.'),false;if(val('aj-m').trim().length<3)return w._err('El motivo es obligatorio.'),false;if(p.stock+d<0&&!canOver(p))return w._err('El stock no puede quedar negativo (este producto exige stock o la venta sin stock está bloqueada).'),false;
-  stockAdjust(p,d,val('aj-m'));rerender();}});};
+A.padj=el=>{const p=prod(el.dataset.id);const PR=wsOn()?wsPres(p):[];
+ const w=modal('Ajustar stock · '+p.name,`<p>Stock actual: <b class="${p.stock<0?'negs':''}">${esc(stockTxt(p))}</b>${wsStockSub(p)}</p>${PR.length?`<label for="aj-u">Contar en</label><select id="aj-u"><option value="1">Unidad</option>${PR.map(k=>`<option value="${k.qty}">${esc(wsLvName(k.lv))} (${numAR(k.qty,3)} u)</option>`).join('')}</select>`:''}<label for="aj-d">Cantidad a sumar o restar (use - para restar)</label><input id="aj-d" inputmode="decimal" placeholder="0" autocomplete="off"><p class="sm mut" id="aj-eq"></p><label for="aj-m">Motivo</label><input id="aj-m" maxlength="100">`,
+ {onOk:w=>{const mul=PR.length?(+val('aj-u')||1):1;const d0=parseNum(val('aj-d'));const d=Math.round(d0*mul*1000)/1000;if(isNaN(d)||d===0)return w._err('Ingresá una cantidad distinta de cero.'),false;if(val('aj-m').trim().length<3)return w._err('El motivo es obligatorio.'),false;if(p.stock+d<0&&!canOver(p))return w._err('El stock no puede quedar negativo (este producto exige stock o la venta sin stock está bloqueada).'),false;
+  stockAdjust(p,d,val('aj-m')+(mul>1?' ('+d0+' × '+numAR(mul,3)+' u)':''));rerender();}});
+ const eq=()=>{const e=$('#aj-eq',w);if(!e||!PR.length)return;const mul=+val('aj-u')||1,d=parseNum(val('aj-d'));e.textContent=(!isNaN(d)&&d!==0&&mul>1)?'= '+(d>0?'+':'')+numAR(d*mul,3)+' unidades':'';};
+ w.addEventListener('input',eq);w.addEventListener('change',eq);};
 /* núcleo único del ajuste de stock (lo usan la pantalla y el asistente) */
 function stockAdjust(p,d,motivo,origen){p.stock=Math.round((p.stock+d)*1000)/1000;p.hist=true;audit('AJUSTE_STOCK',p.name+' '+(d>0?'+':'')+d+' · '+motivo+(origen?' ['+origen+']':''));save();}
 
@@ -1231,8 +1243,8 @@ function commitSale(method,arca,channel,lines,opts){
 
 function posGrid(){const g=$('#pgrid');if(!g)return;const q=pos.q.trim().toLowerCase();
  const list=S.products.filter(p=>p.active&&(!pos.rub||p.rubro===pos.rub)&&(!q||pfull(p).toLowerCase().includes(q)||(p.barcode&&p.barcode.includes(q))));
- g.innerHTML=list.map(p=>`<button class="pbtn" data-act="padd" data-id="${p.id}" ${(p.stock<=0&&!canOver(p))?'disabled':''}><b>${esc(p.name)}</b>${p.sub?`<span>${esc(p.sub)}</span>`:''}<span><i class="rdot" style="background:${rub(p.rubro)?safeColor(rub(p.rubro).color):'#999'}"></i>${esc(rubName(p.rubro))}</span><span>${money(p.price)}${p.unit!=='u'?' / '+unitLbl(p.unit):''} · <span class="${p.stock<0?'negs':''}">stock ${stockTxt(p)}</span></span></button>`).join('')||'<p class="mut">Sin resultados.</p>';}
-function posCart(){const c=$('#pcart');if(!c)return;const sess=openSess();if(typeof wsRecalc==='function')wsRecalc();
+ g.innerHTML=list.map(p=>wsTile(p,`<button class="pbtn" data-act="padd" data-id="${p.id}" ${(p.stock<=0&&!canOver(p))?'disabled':''}><b>${esc(p.name)}</b>${p.sub?`<span>${esc(p.sub)}</span>`:''}<span><i class="rdot" style="background:${rub(p.rubro)?safeColor(rub(p.rubro).color):'#999'}"></i>${esc(rubName(p.rubro))}</span><span>${money(p.price)}${p.unit!=='u'?' / '+unitLbl(p.unit):''} · <span class="${p.stock<0?'negs':''}">stock ${stockTxt(p)}</span></span></button>`)).join('')||'<p class="mut">Sin resultados.</p>';}
+function posCart(){const c=$('#pcart');if(!c)return;const sess=openSess();if(typeof wsRecalc==='function'){wsRecalc();wsGridSync();}
  const fb=$('#fbar');if(fb)fb.innerHTML=fbarHTML();
  c.innerHTML=(sess?'':`<div class="warnbox">No hay caja abierta. <a href="#panel/caja">Abrí la caja</a> para vender.</div>`)+
  (pos.lines.length?pos.lines.map((l,i)=>`<div class="cline" style="${i===pos.sel?'background:#fbf5e8;border-radius:10px;padding:.5rem':''}"><div class="row"><b class="sp">${esc(l.name)}</b><span class="tag">${esc(rubName(l.rubro))}</span><button class="btn sm red" data-act="prm" data-i="${i}" aria-label="Quitar">✕</button></div>
@@ -2081,57 +2093,40 @@ function pubRefresh(){try{const f=document.getElementById('pubframe');if(f&&f.co
 /* ===== Mayorista / minorista · 4.22 · fase F1 =====
    Un solo punto de cálculo de precio (priceResolve) para la pantalla y para commitSale.
    Todo detrás de S.cfg.wholesale.on (apagado en el sistema del cliente: el comportamiento no cambia). */
-const WS_IDS=['L1','L2','L3','L4','L5'];
-const WS_NAMES={L1:'Minorista (base)',L2:'Mayorista 1 · por bulto',L3:'Mayorista 2',L4:'Mayorista 3 · distribuidor',L5:'Especial / VIP'};
 const WS_DAY=86400000;
+const WS_LV0=[{id:'d',name:'Display'},{id:'f',name:'Fardo'},{id:'p',name:'Pallet'}];
 function wsConf(){const w=(S.cfg&&S.cfg.wholesale)||{};
- const lists=WS_IDS.map(id=>{const x=(w.lists||[]).find(q=>q&&q.id===id)||{};
-  return{id,name:String(x.name||WS_NAMES[id]).slice(0,40),on:id==='L1'?true:(x.on===undefined?id==='L2':!!x.on),taxIncl:x.taxIncl!==false,from:x.from||'',to:x.to||''};});
- return{on:!!w.on,allowClub:!!w.allowClub,grace:Math.max(0,Math.min(60,Math.round(+w.grace||0))),example:!!w.example,lists};}
+ const lv=(Array.isArray(w.levels)?w.levels:WS_LV0).filter(x=>x&&x.id&&x.name).slice(0,7).map(x=>({id:String(x.id).replace(/[^a-z0-9_]/gi,'').slice(0,12),name:String(x.name).replace(/[<>]/g,'').slice(0,24)}));
+ return{on:!!w.on,allowClub:!!w.allowClub,grace:Math.max(0,Math.min(60,Math.round(+w.grace||0))),example:!!w.example,levels:lv};}
 const wsOn=()=>wsConf().on;
 const wsDateOk=(f,t)=>{const k=dkey(now());return(!f||k>=f)&&(!t||k<=t);};
-function wsListOk(id){const l=wsConf().lists.find(x=>x.id===id);return!!(l&&l.on&&wsDateOk(l.from,l.to));}
-function wsListName(id){const l=wsConf().lists.find(x=>x.id===id);return l?l.name:id;}
+function wsLvName(id){if(id==='u')return'Unidad';const l=wsConf().levels.find(x=>x.id===id);return l?l.name:String(id);}
+/* presentaciones cargadas en el producto, de menor a mayor cantidad (la «Unidad» es el precio de venta) */
+const wsPres=p=>((p&&p.pres)||[]).filter(k=>k&&k.qty>0&&k.unit>0).slice().sort((a,b)=>a.qty-b.qty);
 const wsIsWh=c=>!!(c&&c.channel==='mayorista');
 function wsChan(){if(pos.chanSet&&pos.chanSet.cust===pos.cust)return pos.chanSet.v;return wsIsWh(custById(pos.cust))?'mayorista':'minorista';}
-function wsListFor(cust,chan){
- if(cust&&cust.list&&wsListOk(cust.list))return cust.list;
- if(chan==='mayorista'){if(wsListOk('L2'))return'L2';return WS_IDS.find(i=>i!=='L1'&&wsListOk(i))||'L1';}
- return'L1';}
 function wsAgreement(cid,p){const A_=(S.agreements||[]).filter(a=>a&&a.active!==false&&a.cust===cid&&wsDateOk(a.from,a.to));
  return A_.find(a=>a.pid&&a.pid===p.id)||A_.find(a=>!a.pid&&a.rubro&&a.rubro===p.rubro)||null;}
-const wsTiers=(p,lid)=>(p.tiers||[]).filter(t=>t&&t.list===lid&&t.from>0).sort((a,b)=>a.from-b.from);
-function wsTierFor(p,lid,qty){const T=wsTiers(p,lid);let hit=null;
- for(let i=0;i<T.length;i++){if(qty>=T[i].from-1e-9)hit=T[i];}
- if(hit&&hit.to&&qty>hit.to+1e-9)return null;   /* hueco entre escalones: rige el precio de la lista */
- return hit;}
-function wsClosedQty(p){const c=(p.packs||[]).filter(k=>k&&k.mode==='bulto_cerrado'&&k.qty>0);return c.length?Math.min(...c.map(k=>k.qty)):0;}
-function wsQtyErr(lines){const agg={};lines.forEach(l=>agg[l.pid]=(agg[l.pid]||0)+l.qty);
- for(const pid in agg){const p=prod(pid);const m=p?wsClosedQty(p):0;if(m){const r=agg[pid]/m;if(Math.abs(r-Math.round(r))>1e-9)return p.name+' se vende sólo por bulto cerrado: la cantidad tiene que ser múltiplo de '+m+' (hoy '+numAR(agg[pid],3)+').';}}
- return'';}
-/* ---- resolución determinista del precio (4.22.1.3) ----
-   base L1 → acuerdo del cliente (gana) → lista del cliente (si falta el producto: L1 y se informa) → escalón (nunca sube) → bulto cerrado (nunca sube) → piso */
+/* desglose del stock en presentaciones: «2 Pallet + 3 Fardo + 5 u» (sólo productos por unidad con presentaciones cargadas) */
+function wsStockStr(p,qty){if(!wsOn()||!p||p.unit!=='u')return'';const P=wsPres(p).reverse();if(!P.length||!(qty>=P[P.length-1].qty))return'';
+ let r=Math.floor(qty+1e-9);const out=[];for(const k of P){const n=Math.floor(r/k.qty);if(n>0){out.push(n+' '+wsLvName(k.lv));r-=n*k.qty;}}if(r>0)out.push(r+' u');return out.join(' + ');}
+/* ---- resolución determinista del precio ----
+   Minorista: precio de venta. Mayorista (cliente con CUIT válido): acuerdo del cliente si existe; si no, el precio por unidad de la
+   presentación MÁS GRANDE que alcanza la cantidad total del mismo producto en la operación (nunca sube el precio) → piso. */
 function priceResolve(p,qty,ctx){
  ctx=ctx||{};const cust=ctx.cust||null,chan=ctx.chan||'minorista';
- const R={price:p.price,base:p.price,alt:p.price,rule:'L1',list:'L1',why:'Minorista · lista L1',missing:'',below:false,warn:''};
+ const R={price:p.price,base:p.price,alt:p.price,rule:'L1',list:'L1',why:'precio de venta',missing:'',below:false,warn:''};
  if(!wsOn())return R;
  const fin=()=>{R.below=!!(p.floor>0&&R.price<p.floor);return R;};
  if(chan==='mayorista'&&!(cust&&arcaCuitOk(cust.taxid||''))){R.warn='cuit';R.why='Mayorista sin cliente con CUIT válido: precio minorista';return fin();}
  const ag=cust?wsAgreement(cust.id,p):null;
  if(ag){R.price=ag.price>0?ag.price:Math.round(p.price*(1-ag.pct/100));R.rule='ACU';R.list='ACU';R.agr=ag.id;R.why='Acuerdo especial'+(ag.pid?'':' (rubro)')+' · '+(ag.price>0?money(ag.price):ag.pct+' % off');return fin();}
- let lid=wsListFor(cust,chan);const pre=chan==='mayorista'?'Mayorista':'Lista';
- if(lid!=='L1'){const lp=p.prices&&p.prices[lid];
-  if(lp>0){R.price=lp;R.list=lid;R.rule=lid;R.why=pre+' · '+wsListName(lid)+' ('+lid+')';}
-  else{R.why='Sin precio en '+wsListName(lid)+' ('+lid+'): se usa L1 minorista';lid='L1';}}
- const t=wsTierFor(p,lid,qty);
- if(t){const tp=t.price>0?t.price:Math.round(R.price*(1-t.pct/100));
-  if(tp>0&&tp<R.price){R.price=tp;R.rule=lid+'-E'+t.from;R.why=pre+' · '+lid+' · escalón '+numAR(t.from,3)+(t.to?'–'+numAR(t.to,3):' o más')+' u';R.tier=t;}}
- else{const nx=wsTiers(p,lid).find(x=>x.from>qty+1e-9);
-  if(nx){const np=nx.price>0?nx.price:Math.round(R.price*(1-nx.pct/100));if(np<R.price)R.missing='Faltan '+numAR(nx.from-qty,3)+' u para el precio de '+numAR(nx.from,3)+(nx.to?'–'+numAR(nx.to,3):' o más')+' u ('+money(np)+')';}}
- /* bulto cerrado: la presentación más grande que divide la cantidad */
- const pk=(p.packs||[]).filter(k=>k&&k.qty>0&&(k.fixed>0||k.pct>0)&&qty>=k.qty-1e-9&&Math.abs(qty/k.qty-Math.round(qty/k.qty))<1e-9).sort((a,b)=>b.qty-a.qty)[0];
- if(pk){const up=pk.fixed>0?Math.round(pk.fixed/pk.qty):Math.round(R.price*(1-pk.pct/100));
-  if(up>0&&up<R.price){R.price=up;R.rule+='+B'+pk.qty;R.why+=' · bulto cerrado ×'+pk.qty;R.pack=pk;}}
+ if(chan!=='mayorista')return fin();
+ R.why='Unidad (precio de venta)';
+ let hit=null,nx=null;
+ for(const k of wsPres(p)){if(qty>=k.qty-1e-9)hit=k;else if(!nx)nx=k;}
+ if(hit&&hit.unit<R.price){R.price=hit.unit;R.rule='P-'+hit.lv;R.list=wsLvName(hit.lv);R.pres=hit;R.why=R.list+' (desde '+numAR(hit.qty,3)+' u): '+money(hit.unit)+' por unidad';}
+ if(nx&&nx.unit<R.price)R.missing='Faltan '+numAR(nx.qty-qty,3)+' u para el precio '+wsLvName(nx.lv)+' ('+money(nx.unit)+' por unidad)';
  return fin();}
 /* recalcula las líneas del ticket en curso (las que no tienen precio puesto a mano) */
 function wsRecalc(){if(!wsOn()||typeof pos==='undefined')return;
@@ -2148,8 +2143,7 @@ function wsGate(lines,cust,opts){
   if(!cust)return{err:'El canal mayorista exige un cliente identificado.'};
   if(!arcaCuitOk(cust.taxid||''))return{err:'El cliente '+custFull(cust)+' no tiene un CUIT válido cargado: el canal mayorista lo exige.'};
   if(!conf.allowClub){if(opts.coupon)return{err:'Los cupones del Club no se aplican a ventas mayoristas.'};if(opts.stampCode)return{err:'Los sellos del Club no se otorgan en ventas mayoristas.'};}}
- const e=wsQtyErr(lines);if(e)return{err:e};
- const agg={};lines.forEach(l=>agg[l.pid]=(agg[l.pid]||0)+l.qty);
+  const agg={};lines.forEach(l=>agg[l.pid]=(agg[l.pid]||0)+l.qty);
  for(const l of lines){const p=prod(l.pid);if(!p)continue;
   if(l.man){l.rule='MAN';l.lst='';}
   else{const r=priceResolve(p,agg[l.pid],{cust,chan});if(l.price!==r.price)delete l.flrOk;l.price=r.price;l.rule=r.rule;l.lst=r.list;l.base=r.base;l.why=r.why;}
@@ -2197,25 +2191,32 @@ function wsCustFind(q){q=String(q||'').trim().toLowerCase();if(!q)return[];const
  return S.customers.filter(c=>c.status!=='baja'&&((c.name+' '+c.last).toLowerCase().includes(q)||(qd&&c.wa.replace(/\D/g,'').includes(qd))||pad4(c.num)===q||(c.dni&&normDni(q).length>=6&&normDni(c.dni)===normDni(q))||(qd.length>=8&&(c.taxid||'').replace(/\D/g,'')===qd))).slice(0,8);}
 function wsCartBar(){if(!wsOn())return'';
  const c=custById(pos.cust),ch=wsChan();const miss=ch==='mayorista'&&!(c&&arcaCuitOk(c.taxid||''));
- const lid=wsListFor(c,ch);
  return`<div class="card" style="margin:.5rem 0" id="wsbar"><div class="row" style="flex-wrap:wrap"><span class="tag ${ch==='mayorista'?'ok':''}">Canal: ${ch==='mayorista'?'Mayorista':'Minorista'}</span><b class="sp">${c?esc(custFull(c)):'Consumidor final'}</b><button class="btn sm" data-act="wsPick">${c?'Cambiar cliente':'Elegir cliente'}</button>${c?'<button class="btn sm" data-act="wsPickClear">Quitar</button>':''}<button class="btn sm" data-act="wsChan">Cambiar canal</button></div>
- ${miss?'<div class="warnbox sm" role="status">El canal mayorista exige un cliente identificado con CUIT válido. Mientras tanto se cobra a precio minorista.</div>':`<p class="sm mut" style="margin:.3rem 0 0">Lista aplicada: <b>${esc(wsListName(lid))}</b>${c&&ch==='mayorista'?' · crédito: debe '+money(debtOf(c.id))+' de '+money(c.limit||0)+(c.term>0?' · plazo '+c.term+' días':''):''}</p>`}</div>`;}
+ ${miss?'<div class="warnbox sm" role="status">El canal mayorista exige un cliente identificado con CUIT válido. Mientras tanto se cobra a precio minorista.</div>':`<p class="sm mut" style="margin:.3rem 0 0">${ch==='mayorista'?'Precio por volumen: cada producto toma el precio de la presentación (Display, Fardo, Pallet…) que alcance su cantidad.':'Precio de venta al público.'}${c&&ch==='mayorista'?' · crédito: debe '+money(debtOf(c.id))+' de '+money(c.limit||0)+(c.term>0?' · plazo '+c.term+' días':''):''}</p>`}</div>`;}
 function wsLineInfo(l,i){if(!wsOn())return'';const p=prod(l.pid);let h='';
- if(l.why)h+=`<div class="sm ${l.rule==='MAN'?'mut':''}" style="margin-top:.3rem"><b>${esc(l.rule==='L1'||!l.rule?'Minorista':l.rule==='MAN'?'A mano':'Mayorista')}</b> · ${esc(l.why)}</div>`;
+ if(l.why)h+=`<div class="sm ${l.rule==='MAN'?'mut':''}" style="margin-top:.3rem"><b>${esc(l.rule==='L1'||!l.rule?'Minorista':l.rule==='MAN'?'A mano':l.rule==='ACU'?'Acuerdo':'Mayorista')}</b> · ${esc(l.why)}</div>`;
  if(l.miss)h+=`<div class="sm mut">${esc(l.miss)}</div>`;
- if(p){const m=wsClosedQty(p);if(m){const r=l.qty/m;if(Math.abs(r-Math.round(r))>1e-9)h+=`<div class="tag bad" style="margin-top:.3rem">Sólo bulto cerrado: múltiplos de ${m}</div>`;}
+ if(p){
   if(p.floor>0&&l.price<p.floor)h+=`<div class="tag bad" style="margin-top:.3rem">Debajo del piso (${money(p.floor)})${l.flrOk?' · autorizado':''}</div>${!l.flrOk&&can('price_lists')?` <button class="btn sm" data-act="wsFloor" data-i="${i}">Autorizar</button>`:''}`;
-  const pk=(p.packs||[]).filter(k=>k&&k.qty>0);if(pk.length)h+=`<div class="row" style="margin-top:.3rem;flex-wrap:wrap">${pk.map(k=>`<button class="btn sm" data-act="wsPack" data-i="${i}" data-k="${esc(k.id)}">+ ${esc(k.name)} (×${numAR(k.qty,3)})</button>`).join('')}</div>`;}
+  const pk=wsPres(p);if(pk.length&&wsChan()==='mayorista')h+=`<div class="row" style="margin-top:.3rem;flex-wrap:wrap">${pk.map(k=>`<button class="btn sm" data-act="wsPack" data-i="${i}" data-k="${esc(k.lv)}">+ ${esc(wsLvName(k.lv))} (${numAR(k.qty,3)} u)</button>`).join('')}</div>`;}
  return h;}
-const wsLineTag=l=>(wsOn()&&l.why&&l.rule&&l.rule!=='L1')?`<small class="mut"> · ${esc(l.rule==='MAN'?'a mano':l.rule)}</small>`:'';
+const wsLineTag=l=>(wsOn()&&l.why&&l.rule&&l.rule!=='L1')?`<small class="mut"> · ${esc(l.rule==='MAN'?'a mano':(l.list||l.rule))}</small>`:'';
 function wsClubOff(){return`<p class="sm mut">Venta mayorista: no se aplican cupones, membresía ni sellos del Club (se puede habilitar en Configuración → Mayorista).</p>`;}
-A.wsPack=el=>{const i=+el.dataset.i,L=pos.lines[i];if(!L)return;const p=prod(L.pid),k=p&&(p.packs||[]).find(x=>x.id===el.dataset.k);if(!k)return;
+/* suma una presentación entera (Display, Fardo, Pallet…) a una línea del ticket */
+A.wsPack=el=>{const i=+el.dataset.i,L=pos.lines[i];if(!L)return;const p=prod(L.pid),k=p&&wsPres(p).find(x=>x.lv===el.dataset.k);if(!k)return;
  lineEdit(i,'qty',String(Math.round((L.qty+k.qty)*1000)/1000).replace('.',','));};
-function wsAddByPack(code){if(!wsOn())return false;
- const p=S.products.find(x=>x.active&&(x.packs||[]).some(k=>k&&k.barcode&&k.barcode===code));if(!p)return false;
- const k=p.packs.find(x=>x.barcode===code);A.padd({dataset:{id:p.id}});
- const i=pos.lines.findIndex(l=>l.pid===p.id);if(i>=0&&k.qty>1)lineEdit(i,'qty',String(Math.round((pos.lines[i].qty+k.qty-1)*1000)/1000).replace('.',','));
- return true;}
+/* agrega al ticket una presentación del producto (desde la grilla de Vender o con el código de barras de la presentación) */
+function wsAddPres(p,k){if(!p||!k)return false;const had=pos.lines.some(l=>l.pid===p.id);
+ if(!had){A.padd({dataset:{id:p.id}});}
+ const i=pos.lines.findIndex(l=>l.pid===p.id);if(i<0)return true;
+ const add=had?k.qty:k.qty-1;if(add>0)lineEdit(i,'qty',String(Math.round((pos.lines[i].qty+add)*1000)/1000).replace('.',','));return true;}
+A.wsAddPres=el=>{const p=prod(el.dataset.id);if(!p)return;wsAddPres(p,wsPres(p).find(x=>x.lv===el.dataset.lv));};
+function wsAddByPack(code){if(!wsOn()||!code)return false;
+ for(const p of S.products){if(!p.active)continue;const k=wsPres(p).find(x=>x.barcode&&x.barcode===code);if(k)return wsAddPres(p,k);}return false;}
+/* Vender: en el canal mayorista cada producto muestra sus precios por presentación y botones para sumar Display/Fardo/Pallet */
+function wsTile(p,base){if(!wsOn()||wsChan()!=='mayorista')return base;const P=wsPres(p);if(!P.length)return base;
+ return`<div class="pw">${base}<div class="pchips" aria-label="Sumar por presentación: ${esc(p.name)}">${P.map(k=>`<button type="button" class="btn sm" data-act="wsAddPres" data-id="${p.id}" data-lv="${esc(k.lv)}" ${(p.stock<k.qty&&!canOver(p))?'disabled':''} aria-label="Agregar ${esc(wsLvName(k.lv))} de ${numAR(k.qty,3)} unidades de ${esc(p.name)}"><b>+ ${esc(wsLvName(k.lv))}</b> ×${numAR(k.qty,3)}<span>${money(k.unit)} c/u · ${money(Math.round(k.unit*k.qty))}</span></button>`).join('')}</div></div>`;}
+function wsGridSync(){const key=wsOn()?wsChan():'-';if(pos._wsg!==key){pos._wsg=key;if(typeof posGrid==='function')posGrid();}}
 A.wsFloor=el=>{if(!can('price_lists'))return toast('Sin permiso',1);const i=+el.dataset.i,L=pos.lines[i];if(!L)return;
  modal('Autorizar precio bajo el piso',`<p class="sm">${esc(L.name)}: ${money(L.price)} (piso ${money((prod(L.pid)||{}).floor||0)}).</p><label for="fl-w">Motivo (obligatorio)</label><input id="fl-w" maxlength="120" autocomplete="off">`,
  {okText:'Autorizar',onOk:w=>{const why=val('fl-w').trim();if(why.length<5)return w._err('Escribí el motivo (mínimo 5 letras).'),false;L.flrOk=1;L.flrWhy=why;audit('PISO_PRECIO',L.name+' · '+money(L.price)+' bajo el piso · '+why);posCart();}});};
@@ -2235,11 +2236,11 @@ A.wsChan=()=>{const c=custById(pos.cust),cur=wsChan(),to=cur==='mayorista'?'mino
 const wsReview=cid=>S.sales.filter(s=>s.credit_review&&(!cid||s.cust===cid));
 const wsCrw={sin_limite:'cliente sin límite',supera_limite:'superó el límite'};
 /* ---- ficha del cliente: bloque mayorista ---- */
-function wsCustCard(c){if(!wsOn()||!c)return'';const ed=can('price_lists')?'':'disabled';const lists=wsConf().lists.filter(l=>l.on);
+function wsCustCard(c){if(!wsOn()||!c)return'';const ed=can('price_lists')?'':'disabled';
  const ag=wsAging(c.id);const od=wsOverdue(c.id);
  return`<div class="card" style="margin:.6rem 0"><h3 style="margin-top:0">Mayorista y crédito</h3>
  <div class="grid g2"><div><label for="wc-ch">Canal habitual</label><select id="wc-ch" ${ed}><option value="minorista" ${!wsIsWh(c)?'selected':''}>Minorista</option><option value="mayorista" ${wsIsWh(c)?'selected':''}>Mayorista</option></select></div>
- <div><label for="wc-li">Lista de precios</label><select id="wc-li" ${ed}><option value="">— Según el canal —</option>${lists.map(l=>`<option value="${l.id}" ${c.list===l.id?'selected':''}>${esc(l.id+' · '+l.name)}</option>`).join('')}</select></div></div>
+ </div>
  <div class="grid g2"><div><label for="wc-tx">CUIT (obligatorio para vender como mayorista)</label><input id="wc-tx" inputmode="numeric" maxlength="13" autocomplete="off" placeholder="20-12345678-6" value="${esc(c.taxid||'')}" ${ed}></div>
  <div><label for="wc-tm">Plazo máximo de pago (días)</label><input id="wc-tm" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="Sin plazo" value="${c.term>0?esc(String(c.term)):''}" ${ed}></div></div>
  <div class="grid g2"><div><label for="wc-zn">Zona de cobranza</label><input id="wc-zn" maxlength="30" autocomplete="off" value="${esc(c.zone||'')}" ${ed}></div><div><label for="wc-sl">Vendedor asignado</label><input id="wc-sl" maxlength="30" autocomplete="off" value="${esc(c.seller||'')}" ${ed}></div></div>
@@ -2248,60 +2249,69 @@ function wsCustCard(c){if(!wsOn()||!c)return'';const ed=can('price_lists')?'':'d
  ${wsReview(c.id).length?`<div class="warnbox sm">${wsReview(c.id).length} venta(s) a cuenta corriente marcadas para revisión por el servidor (${esc(wsReview(c.id).map(s=>s.n).slice(-5).join(', '))}).</div>`:''}
  ${can('credit_ov')?`<button class="btn sm" type="button" data-act="wsCredOv" data-id="${c.id}" data-need="0">Autorizar excepción de crédito</button>`:''}</div>`;}
 function wsCustSave(c,w){if(!wsOn()||!$('#wc-ch',w)||$('#wc-ch',w).disabled)return'';
- const ch=val('wc-ch')==='mayorista'?'mayorista':'minorista',li=val('wc-li'),tx=val('wc-tx').replace(/\D/g,''),tm=val('wc-tm').trim()===''?0:Math.round(parseNum(val('wc-tm'))),zn=val('wc-zn').trim().slice(0,30),sl=val('wc-sl').trim().slice(0,30);
+ const ch=val('wc-ch')==='mayorista'?'mayorista':'minorista',tx=val('wc-tx').replace(/\D/g,''),tm=val('wc-tm').trim()===''?0:Math.round(parseNum(val('wc-tm'))),zn=val('wc-zn').trim().slice(0,30),sl=val('wc-sl').trim().slice(0,30);
  if(tx&&!arcaCuitOk(tx))return'El CUIT no es válido (11 dígitos con dígito verificador correcto).';
  if(ch==='mayorista'&&!tx)return'Para marcar al cliente como mayorista cargá su CUIT.';
  if(isNaN(tm)||tm<0||tm>365)return'El plazo va de 1 a 365 días (o vacío).';
- if(li&&!wsListOk(li))return'La lista elegida no está activa.';
  const chg=[];const cmp=(k,a,b)=>{if(String(a||'')!==String(b||''))chg.push(k+': '+(a||'—')+' → '+(b||'—'));};
- cmp('canal',c.channel||'minorista',ch);cmp('lista',c.list,li);cmp('CUIT',c.taxid?'cargado':'',tx?'cargado':'');cmp('plazo',c.term>0?c.term:'',tm>0?tm:'');cmp('zona',c.zone,zn);cmp('vendedor',c.seller,sl);
- c.channel=ch;c.list=li;c.taxid=tx;c.term=tm;c.zone=zn;c.seller=sl;
+ cmp('canal',c.channel||'minorista',ch);cmp('CUIT',c.taxid?'cargado':'',tx?'cargado':'');cmp('plazo',c.term>0?c.term:'',tm>0?tm:'');cmp('zona',c.zone,zn);cmp('vendedor',c.seller,sl);
+ c.channel=ch;c.taxid=tx;c.term=tm;c.zone=zn;c.seller=sl;
  if(chg.length)audit('CLIENTE_MAYORISTA',custFull(c)+' · '+chg.join(' · '));return'';}
 
-/* ---- producto: listas, piso, escalones y presentaciones ---- */
-function wsRowBtn(p){return(wsOn()&&can('price_lists'))?` <button class="btn sm" data-act="wsProd" data-id="${p.id}">Mayorista</button>`:'';}
+/* ---- producto: precios por presentación (dentro del alta/edición del producto) y piso ---- */
 const wsNumStr=n=>(n===undefined||n===null||n===''||isNaN(n)||!n)?'':String(n).replace('.',',');
-A.wsProd=el=>{if(!can('price_lists'))return toast('Sin permiso para editar listas de precio.',1);const p=prod(el.dataset.id);if(!p)return;
- const conf=wsConf();const T=(p.tiers||[]).slice().sort((a,b)=>(a.list||'').localeCompare(b.list||'')||a.from-b.from);const K=p.packs||[];
- const opts=sel=>`<option value="">—</option>`+WS_IDS.map(id=>`<option value="${id}" ${sel===id?'selected':''}>${id}</option>`).join('');
- const trow=i=>{const t=T[i]||{};return`<div class="grid" style="grid-template-columns:5rem 1fr 1fr 6rem 1fr;gap:.4rem;margin-bottom:.3rem"><select id="wp-tl${i}" aria-label="Escalón ${i+1}: lista">${opts(t.list)}</select><input id="wp-tf${i}" inputmode="decimal" placeholder="Desde" aria-label="Escalón ${i+1}: desde" value="${esc(wsNumStr(t.from))}"><input id="wp-tt${i}" inputmode="decimal" placeholder="Hasta (vacío = sin tope)" aria-label="Escalón ${i+1}: hasta" value="${esc(wsNumStr(t.to))}"><select id="wp-tk${i}" aria-label="Escalón ${i+1}: tipo"><option value="price" ${!t.pct?'selected':''}>$ por u</option><option value="pct" ${t.pct?'selected':''}>% off</option></select><input id="wp-tv${i}" inputmode="decimal" placeholder="Valor" aria-label="Escalón ${i+1}: valor" value="${esc(t.pct?wsNumStr(t.pct):pesosStr(t.price||0))}"></div>`;};
- const krow=i=>{const k=K[i]||{};const bk=k.fixed>0?'fixed':(k.pct>0?'pct':'none');return`<div class="grid" style="grid-template-columns:1fr 5rem 1fr 7rem 6rem 5rem;gap:.4rem;margin-bottom:.3rem"><input id="wp-kn${i}" maxlength="24" placeholder="Nombre (Caja ×6)" aria-label="Presentación ${i+1}: nombre" value="${esc(k.name||'')}"><input id="wp-kq${i}" inputmode="decimal" placeholder="Unid." aria-label="Presentación ${i+1}: unidades base" value="${esc(wsNumStr(k.qty))}"><input id="wp-kb${i}" inputmode="numeric" placeholder="Código de barras" aria-label="Presentación ${i+1}: código" value="${esc(k.barcode||'')}"><select id="wp-km${i}" aria-label="Presentación ${i+1}: modalidad"><option value="ambas" ${k.mode!=='bulto_cerrado'?'selected':''}>Suelta y bulto</option><option value="bulto_cerrado" ${k.mode==='bulto_cerrado'?'selected':''}>Sólo bulto</option></select><select id="wp-kk${i}" aria-label="Presentación ${i+1}: bonificación"><option value="none" ${bk==='none'?'selected':''}>Sin bonif.</option><option value="fixed" ${bk==='fixed'?'selected':''}>$ x bulto</option><option value="pct" ${bk==='pct'?'selected':''}>% off</option></select><input id="wp-kv${i}" inputmode="decimal" placeholder="Valor" aria-label="Presentación ${i+1}: valor" value="${esc(bk==='fixed'?pesosStr(k.fixed):bk==='pct'?wsNumStr(k.pct):'')}"></div>`;};
- modal('Mayorista · '+pfull(p),`<p class="sm mut">Precio minorista (L1): <b>${money(p.price)}</b>. Lo que dejes vacío cae al precio minorista. Las cantidades van en unidad base (${esc(unitLbl(p.unit))}).</p>
- <h4 style="margin:.5rem 0 .2rem">Precio por lista</h4><div class="grid g2">${conf.lists.filter(l=>l.id!=='L1').map(l=>`<div><label for="wp-p${l.id}">${esc(l.id+' · '+l.name)}${l.on?'':' (apagada)'}</label>${numIn('wp-p'+l.id,(p.prices||{})[l.id]||0,'Sin precio')}</div>`).join('')}</div>
- <label for="wp-fl">Piso de precio (opcional): por debajo exige supervisor y motivo</label>${numIn('wp-fl',p.floor||0,'Sin piso')}
- <h4 style="margin:.6rem 0 .2rem">Escalones por cantidad (no se pueden solapar)</h4><p class="sm mut">Lista · desde · hasta · tipo · valor. Un escalón nunca sube el precio.</p>${[0,1,2,3,4,5].map(trow).join('')}
- <h4 style="margin:.6rem 0 .2rem">Presentaciones (bultos)</h4><p class="sm mut">Nombre · unidades base · código propio · modalidad · bonificación por bulto cerrado.</p>${[0,1,2].map(krow).join('')}`,
- {wide:true,okText:'Guardar',onOk:w=>{const R=wsReadProd(p);if(R.err)return w._err(R.err),false;
-  const old={pr:JSON.stringify(p.prices||{}),fl:p.floor||0,t:(p.tiers||[]).length,k:(p.packs||[]).length};
-  p.prices=R.prices;p.floor=R.floor;p.tiers=R.tiers;p.packs=R.packs;
-  audit('LISTAS_PRODUCTO',pfull(p)+' · listas '+old.pr+' → '+JSON.stringify(p.prices)+' · piso '+money(old.fl)+' → '+money(p.floor)+' · escalones '+old.t+' → '+p.tiers.length+' · presentaciones '+old.k+' → '+p.packs.length);
-  save();rerender();toast('Listas guardadas');}});};
-function wsReadProd(p){const conf=wsConf();const prices={};
- for(const l of conf.lists.filter(x=>x.id!=='L1')){const v=val('wp-p'+l.id).trim();if(v==='')continue;const c=cents(v);if(isNaN(c)||c<=0)return{err:'El precio de '+l.id+' no es válido.'};prices[l.id]=c;}
+function wsProdBlock(p){if(!wsOn()||!can('price_lists'))return'';const conf=wsConf();const P=(p&&p.pres)||[];
+ const row=lv=>{const k=P.find(x=>x.lv===lv.id)||{};const n=esc(lv.name);
+  return`<div class="wplv"><div class="row" style="gap:.5rem"><b>${n}</b><span class="sm mut sp" id="wp-m-${lv.id}"></span></div>
+  <div class="wpg"><div><label for="wp-q-${lv.id}">Unidades que trae</label><input id="wp-q-${lv.id}" inputmode="decimal" autocomplete="off" placeholder="Ej. 6" value="${esc(wsNumStr(k.qty))}"></div>
+  <div><label for="wp-t-${lv.id}">Precio de la presentación $</label>${numIn('wp-t-'+lv.id,(k.qty>0&&k.unit>0)?Math.round(k.qty*k.unit):0,'Precio')}</div>
+  <div><label for="wp-u-${lv.id}">Precio por unidad $</label>${numIn('wp-u-'+lv.id,k.unit||0,'Por unidad')}</div>
+  <div><label for="wp-b-${lv.id}">Código de barras</label><input id="wp-b-${lv.id}" inputmode="numeric" autocomplete="off" maxlength="20" placeholder="Opcional" value="${esc(k.barcode||'')}"></div></div></div>`;};
+ return`<div class="card" id="wp-box" style="margin:.6rem 0"><h4 style="margin:0 0 .2rem">Precios mayoristas por presentación</h4>
+ <p class="sm mut">La <b>Unidad</b> es el precio final de venta de arriba. En cada presentación cargá cuántas unidades trae y su precio (el de la presentación o el de cada unidad: el otro se completa solo). En Vender, al cliente mayorista se le cobra el precio por unidad de la presentación más grande que alcance la cantidad que lleva. Lo que dejés vacío no se usa.</p>
+ <div class="wplv"><div class="row" style="gap:.5rem"><b>Unidad</b><span class="sm mut" id="wp-m-u">1 unidad · precio de venta</span></div></div>
+ ${conf.levels.map(row).join('')}
+ ${conf.levels.length?'':'<p class="sm mut">Todavía no hay presentaciones definidas: se crean en Configuración → Mayorista y minorista.</p>'}
+ <label for="wp-fl">Piso de precio por unidad (opcional): por debajo exige supervisor y motivo</label>${numIn('wp-fl',(p&&p.floor)||0,'Sin piso')}</div>`;}
+function wsProdBind(w,cv){if(!$('#wp-box',w))return;const conf=wsConf();
+ const refresh=()=>{const pr=cents(val('pm-f')),cost=cv?cents(val('pm-c')===''?'0':val('pm-c')):0;const ok=!isNaN(pr)&&pr>0;
+  const mu=$('#wp-m-u',w);if(mu)mu.textContent='1 unidad · '+(ok?money(pr):'cargá el precio de venta')+((ok&&cv&&cost>0)?' · margen '+numAR((pr-cost)/pr*100,1)+' %':'');
+  conf.levels.forEach(lv=>{const q=parseNum(val('wp-q-'+lv.id)),u=cents(val('wp-u-'+lv.id)),m=$('#wp-m-'+lv.id,w);if(!m)return;
+   if(!(q>0)||isNaN(u)||!(u>0)){m.textContent='';return;}
+   let t=(ok?numAR((pr-u)/pr*100,1)+' % menos que la unidad':'');if(cv&&cost>0)t+=(t?' · ':'')+'margen '+numAR((u-cost)/u*100,1)+' %'+(u<cost?' (¡bajo el costo!)':'');m.textContent=t;});};
+ w.addEventListener('input',e=>{const id=e.target.id||'';const m=id.match(/^wp-([qtu])-(.+)$/);
+  if(m){const lv=m[2],qe=$('#wp-q-'+lv,w),te=$('#wp-t-'+lv,w),ue=$('#wp-u-'+lv,w);const q=parseNum(qe.value);
+   if(q>0){const u=cents(ue.value),t=cents(te.value);const uOk=ue.value.trim()!==''&&!isNaN(u)&&u>0,tOk=te.value.trim()!==''&&!isNaN(t)&&t>0;
+    if(m[1]==='u'){te.value=uOk?pesosStr(Math.round(u*q)):'';}
+    else if(m[1]==='t'){ue.value=tOk?pesosStr(Math.round(t/q)):'';}
+    else if(uOk)te.value=pesosStr(Math.round(u*q));else if(tOk)ue.value=pesosStr(Math.round(t/q));}}
+  refresh();});
+ refresh();}
+/* lee y valida las presentaciones del formulario del producto (null si el bloque no está en pantalla) */
+function wsProdRead(p,pr,bc,cost){if(!wsOn()||!can('price_lists')||!$('#wp-box'))return null;const conf=wsConf();const isU=val('pm-u')==='u';
+ const bcs=new Set(S.products.filter(x=>!p||x.id!==p.id).flatMap(x=>[x.barcode].concat(wsPres(x).map(k=>k.barcode))).filter(Boolean));if(bc)bcs.add(bc);
+ const pres=[],warns=[];
+ for(const lv of conf.levels){const q=val('wp-q-'+lv.id).trim(),t=val('wp-t-'+lv.id).trim(),u=val('wp-u-'+lv.id).trim(),b=val('wp-b-'+lv.id).trim();
+  if(!q&&!t&&!u&&!b)continue;const n=lv.name;
+  const qty=parseNum(q);if(!(qty>0))return{err:n+': indicá cuántas unidades trae.'};
+  if(isU&&!Number.isInteger(qty))return{err:n+': este producto se cuenta en unidades enteras.'};
+  const unit=u!==''?cents(u):(t!==''?Math.round(cents(t)/qty):NaN);
+  if(isNaN(unit)||!(unit>0))return{err:n+': cargá el precio (de la presentación o por unidad).'};
+  if(unit>pr)return{err:n+': el precio por unidad ('+money(unit)+') no puede ser mayor que el precio de la unidad ('+money(pr)+').'};
+  if(b){if(bcs.has(b))return{err:n+': el código de barras ya lo usa otro artículo o presentación.'};bcs.add(b);}
+  if(cost>0&&unit<cost)warns.push(n+' queda bajo el costo');
+  pres.push({lv:lv.id,qty:Math.round(qty*1000)/1000,unit,barcode:b});}
+ pres.sort((a,b)=>a.qty-b.qty);
+ for(let i=1;i<pres.length;i++){if(pres[i].qty===pres[i-1].qty)return{err:wsLvName(pres[i].lv)+' y '+wsLvName(pres[i-1].lv)+' traen la misma cantidad de unidades.'};
+  if(pres[i].unit>pres[i-1].unit)return{err:wsLvName(pres[i].lv)+' ('+numAR(pres[i].qty,3)+' u) cuesta más por unidad que '+wsLvName(pres[i-1].lv)+' ('+numAR(pres[i-1].qty,3)+' u): el precio tiene que bajar a medida que sube la cantidad.'};}
  const fv=val('wp-fl').trim();const floor=fv===''?0:cents(fv);if(isNaN(floor)||floor<0)return{err:'El piso de precio no es válido.'};
- const tiers=[];
- for(let i=0;i<6;i++){const li=val('wp-tl'+i),f=val('wp-tf'+i).trim(),t=val('wp-tt'+i).trim(),k=val('wp-tk'+i),v=val('wp-tv'+i).trim();
-  if(!li&&!f&&!t&&!v)continue;if(!li)return{err:'Escalón '+(i+1)+': elegí la lista.'};
-  const from=parseNum(f);if(!(from>0))return{err:'Escalón '+(i+1)+': el «desde» debe ser mayor a cero.'};
-  const to=t===''?0:parseNum(t);if(t!==''&&!(to>=from))return{err:'Escalón '+(i+1)+': el «hasta» no puede ser menor que el «desde».'};
-  const x={list:li,from:Math.round(from*1000)/1000,to:Math.round(to*1000)/1000};
-  if(k==='pct'){const n=parseNum(v);if(!(n>0&&n<100))return{err:'Escalón '+(i+1)+': el porcentaje va de 0 a 100 (sin incluirlos).'};x.pct=n;x.price=0;}
-  else{const c=cents(v);if(isNaN(c)||c<=0)return{err:'Escalón '+(i+1)+': el precio no es válido.'};x.price=c;x.pct=0;
-   const lp=li==='L1'?p.price:(prices[li]||p.price);if(c>=lp)return{err:'Escalón '+(i+1)+': el precio ('+money(c)+') no baja el de la lista '+li+' ('+money(lp)+').'};}
-  tiers.push(x);}
- for(const li of WS_IDS){const L=tiers.filter(t=>t.list===li).sort((a,b)=>a.from-b.from);
-  for(let i=0;i<L.length;i++){if(i<L.length-1){if(!L[i].to)return{err:'Lista '+li+': sólo el último escalón puede quedar sin «hasta».'};if(L[i].to>=L[i+1].from)return{err:'Lista '+li+': los escalones se solapan ('+numAR(L[i].from,3)+'–'+numAR(L[i].to,3)+' y desde '+numAR(L[i+1].from,3)+').'};}}}
- const packs=[];const bcs=new Set(S.products.filter(x=>x.id!==p.id).flatMap(x=>[x.barcode].concat((x.packs||[]).map(k=>k&&k.barcode))).filter(Boolean));if(p.barcode)bcs.add(p.barcode);
- for(let i=0;i<3;i++){const n=val('wp-kn'+i).trim(),q=val('wp-kq'+i).trim(),b=val('wp-kb'+i).trim(),m=val('wp-km'+i),k=val('wp-kk'+i),v=val('wp-kv'+i).trim();
-  if(!n&&!q&&!b&&!v)continue;if(!n)return{err:'Presentación '+(i+1)+': falta el nombre.'};
-  const qty=parseNum(q);if(!(qty>0))return{err:'Presentación '+(i+1)+': las unidades base deben ser mayores a cero.'};if(p.unit==='u'&&!Number.isInteger(qty))return{err:'Presentación '+(i+1)+': este producto se cuenta en unidades enteras.'};
-  if(b){if(bcs.has(b))return{err:'Presentación '+(i+1)+': el código de barras ya lo usa otro artículo o presentación.'};bcs.add(b);}
-  const x={id:(p.packs&&p.packs[i]&&p.packs[i].id)||uid(),name:n.replace(/[<>]/g,''),qty,barcode:b,mode:m==='bulto_cerrado'?'bulto_cerrado':'ambas',fixed:0,pct:0};
-  if(k==='fixed'){const c=cents(v);if(isNaN(c)||c<=0)return{err:'Presentación '+(i+1)+': el precio por bulto no es válido.'};x.fixed=c;}
-  else if(k==='pct'){const n2=parseNum(v);if(!(n2>0&&n2<100))return{err:'Presentación '+(i+1)+': el porcentaje va de 0 a 100 (sin incluirlos).'};x.pct=n2;}
-  packs.push(x);}
- if(new Set(packs.map(k=>k.qty)).size!==packs.length)return{err:'Hay dos presentaciones con las mismas unidades.'};
- return{prices,floor,tiers,packs};}
+ return{pres,floor,warns};}
+/* ---- inventario: columna de precios mayoristas y stock por presentación ---- */
+const wsInvTh=()=>wsOn()?'<th>Precios por presentación</th>':'';
+const wsInvCols=()=>wsOn()?1:0;
+function wsInvTd(p){if(!wsOn())return'';const P=wsPres(p);
+ return`<td class="sm">${P.length?`<div>Unidad <b>${money(p.price)}</b></div>`+P.map(k=>`<div>${esc(wsLvName(k.lv))} ×${numAR(k.qty,3)}: <b>${money(Math.round(k.unit*k.qty))}</b> <span class="mut">(${money(k.unit)} c/u)</span></div>`).join(''):'<span class="mut">Sin presentaciones</span>'}</td>`;}
+const wsStockSub=p=>{const s=wsStockStr(p,p.stock);return s?`<div class="sm mut">${esc(s)}</div>`:'';};
 
 /* ---- acuerdos especiales ---- */
 A.wsAgr=()=>{if(!can('price_lists'))return toast('Sin permiso para crear acuerdos.',1);
@@ -2328,22 +2338,40 @@ A.wsAgrOff=el=>{const a=(S.agreements||[]).find(x=>x.id===el.dataset.id);if(!a||
 function wsCfgCard(){if(!(can('config')||can('price_lists')))return'';const c=wsConf();const adm=can('config')?'':'disabled';
  const ag=(S.agreements||[]).slice().reverse();const ov=(S.creditOv||[]).slice(-5).reverse();
  return`<div class="card" style="margin-top:1rem" id="ws-card"><h3>Mayorista y minorista ${c.example?'<span class="tag sim">datos de ejemplo</span>':''}</h3>
- <p class="sm mut">Listas de precio, escalones por cantidad, bultos, acuerdos por cliente y crédito con plazo. Apagado, el sistema vende exactamente como siempre.</p>
+ <p class="sm mut">Precios por presentación (Unidad, Display, Fardo, Pallet…) según el volumen, acuerdos por cliente y crédito con plazo. Apagado, el sistema vende exactamente como siempre.</p>
  <label class="chk"><input type="checkbox" id="ws-on" ${c.on?'checked':''} ${adm}> Activar canal mayorista</label>
  ${typeof CLOUD_HOOK!=='undefined'&&CLOUD_HOOK&&!c.on?'<div class="warnbox sm">Con la nube activa, antes de activarlo hay que haber corrido el archivo <b>10-mayorista-precios.sql</b> en Supabase (acuerdos, excepciones de crédito y revisión de crédito del servidor). Si no, el servidor rechaza esos registros y la barra de sincronización lo muestra.</div>':''}
- ${c.on?`<div class="tw"><table><caption class="sr">Listas de precio</caption><thead><tr><th>Lista</th><th>Nombre</th><th>Activa</th><th>Impuestos</th><th>Desde</th><th>Hasta</th></tr></thead><tbody>${c.lists.map(l=>`<tr><td><b>${l.id}</b></td><td><input id="ws-n-${l.id}" maxlength="40" value="${esc(l.name)}" aria-label="Nombre de la lista ${l.id}" ${adm}></td><td>${l.id==='L1'?'siempre':`<input type="checkbox" id="ws-a-${l.id}" ${l.on?'checked':''} aria-label="Lista ${l.id} activa" ${adm}>`}</td><td><select id="ws-i-${l.id}" aria-label="Impuestos de ${l.id}" ${adm}><option value="1" ${l.taxIncl?'selected':''}>Incluidos</option><option value="0" ${!l.taxIncl?'selected':''}>No incluidos</option></select></td><td><input type="date" id="ws-f-${l.id}" value="${esc(l.from)}" aria-label="Lista ${l.id} desde" ${adm}></td><td><input type="date" id="ws-t-${l.id}" value="${esc(l.to)}" aria-label="Lista ${l.id} hasta" ${adm}></td></tr>`).join('')}</tbody></table></div>
+ ${c.on?`<h4 style="margin:.8rem 0 .2rem">Presentaciones de venta</h4>
+ <p class="sm mut">Son los «tipos de precio» que se cargan en cada producto según el volumen: <b>Unidad</b> (siempre; es el precio de venta) y las que definas acá. Podés renombrarlas y agregar las que necesites (Media caja, Bolsón…). En cada producto se carga cuántas unidades trae cada una y su precio.</p>
+ <div id="ws-lv">${c.levels.map(l=>`<div class="row" style="margin-bottom:.3rem"><input id="ws-ln-${esc(l.id)}" maxlength="24" value="${esc(l.name)}" aria-label="Nombre de la presentación" style="max-width:240px" ${adm}>${adm===''?`<button class="btn sm red" type="button" data-act="wsLvDel" data-id="${esc(l.id)}" aria-label="Quitar ${esc(l.name)}">Quitar</button>`:''}<span class="sm mut">${(S.products||[]).filter(p=>(p.pres||[]).some(k=>k.lv===l.id)).length} producto(s) la usan</span></div>`).join('')||'<p class="sm mut">Sin presentaciones: sólo se vende por Unidad.</p>'}</div>
+ ${adm===''&&c.levels.length<7?'<button class="btn sm" type="button" data-act="wsLvAdd">+ Agregar presentación</button>':''}
  <div class="grid g2"><div><label for="ws-gr">Tolerancia de mora (días después del vencimiento)</label><input id="ws-gr" inputmode="numeric" maxlength="2" placeholder="0" value="${c.grace?c.grace:''}" ${adm}></div><div><label class="chk" style="margin-top:1.6rem"><input type="checkbox" id="ws-club" ${c.allowClub?'checked':''} ${adm}> Permitir cupones, membresía y sellos del Club en ventas mayoristas</label></div></div>`:''}
  ${adm===''?`<div class="row"><button class="btn gold" data-act="wsSave">Guardar</button></div>`:''}
  ${c.on?`<h4 style="margin:.8rem 0 .2rem">Acuerdos especiales</h4>${ag.length?`<div class="tw"><table><caption class="sr">Acuerdos especiales</caption><thead><tr><th>Cliente</th><th>Producto / rubro</th><th>Condición</th><th>Vigencia</th><th></th></tr></thead><tbody>${ag.map(a=>`<tr><td>${esc(custFull(custById(a.cust)))}</td><td>${esc(a.pid?pfull(prod(a.pid)||{name:a.pid}):'Rubro '+rubName(a.rubro))}</td><td>${a.price?money(a.price):esc(a.pct+' % off')}</td><td>${esc((a.from||'ya')+' → '+(a.to||'sin fin'))} ${a.active===false?'<span class="tag">inactivo</span>':wsDateOk(a.from,a.to)?'<span class="tag ok">vigente</span>':'<span class="tag warn">fuera de fecha</span>'}</td><td>${a.active!==false&&can('price_lists')?`<button class="btn sm" data-act="wsAgrOff" data-id="${a.id}">Desactivar</button>`:''}</td></tr>`).join('')}</tbody></table></div>`:'<p class="sm mut">Todavía no hay acuerdos.</p>'}
  ${can('price_lists')?'<button class="btn sm" data-act="wsAgr">+ Nuevo acuerdo</button>':''}
  ${wsReview().length?`<div class="warnbox sm" role="status"><b>${wsReview().length} venta(s) a revisar:</b> el servidor las marcó porque superaron el límite de crédito mientras el equipo estaba sin conexión. ${esc(wsReview().slice(-5).map(s=>s.n+' ('+(wsCrw[(s.crw||'').split('+')[0]]||'revisar')+')').join(' · '))}</div>`:''}
  <h4 style="margin:.8rem 0 .2rem">Excepciones de crédito recientes</h4>${ov.length?`<ul class="sm">${ov.map(o=>`<li>${esc(custFull(custById(o.cust)))} · hasta ${money(o.max)} · ${esc(o.by)} · «${esc(o.reason)}» · ${(S.creditUse||[]).some(u=>u.ov===o.id)?'usada':o.until>now()?'vigente':'vencida'}</li>`).join('')}</ul>`:'<p class="sm mut">Ninguna.</p>'}`:''}</div>`;}
+/* nombres de presentaciones tal como están en pantalla (o las guardadas si la tarjeta no está abierta) */
+function wsLvRead(){const cur=wsConf().levels;const out=[];const names=new Set(['unidad']);
+ for(const l of cur){const e=$('#ws-ln-'+l.id);const n=(e?e.value:l.name).trim().replace(/[<>]/g,'').slice(0,24);if(!n)return{err:'Falta el nombre de una presentación.'};
+  if(names.has(n.toLowerCase()))return{err:'Hay dos presentaciones con el nombre «'+n+'» (o se llama «Unidad», que ya existe).'};names.add(n.toLowerCase());out.push({id:l.id,name:n});}
+ return{levels:out};}
+function wsLvSave(levels,msg){const cur=wsConf();const W=Object.assign({},S.cfg.wholesale||{},{levels});delete W.lists;S.cfg.wholesale=W;audit('MAYORISTA_PRESENTACIONES',msg+' · '+levels.map(l=>l.name).join(', '));save();rerender();}
+A.wsLvAdd=()=>{if(!can('config'))return toast('Sólo el administrador',1);const L=wsLvRead();if(L.err)return toast(L.err,1);
+ modal('Agregar presentación',`<label for="lv-n">Nombre (ej. Media caja, Bolsón)</label><input id="lv-n" maxlength="24" autocomplete="off">`,
+ {okText:'Agregar',onOk:w=>{const n=val('lv-n').trim().replace(/[<>]/g,'');if(!n)return w._err('Escribí el nombre.'),false;
+  if(L.levels.some(l=>l.name.toLowerCase()===n.toLowerCase())||n.toLowerCase()==='unidad')return w._err('Ya existe una presentación con ese nombre.'),false;
+  const id='x'+Date.now().toString(36).slice(-6);wsLvSave(L.levels.concat([{id,name:n}]),'agregada «'+n+'»');toast('Presentación agregada');}});};
+A.wsLvDel=el=>{if(!can('config'))return toast('Sólo el administrador',1);const L=wsLvRead();if(L.err)return toast(L.err,1);const l=L.levels.find(x=>x.id===el.dataset.id);if(!l)return;
+ const n=S.products.filter(p=>(p.pres||[]).some(k=>k.lv===l.id)).length;
+ if(n)return toast('«'+l.name+'» está cargada en '+n+' producto(s): primero sacala de esos productos.',1);
+ confirmBox('Quitar presentación','Se quita «'+l.name+'» de la lista. Ningún producto la usa.',()=>{wsLvSave(L.levels.filter(x=>x.id!==l.id),'quitada «'+l.name+'»');},'Quitar');};
 A.wsSave=()=>{if(!can('config'))return toast('Sólo el administrador',1);const cur=wsConf();const on=$('#ws-on')?$('#ws-on').checked:cur.on;
- const W={on,allowClub:cur.allowClub,grace:cur.grace,example:cur.example,lists:cur.lists.map(l=>({...l}))};
+ const W=Object.assign({},S.cfg.wholesale||{},{on,allowClub:cur.allowClub,grace:cur.grace,example:cur.example,levels:cur.levels.map(l=>({...l}))});delete W.lists;
  if(on&&cur.on){W.allowClub=!!($('#ws-club')&&$('#ws-club').checked);const g=val('ws-gr').trim()===''?0:Math.round(parseNum(val('ws-gr')));if(isNaN(g)||g<0||g>60)return toast('La tolerancia de mora va de 0 a 60 días.',1);W.grace=g;
-  for(const l of W.lists){const n=val('ws-n-'+l.id).trim();if(!n)return toast('Falta el nombre de la lista '+l.id+'.',1);l.name=n.replace(/[<>]/g,'').slice(0,40);if(l.id!=='L1')l.on=!!$('#ws-a-'+l.id).checked;l.taxIncl=val('ws-i-'+l.id)!=='0';l.from=val('ws-f-'+l.id);l.to=val('ws-t-'+l.id);if(l.from&&l.to&&l.to<l.from)return toast('Lista '+l.id+': la fecha final es anterior a la inicial.',1);}}
+  const L=wsLvRead();if(L.err)return toast(L.err,1);W.levels=L.levels;}
  const apply=()=>{const before=JSON.stringify(S.cfg.wholesale||{});S.cfg.wholesale=W;audit(on!==cur.on?(on?'MAYORISTA_ACTIVAR':'MAYORISTA_APAGAR'):'MAYORISTA_CONFIG','antes '+before.slice(0,160)+' · ahora '+JSON.stringify(W).slice(0,160));save();rerender();toast('Guardado');};
- if(on!==cur.on)confirmBox(on?'Activar canal mayorista':'Apagar canal mayorista',on?'Aparecen las listas, los escalones, los bultos y el crédito con plazo. Las ventas anteriores no cambian.':'Se vende como minorista otra vez. Las listas, acuerdos y bultos quedan guardados y las ventas anteriores no cambian.',apply,on?'Activar':'Apagar');else apply();};
+ if(on!==cur.on)confirmBox(on?'Activar canal mayorista':'Apagar canal mayorista',on?'Aparecen los precios por presentación (Unidad, Display, Fardo, Pallet…), los acuerdos por cliente y el crédito con plazo. Las ventas anteriores no cambian.':'Se vende como minorista otra vez. Las presentaciones, acuerdos y precios quedan guardados y las ventas anteriores no cambian.',apply,on?'Activar':'Apagar');else apply();};
 
 /* ===== Personal: fichaje, horas, empleados ===== */
 let perTab='fichaje';
