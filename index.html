@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-21 04:32 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-21 23:11 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -741,7 +741,7 @@ const stockTxt=p=>(p.stock<0?'−'+Math.abs(p.stock):String(p.stock).replace('.'
 const empName=id=>(S.employees.find(e=>e.id===id)||{name:'—'}).name;
 const openSess=()=>S.sessions.find(s=>!s.closedAt&&(s.caja===undefined||s.caja===S.tenant.caja)); /* la sesión abierta de ESTE equipo (otros equipos tienen la suya) */
 const saleOk=s=>s.status==='ok';
-const lineTotal=it=>Math.round(it.qty*it.price)-(it.disc||0);
+const lineTotal=it=>(it.tr&&it.amt>0?it.amt:Math.round(it.qty*it.price))-(it.disc||0);
 const lineCost=it=>Math.round(it.qty*it.cost);
 const initial=n=>(String(n||'?').trim()[0]||'?').toUpperCase();
 
@@ -971,7 +971,7 @@ function addMov(type,rubroId,concept,amount){const e=validRubro(rubroId,type);if
  const m={id:uid(),ts:now(),sessId:openSess().id,type,rubro:rubroId,rubroName:rubName(rubroId),concept:concept.trim().slice(0,120),amount,user:user.name};S.movs.push(m);
  audit(type==='ingreso'?'INGRESO_CAJA':'EGRESO_CAJA',rubName(rubroId)+' · '+m.concept+' · '+money(amount));emit('cash.movement',{type,rubro:rubroId,amount});save();return'';}
 function movModal(type,pref){if(!can('cash_mov'))return toast('Sin permiso',1);if(!openSess()){toast('Abrí la caja primero (Caja → Abrir caja)',1);return;}
- const opts=S.rubros.filter(r=>type==='egreso'?r.kind!=='cobr':r.kind!=='shared');
+ const opts=S.rubros.filter(r=>!r.sys&&(type==='egreso'?r.kind!=='cobr':r.kind!=='shared'));
  const w=modal(type==='ingreso'?'Ingreso de efectivo':'Egreso de efectivo',`<p class="sm mut">${type==='ingreso'?'Suma efectivo a la caja del rubro que elijas.':'Resta de la caja del rubro que elijas (por ejemplo, un pago entre socios).'}</p><label for="mv-r">Rubro / persona de quien es la caja (obligatorio)</label><select id="mv-r"><option value="">— Elegí un rubro —</option>${opts.map(r=>`<option value="${r.id}">${esc(r.name)}${r.owner?' ('+esc(r.owner)+')':''}</option>`).join('')}</select>
  <label for="mv-c">Motivo / concepto</label><input id="mv-c" maxlength="120" placeholder="Ej.: pago a proveedor, reintegro, retiro" autocomplete="off" value="${esc(pref||'')}">
  <label for="mv-a">Importe ($)</label>${numIn('mv-a',0,'0')}`,{okText:'Guardar',onOk:w=>{const e=addMov(type,val('mv-r'),val('mv-c'),cents(val('mv-a')));if(e){w._err(e);return false;}toast('Movimiento guardado');rerender();}});}
@@ -1197,7 +1197,7 @@ const pos={lines:[],method:'efectivo',arca:false,rcp:null,sel:-1,q:'',rub:'',cus
 const prod=id=>S.products.find(p=>p.id===id);
 const pfull=p=>p.name+(p.sub?' ('+p.sub+')':'');
 const qtyIn=pid=>pos.lines.filter(l=>l.pid===pid).reduce((a,l)=>a+l.qty,0);
-const posGross=()=>pos.lines.reduce((a,l)=>a+Math.round(l.qty*l.price),0);
+const posGross=()=>pos.lines.reduce((a,l)=>a+(typeof lnAmt==='function'?lnAmt(l):Math.round(l.qty*l.price)),0);
 const posBen=()=>(typeof wsNoClub==='function'&&wsNoClub())?{disc:0,kind:'',label:'',code:'',couponId:'',couponErr:'',base:0}:applyBenefit(pos.lines,pos.cust,pos.coupon);
 const posTotal=()=>posGross()-posBen().disc;
 const POS_METHODS=['efectivo','debito','credito','fiado','transferencia','qr','modo'];
@@ -1243,8 +1243,10 @@ function commitSale(method,arca,channel,lines,opts){
  /* beneficio: se recalcula acá (en la versión con servidor, en el servidor) */
  const cust=opts.custId?custById(opts.custId):null;
  const W=(opts.ws&&wsOn())?wsGate(lines,cust,opts):null;if(W&&W.err)return W;
+ if(W)lines=wsSplit(lines);
  const ben=(W&&W.chan==='mayorista'&&!W.club)?{disc:0,kind:'',label:'',code:'',couponId:'',couponErr:'',base:0}:(typeof applyBenefit==='function')?applyBenefit(lines,cust?cust.id:'',opts.coupon||''):{disc:0,kind:''};
  if(opts.coupon&&ben.kind!=='coupon'&&ben.couponErr)return{err:'Cupón: '+ben.couponErr};
+ if(opts.extraDisc>0){ben.disc+=opts.extraDisc;if(!ben.kind){ben.kind='tn';ben.label='Descuento de Tiendanube';}}   /* descuento ya aplicado por la tienda online (Tiendanube): no es un cupón del sistema */
  const gross=lines.reduce((a,l)=>a+Math.round(l.qty*l.price),0);const total=gross-ben.disc;const alloc=allocDisc(lines,ben.disc);
  /* pagos: una sola línea (venta simple) o varias (mixta). Todo se valida ANTES de tocar stock, caja o cuenta corriente. */
  const pays=(opts.pays&&opts.pays.length?opts.pays:[{m:method,a:total}]).map(p=>({m:p.m,a:p.a}));
@@ -1256,11 +1258,12 @@ function commitSale(method,arca,channel,lines,opts){
  const c=S.tenant.caja;S.seq[c]=(S.seq[c]||0)+1;const digital=method==='qr'||method==='modo';
  pays.forEach(p=>{p.fee=(digital||p.m==='fiado')?0:Math.round(p.a*((S.cfg.fee[p.m]||0))/100);});
  const fiadoAmt=pc.fiadoAmt;
- const sale={id:uid(),n:c+'-'+S.seq[c],ts:now(),user:user?user.name:'sistema',caja:c,sessId:sess.id,items:lines.map((l,i)=>({pid:l.pid,name:l.name,rubro:l.rubro,qty:l.qty,price:l.price,cost:l.cost,list:l.list,disc:alloc[i]||0,...(W&&l.rule?{lr:l.rule,ll:l.lst||'',lb:l.base||0}:{})})),total,method,
+ const sale={id:opts.saleId||uid(),n:c+'-'+S.seq[c],ts:now(),user:user?user.name:'sistema',caja:c,sessId:sess.id,items:lines.map((l,i)=>({pid:l.pid,name:l.name,rubro:l.rubro,qty:l.qty,price:l.price,cost:l.cost,list:l.list,disc:alloc[i]||0,...(W&&l.rule?{lr:l.rule,ll:l.lst||'',lb:l.base||0}:{})})),total,method,
   doc:arca?'factura_pendiente_cae':'ticket_interno',status:digital?'pendiente':'ok',fee:0,channel:channel||'local',cust:cust?cust.id:'',custName:cust?cust.name+' '+cust.last:'',
   coupon:ben.kind==='coupon'?ben.code:'',benefit:ben.disc?{kind:ben.kind,label:ben.label,disc:ben.disc}:null,recv:opts.recv||0,fiado:fiadoAmt>0,
   pays,fiadoAmt,paid:total-fiadoAmt,balance:fiadoAmt,vuelto:pc.vuelto,pstate:fiadoAmt<=0?'pagada':(fiadoAmt>=total?'pendiente':'parcial')};
  sale.fee=pays.reduce((a,p)=>a+p.fee,0);
+ if(opts.tnOrder)sale.tn=opts.tnOrder;
  if(W)sale.wch=W.chan;if(cr.ov)sale.cov=cr.ov;if(fiadoAmt>0&&wsOn()&&cust&&cust.term>0){sale.term=cust.term;sale.due=sale.ts+cust.term*WS_DAY;}
  const neg=[];for(const pid in need){const p=prod(pid);p.stock=Math.round((p.stock-need[pid])*1000)/1000;if(p.stock<0)neg.push(p.name+' → '+p.stock);}if(neg.length)audit('VENTA_SIN_STOCK',neg.join(' · '));
  S.sales.push(sale);S.lastSale=sale.id;
@@ -1570,7 +1573,7 @@ SCREENS.cajasx.show=cashOn;
    · Estados por eventos sólo-agregar (S.transferEvents, colección ctev): completado · en_transito · recibido · recibido_con_diferencia · devuelto · revertido
    · Comprobante interno «Boleta de Movimiento de Fondos» con número T-<caja>-<n>, cadena de hash e impresión 80/58 mm y A4
    · El servidor (migración 11) vuelve a validar permiso, autorizante, estado de las cajas, importe y rubro. Ocultar un botón no es un control. */
-const XF_DEF={strict:false,closedMode:'transito',approvalOver:0,transitAlertH:0,selfAuth:false};
+const XF_DEF={strict:false,closedMode:'transito',approvalOver:0,transitAlertH:0,selfAuth:false,noRubro:false};
 const xfCfg=()=>Object.assign({},XF_DEF,(S.cfg&&S.cfg.xfer)||{});
 const xfStrict=()=>!!xfCfg().strict;
 /* quién puede emitir y recibir: con la bandera, sólo `transfer_funds`; sin ella, como hasta ahora (arqueo y cierre) o `transfer_funds` */
@@ -1642,6 +1645,9 @@ function xfAuthHTML(){return`<div class="warnbox" id="xf-ab" hidden><b>Necesita 
  <label for="xf-au">Administrador que autoriza</label><select id="xf-au"></select>
  <label for="xf-ap">${xfCloud()?'Clave del administrador':'PIN del administrador'}</label><input id="xf-ap" type="password" autocomplete="off" ${xfCloud()?'':'inputmode="numeric"'}></div>`;}
 /* ---------- crear un traspaso (lógica pura: la usan el modal y las pruebas) ---------- */
+/* perfil sin rubros (mayorista de un solo dueño): el traspaso usa un concepto interno fijo y oculto; no toca los rubros del negocio */
+function sysRubro(id,name){let r=S.rubros.find(x=>x.id===id);if(!r){r={id,name,kind:'shared',color:'#6b7280',sys:true,reparte:false,owner:'',active:true};S.rubros.push(r);}return r.id;}
+function xfSysRubro(){return sysRubro('sys-traspaso','Traspaso interno');}
 function xferCreate(o){
  if(!mainOn())return'El módulo de caja principal no está habilitado.';
  if(!xfCan())return'Sin permiso para traspasar fondos.';
@@ -1653,7 +1659,8 @@ function xferCreate(o){
  const fs=xfRegState(o.from),ts=xfRegState(o.to);
  if((fs.st==='cerrada'||ts.st==='cerrada')&&!xfStrict())return'Las dos cajas tienen que estar abiertas para traspasar. Para mover fondos con una caja cerrada hace falta el permiso de traspasos (Usuarios y permisos).';
  if(brOn()&&(fr.branchId||'')!==(to.branchId||'')&&fr.type!=='main'&&to.type!=='main')return'Entre sucursales distintas sólo se traspasa desde o hacia una caja principal.';
- const e=validRubro(o.rubro,'ingreso')||validRubro(o.rubro,'egreso');if(e)return e;
+ if(xfCfg().noRubro&&!o.rubro)o.rubro=xfSysRubro();
+ const e=o.rubro==='sys-traspaso'?'':(validRubro(o.rubro,'ingreso')||validRubro(o.rubro,'egreso'));if(e)return e;
  if(!o.motivo||o.motivo.trim().length<3)return'Escribí el motivo (mínimo 3 letras).';
  let avail;if(fs.st==='abierta'){const ss=openOf(o.from);avail=arqueoCalc(ss,arqInputs(ss)).expectedCash;}else avail=xfSuggested(o.from).amount;
  if(o.amount>avail&&!o.force)return fs.st==='abierta'?'La caja de origen no tiene efectivo suficiente (esperado '+money(avail)+').':'La caja de origen está cerrada y su fondo retenido es '+money(avail)+': no alcanza.';
@@ -1719,7 +1726,7 @@ async function xfOpenModal(o){ /* o: {rev?:transfer, title} */
  <label for="xf-f">Desde</label><select id="xf-f" ${rv?'disabled':''}>${regs.map(opt).join('')}</select>
  <label for="xf-t">Hacia</label><select id="xf-t" ${rv?'disabled':''}>${regs.map(opt).join('')}</select>
  <label for="xf-a">Importe ($)</label>${numIn('xf-a',rv?rv.amount:0,'0')}
- <label for="xf-r">Rubro (obligatorio)</label><select id="xf-r"><option value="">— Elegí un rubro —</option>${xfRubOpts()}</select>
+ ${xfCfg().noRubro?'':`<label for="xf-r">Rubro (obligatorio)</label><select id="xf-r"><option value="">— Elegí un rubro —</option>${xfRubOpts()}</select>`}
  <label for="xf-m">Motivo / concepto</label><input id="xf-m" maxlength="200" placeholder="Ej.: retiro de excedente a caja principal" autocomplete="off" value="${rv?esc('Reversa: '+rv.motivo):''}">
  <p class="sm mut" id="xf-ds"></p>
  ${xfAuthHTML()}
@@ -1727,11 +1734,11 @@ async function xfOpenModal(o){ /* o: {rev?:transfer, title} */
  {okText:rv?'Revertir':'Traspasar',onOk:async w2=>{
   const f=val('xf-f'),t=val('xf-t'),amt=cents(val('xf-a'));const why=xfReasons(f,t,isNaN(amt)?0:amt,rv?rv.id:'');let auth=null;
   if(why.length){const res=await xfAuthResolve(adms,val('xf-au'),val('xf-ap'));if(res.err){w2._err(res.err);return false;}auth=res.auth;}
-  const e=xferCreate({id,from:f,to:t,amount:amt,rubro:val('xf-r'),motivo:val('xf-m'),auth,rev:rv?rv.id:undefined,force:!!rv});
+  const e=xferCreate({id,from:f,to:t,amount:amt,rubro:(w2.querySelector('#xf-r')?val('xf-r'):''),motivo:val('xf-m'),auth,rev:rv?rv.id:undefined,force:!!rv});
   if(e){w2._err(e);return false;}
   toast('Traspaso registrado');rerender();const tt=xfTr(id);if(tt)setTimeout(()=>A.xferView({dataset:{id:tt.id}}),60);}});
  w.dataset.rev=rv?rv.id:'';
- const set=(id2,v)=>{const el=w.querySelector('#'+id2);if(el&&v)el.value=v;};set('xf-f',fromId);set('xf-t',toId);if(rv)set('xf-r',rv.rubro);
+ const set=(id2,v)=>{const el=w.querySelector('#'+id2);if(el&&v)el.value=v;};set('xf-f',fromId);set('xf-t',toId);if(rv&&!xfCfg().noRubro)set('xf-r',rv.rubro);
  const au=w.querySelector('#xf-au');if(au)au.innerHTML=cand.length?cand.map(a=>`<option value="${esc(a.id)}">${esc(a.name)}${a.id===xfMe()?' (yo)':''}</option>`).join(''):'<option value="">No hay otro administrador que pueda autorizar</option>';
  ['input','change'].forEach(ev=>w.addEventListener(ev,()=>xfModalSync(w)));xfModalSync(w);}
 A.xfer=()=>xfOpenModal({});
@@ -1891,9 +1898,10 @@ function xfCfgCard(){const c=xfCfg();if(!can('config'))return'';
  <label for="xc-o">Pedir autorización de un administrador si el importe supera ($, vacío = nunca)</label>${numIn('xc-o',c.approvalOver,'Sin límite')}
  <label for="xc-h">Alerta de fondos en tránsito después de (horas, vacío = sin alerta)</label><input id="xc-h" inputmode="numeric" placeholder="Sin alerta" value="${c.transitAlertH?c.transitAlertH:''}" autocomplete="off">
  <label class="chk"><input type="checkbox" id="xc-a" ${c.selfAuth?'checked':''}> Con más de un administrador, permitir que uno se autorice a sí mismo</label>
+ <label class="chk"><input type="checkbox" id="xc-n" ${c.noRubro?'checked':''}> Perfil sin rubros (un solo dueño): los traspasos no piden rubro y quedan como «Traspaso interno»</label>
  <div class="row"><button class="btn gold" data-act="xfCfgSave">Guardar reglas</button></div></div>`;}
 A.xfCfgSave=()=>{if(!can('config'))return toast('Sólo el administrador',1);const o=cents(val('xc-o')),h=parseInt(val('xc-h'),10);
- const n={strict:$('#xc-s').checked,closedMode:val('xc-m')==='saldo_inicial'?'saldo_inicial':'transito',approvalOver:isNaN(o)||o<0?0:o,transitAlertH:isNaN(h)||h<0?0:h,selfAuth:$('#xc-a').checked};
+ const n={strict:$('#xc-s').checked,closedMode:val('xc-m')==='saldo_inicial'?'saldo_inicial':'transito',approvalOver:isNaN(o)||o<0?0:o,transitAlertH:isNaN(h)||h<0?0:h,selfAuth:$('#xc-a').checked,noRubro:$('#xc-n').checked};
  const old=xfCfg();S.cfg.xfer=n;audit('TRASPASO_REGLAS','estricto '+old.strict+'→'+n.strict+' · cerradas '+old.closedMode+'→'+n.closedMode+' · supera '+money(old.approvalOver)+'→'+money(n.approvalOver)+' · alerta '+old.transitAlertH+'→'+n.transitAlertH+' h · autoautorización '+old.selfAuth+'→'+n.selfAuth);save();rerender();toast('Reglas guardadas');};
 
 /* ===== V26.9 · 4.23.4 / 4.23.5 Detalle de los cobros digitales (transferencia, débito, crédito, QR/MODO) =====
@@ -2876,7 +2884,7 @@ function couponCheck(cp,cust,base){const today=dkey(now());
  if(cp.perCust>0&&cust&&cp.uses.filter(u=>u.cust===cust.id).length>=cp.perCust)return'El cliente ya usó este cupón.';
  if(base<(cp.min||0))return'Compra mínima de '+money(cp.min)+' en productos con promoción.';return'';}
 const cpDisc=(cp,base)=>cp.type==='pct'?Math.round(base*cp.value/100):Math.min(cp.value,base);
-function applyBenefit(lines,custId,code){const cust=custById(custId);let base=0;lines.forEach(l=>{if(!noPromo(l))base+=Math.round(l.qty*l.price);});
+function applyBenefit(lines,custId,code){const cust=custById(custId);let base=0;lines.forEach(l=>{if(!noPromo(l))base+=(typeof lnAmt==="function"?lnAmt(l):Math.round(l.qty*l.price));});
  const out={disc:0,kind:'',label:'',code:'',couponId:'',couponErr:'',base};
  let cand=null;
  code=String(code||'').trim().toUpperCase();
@@ -2887,7 +2895,7 @@ function applyBenefit(lines,custId,code){const cust=custById(custId);let base=0;
  if(base===0&&(code||mb)&&!out.couponErr)out.note='Los productos de tabaco no participan de promociones ni descuentos.';
  return out;}
 /* reparte el descuento entre las líneas elegibles (resto al mayor decimal) */
-function allocDisc(lines,disc){const idx=[],bases=[];lines.forEach((l,i)=>{if(!noPromo(l)){idx.push(i);bases.push(Math.round(l.qty*l.price));}});const out=lines.map(()=>0);const B=bases.reduce((a,b)=>a+b,0);if(!disc||!B)return out;
+function allocDisc(lines,disc){const idx=[],bases=[];lines.forEach((l,i)=>{if(!noPromo(l)){idx.push(i);bases.push((typeof lnAmt==="function"?lnAmt(l):Math.round(l.qty*l.price)));}});const out=lines.map(()=>0);const B=bases.reduce((a,b)=>a+b,0);if(!disc||!B)return out;
  const ex=bases.map(b=>disc*b/B);const fl=ex.map(Math.floor);let rest=disc-fl.reduce((a,b)=>a+b,0);const ord=ex.map((e,i)=>[e-fl[i],i]).sort((a,b)=>b[0]-a[0]);for(let k=0;k<rest;k++)fl[ord[k%ord.length][1]]++;
  idx.forEach((li,k)=>{out[li]=Math.min(fl[k],bases[k]);});return out;}
 
@@ -3275,17 +3283,23 @@ function priceResolve(p,qty,ctx){
  if(ag){R.price=ag.price>0?ag.price:Math.round(p.price*(1-ag.pct/100));R.rule='ACU';R.list='ACU';R.agr=ag.id;R.why='Acuerdo especial'+(ag.pid?'':' (rubro)')+' · '+(ag.price>0?money(ag.price):ag.pct+' % off');return fin();}
  if(chan!=='mayorista')return fin();
  R.why='Unidad (precio de venta)';
- let hit=null,nx=null;
- for(const k of wsPres(p)){if(qty>=k.qty-1e-9)hit=k;else if(!nx)nx=k;}
- if(hit&&hit.unit<R.price){R.price=hit.unit;R.rule='P-'+hit.lv;R.list=wsLvName(hit.lv);R.pres=hit;R.why=R.list+' (desde '+numAR(hit.qty,3)+' u): '+money(hit.unit)+' por unidad';}
- if(nx&&nx.unit<R.price)R.missing='Faltan '+numAR(nx.qty-qty,3)+' u para el precio '+wsLvName(nx.lv)+' ('+money(nx.unit)+' por unidad)';
+ /* cobro POR TRAMOS: cada presentación completa va a su precio por unidad y el resto suelto al precio de venta (nunca se cobra todo al precio de la presentación) */
+ const P=wsPres(p).filter(k=>k.unit<p.price).reverse();let rem=qty,nx=null;const tr=[];
+ for(const k of P){const n=Math.floor(rem/k.qty+1e-9);if(n>0){tr.push({qty:Math.round(n*k.qty*1000)/1000,price:k.unit,rule:'P-'+k.lv,lst:wsLvName(k.lv)});rem=Math.round((rem-n*k.qty)*1000)/1000;}}
+ for(const k of wsPres(p)){if(k.unit<p.price&&qty<k.qty-1e-9){nx=k;break;}}
+ if(tr.length){if(rem>1e-9)tr.push({qty:rem,price:p.price,rule:'L1',lst:'Unidad'});
+  R.amt=tr.reduce((a,t)=>a+Math.round(t.qty*t.price),0);R.tr=tr;R.price=Math.round(R.amt/qty);
+  R.rule=tr.length===1?tr[0].rule:'MIX';R.list=tr.length===1?tr[0].lst:'Mixto';
+  R.why=tr.map(t=>numAR(t.qty,3)+' u '+t.lst+' a '+money(t.price)).join(' + ');}
+ if(nx)R.missing='Faltan '+numAR(nx.qty-qty,3)+' u para el precio '+wsLvName(nx.lv)+' ('+money(nx.unit)+' por unidad)';
  return fin();}
 /* recalcula las líneas del ticket en curso (las que no tienen precio puesto a mano) */
 function wsRecalc(){if(!wsOn()||typeof pos==='undefined')return;
  const cust=custById(pos.cust),chan=wsChan();const agg={};pos.lines.forEach(l=>agg[l.pid]=(agg[l.pid]||0)+l.qty);
  pos.lines.forEach(l=>{const p=prod(l.pid);if(!p)return;
-  if(l.man){l.rule='MAN';l.lst='';l.why='Precio puesto a mano (queda auditado)';l.miss='';return;}
-  const r=priceResolve(p,agg[l.pid],{cust,chan});
+  if(l.man){l.rule='MAN';l.lst='';l.why='Precio puesto a mano (queda auditado)';l.miss='';delete l.tr;delete l.amt;return;}
+  const dup=pos.lines.filter(x=>x.pid===l.pid).length>1;
+  const r=priceResolve(p,dup?l.qty:agg[l.pid],{cust,chan});l.tr=r.tr;l.amt=r.amt;
   if(l.price!==r.price){delete l.flrOk;}
   l.price=r.price;l.list=r.price;l.rule=r.rule;l.lst=r.list;l.base=r.base;l.why=r.why;l.miss=r.missing;});}
 /* validaciones y precios finales al cobrar (el mismo cálculo que la pantalla) */
@@ -3297,10 +3311,13 @@ function wsGate(lines,cust,opts){
   if(!conf.allowClub){if(opts.coupon)return{err:'Los cupones del Club no se aplican a ventas mayoristas.'};if(opts.stampCode)return{err:'Los sellos del Club no se otorgan en ventas mayoristas.'};}}
   const agg={};lines.forEach(l=>agg[l.pid]=(agg[l.pid]||0)+l.qty);
  for(const l of lines){const p=prod(l.pid);if(!p)continue;
-  if(l.man){l.rule='MAN';l.lst='';}
-  else{const r=priceResolve(p,agg[l.pid],{cust,chan});if(l.price!==r.price)delete l.flrOk;l.price=r.price;l.rule=r.rule;l.lst=r.list;l.base=r.base;l.why=r.why;}
-  if(p.floor>0&&l.price<p.floor&&!l.flrOk)return{err:'El precio de '+p.name+' ('+money(l.price)+') está por debajo del piso ('+money(p.floor)+'): lo tiene que autorizar un supervisor con motivo.'};}
+  if(l.man){l.rule='MAN';l.lst='';delete l.tr;delete l.amt;}
+  else{const dup=lines.filter(x=>x.pid===l.pid).length>1;const r=priceResolve(p,dup?l.qty:agg[l.pid],{cust,chan});l.tr=r.tr;l.amt=r.amt;if(l.price!==r.price)delete l.flrOk;l.price=r.price;l.rule=r.rule;l.lst=r.list;l.base=r.base;l.why=r.why;}
+  if(p.floor>0&&Math.min(l.price,...((l.tr||[]).map(t=>t.price)))<p.floor&&!l.flrOk)return{err:'El precio de '+p.name+' ('+money(l.price)+') está por debajo del piso ('+money(p.floor)+'): lo tiene que autorizar un supervisor con motivo.'};}
  return{chan,club:conf.allowClub};}
+/* importe exacto de una línea (con tramos) y desglose en renglones para guardar la venta: cada renglón cumple cantidad × precio */
+const lnAmt=l=>l.amt>0&&l.tr?l.amt:Math.round(l.qty*l.price);
+function wsSplit(lines){const out=[];lines.forEach(l=>{if(l.tr&&l.tr.length>1){l.tr.forEach(t=>out.push(Object.assign({},l,{qty:t.qty,price:t.price,rule:t.rule,lst:t.lst,list:t.price,tr:undefined,amt:undefined})));}else out.push(l.tr&&l.tr.length===1?Object.assign({},l,{rule:l.tr[0].rule,lst:l.tr[0].lst,tr:undefined,amt:undefined}):l);});return out;}
 const wsNoClub=()=>wsOn()&&wsChan()==='mayorista'&&!wsConf().allowClub;
 
 /* ---- crédito: límite + plazo + mora + excepción autorizada (4.22.2) ---- */
@@ -3718,7 +3735,7 @@ reg('integ','Integraciones','plug','integrations',()=>{const I=S.integ,G=I.googl
  <div class="card" style="margin-top:1rem"><div class="row"><h3 class="sp">Cobros digitales pendientes (webhook)</h3></div>${pend.length?`<div class="tw"><table><tbody>${pend.map(s=>`<tr><td>${esc(s.n)}</td><td>${esc(MET[s.method])}</td><td class="r">${money(s.total)}</td><td class="r"><button class="btn sm gold" data-act="whOk" data-id="${s.id}">Aprobado</button> <button class="btn sm" data-act="whDup" data-id="${s.id}">Repetir evento</button> <button class="btn sm red" data-act="whNo" data-id="${s.id}">Rechazado</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="sm mut">No hay cobros pendientes. Vendé con QR/MP o MODO para probar.</p>'}
   <p class="sm mut">"Repetir evento" muestra la idempotencia: el mismo aviso dos veces no duplica el cobro.</p></div>
  <div class="card" style="margin-top:1rem"><div class="row"><h3 class="sp">Cola de eventos (procesamiento asíncrono)</h3><label class="chk" style="margin:0"><input type="checkbox" id="sim-off" ${S.simOffline?'checked':''}> Simular caída de APIs externas</label><button class="btn sm" data-act="evProc">Procesar cola</button></div>
-  <p class="sm mut">El POS sigue vendiendo aunque las APIs fallen: los cobros digitales quedan pendientes y los eventos en cola hasta que vuelvan.</p><div class="tw"><table><thead><tr><th>Hora</th><th>Evento</th><th>Estado</th></tr></thead><tbody>${S.events.slice(-12).reverse().map(e=>`<tr><td>${hm(e.ts)}</td><td>${esc(EVL[e.type]||e.type)}</td><td><span class="tag ${e.status==='procesado'?'ok':'warn'}">${esc(e.status)}</span></td></tr>`).join('')||'<tr><td colspan="3" class="mut">Sin eventos.</td></tr>'}</tbody></table></div></div>${typeof onlineCard==='function'?onlineCard():''}${typeof walletCard==='function'?walletCard():''}`;},
+  <p class="sm mut">El POS sigue vendiendo aunque las APIs fallen: los cobros digitales quedan pendientes y los eventos en cola hasta que vuelvan.</p><div class="tw"><table><thead><tr><th>Hora</th><th>Evento</th><th>Estado</th></tr></thead><tbody>${S.events.slice(-12).reverse().map(e=>`<tr><td>${hm(e.ts)}</td><td>${esc(EVL[e.type]||e.type)}</td><td><span class="tag ${e.status==='procesado'?'ok':'warn'}">${esc(e.status)}</span></td></tr>`).join('')||'<tr><td colspan="3" class="mut">Sin eventos.</td></tr>'}</tbody></table></div></div>${typeof tnCard==='function'?tnCard():''}${typeof intPasosHtml==='function'?intPasosHtml():''}${typeof onlineCard==='function'?onlineCard():''}${typeof walletCard==='function'?walletCard():''}`;},
  ()=>{const s=$('#sim-off');s&&s.addEventListener('change',()=>{S.simOffline=s.checked;audit('SIMULAR_CAIDA_API',s.checked?'activada':'desactivada');if(!s.checked)processQueue();save();rerender();});},'Sistema');
 document.addEventListener('change',e=>{const t=e.target;if(curScreen!=='integ')return;if(t.dataset.fee){const v=parseNum(t.value===''?'0':t.value);if(isNaN(v)||v<0||v>100){toast('Porcentaje inválido (0 a 100).',1);return;}S.cfg.fee[t.dataset.fee]=v;audit('COMISION_PROVEEDOR',t.dataset.fee+' '+v+' %');save();}
  else if(t.dataset.cfg==='wa'||t.dataset.cfg==='waReport'){S.tenant[t.dataset.cfg]=t.value.replace(/\D/g,'');save();}else if(t.dataset.cfg==='gfolder'){S.integ.google.folder=t.value.trim()||'RAVE Respaldos';save();}});
@@ -3934,10 +3951,18 @@ const LOCAL={
   const medio=cmpTxt(p.medio_pago),rubro=cmpTxt(p.rubro_id),turno=cmpTxt(p.turno_id),ref=(cmpTxt(p.referencia)||'').slice(0,80);
   if(!medio||!CMP_MEDIOS[medio])cmpFail('indicá el medio de pago (efectivo, transferencia, cheque o tarjeta)');
   cmpRubroEgreso(rubro,true);
-  let mov=null;if(medio==='efectivo'){cmpTurnoAbierto(turno);mov=cmpMovCaja(turno,rubro,'Pago a proveedor '+prov.razon+(ref?' · '+ref:''),mc,'pago');}
-  prov.saldo-=mc;const e=cmpLedger(prov.id,'Pago',mc,prov.saldo,{ref,medio,rubro,movId:mov,key});
-  audit('PROVEEDOR_PAGO',prov.razon+' · '+money(mc)+' · '+medio);if(mov)emit('cash.movement',{type:'egreso',rubro,amount:mc});save();
-  return{ok:true,repetido:false,movimiento_id:e.id,monto,saldo_proveedor:c2p(prov.saldo),movimiento_caja_id:mov};});},
+  let mov=null,asig=null;
+  if(Array.isArray(p.asignaciones)&&p.asignaciones.length){ /* pago repartido entre cajas: un solo Pago, un egreso por caja, suma exacta; todo o nada (cmpAtomic revierte) */
+   if(medio!=='efectivo')cmpFail('el reparto entre cajas sólo corresponde a pagos en efectivo');
+   const seen=new Set();let suma=0;asig=p.asignaciones.map(a=>{const t=cmpTxt(a.turno_id),c=p2c(cmpNum(a.monto));
+    if(!t||!(c>0))cmpFail('cada caja del reparto necesita turno e importe mayor a cero');if(seen.has(t))cmpFail('una misma caja no puede repetirse en el reparto');seen.add(t);cmpTurnoAbierto(t);suma+=c;return{t,c};});
+   if(suma!==mc)cmpFail('el reparto entre cajas ('+c2p(suma)+') no suma el pago ('+monto+')');
+   asig.forEach(a=>{a.mov=cmpMovCaja(a.t,rubro,'Pago a proveedor '+prov.razon+(ref?' · '+ref:''),a.c,'pago');});
+  }else if(medio==='efectivo'){cmpTurnoAbierto(turno);mov=cmpMovCaja(turno,rubro,'Pago a proveedor '+prov.razon+(ref?' · '+ref:''),mc,'pago');}
+  prov.saldo-=mc;const e=cmpLedger(prov.id,'Pago',mc,prov.saldo,{ref,medio,rubro,movId:mov,key,asig:asig?asig.map(a=>({turno_id:a.t,monto:a.c,movId:a.mov})):undefined});
+  audit('PROVEEDOR_PAGO',prov.razon+' · '+money(mc)+' · '+medio+(asig?' · repartido en '+asig.length+' cajas':''));
+  if(mov)emit('cash.movement',{type:'egreso',rubro,amount:mc});if(asig)asig.forEach(a=>emit('cash.movement',{type:'egreso',rubro,amount:a.c}));save();
+  return{ok:true,repetido:false,movimiento_id:e.id,monto,saldo_proveedor:c2p(prov.saldo),movimiento_caja_id:mov,asignaciones:asig?asig.map(a=>({turno_id:a.t,monto:c2p(a.c),movimiento_caja_id:a.mov})):[]};});},
  async nc(p){cmpAcceso();return cmpAtomic(()=>{
   const key=cmpKeyOk(cmpTxt(p.idempotency_key));
   const prov=cmpProv(p.proveedor_id);if(!prov)cmpFail('el proveedor no existe en este comercio');
@@ -4163,7 +4188,7 @@ function cmpRemitoTab(){if(!crS)cmpNewRemito('');return `<div id="cr-box">${cmpR
 function cmpRemitoInner(){const c=crS;
  if(c.res)return cmpRemitoResult(c.res);
  const prov=cmpProv(c.prov);const ocs=prov?cmpArr('pOrders').filter(o=>o.provId===prov.id&&o.estado==='Solicitada').sort((a,b)=>b.num-a.num):[];
- const sess=openSess();const rubs=S.rubros.filter(r=>r.kind!=='cobr');
+ const sess=openSess();const rubs=S.rubros.filter(r=>r.kind!=='cobr'&&!r.sys);
  const contado=c.cond==='contado';
  return `<div class="cmp-form" id="cr-form" role="group" aria-label="Carga de remito">
   <fieldset class="cmp-card"><legend>1 · Proveedor y orden de compra</legend>
@@ -4291,20 +4316,38 @@ A.cmpRemitoGo=()=>{if(!crS||crS.busy)return;if(!can('purchases'))return toast('S
    catch(e){c.busy=false;w._err(e.message);return false;}}});};
 
 /* ---------- pagos y notas de crédito ---------- */
-A.cmpPay=el=>{if(!can('purchases'))return toast('Sin permiso',1);const s=cmpProv(el.dataset.id);if(!s)return;if(!(s.saldo>0)){toast('Este proveedor no tiene deuda',1);return;}
- const key=cmpKey();const rubs=S.rubros.filter(r=>r.kind!=='cobr');const sess=openSess();
+/* En la nube, repartir un pago entre cajas exige la migración 12 en el servidor: se detecta (la tabla existe) y, si falta, la opción no se ofrece. */
+const CMP12={ok:null};
+async function cmp12Probe(){try{await sel('pagos_proveedor_asignaciones?select=id&limit=1');CMP12.ok=true;}catch(e){CMP12.ok=(e&&(e.net||(e.status&&e.status!==404&&e.status!==400)))?null:false;}}
+A.cmpPay=async el=>{if(!can('purchases'))return toast('Sin permiso',1);const s=cmpProv(el.dataset.id);if(!s)return;if(!(s.saldo>0)){toast('Este proveedor no tiene deuda',1);return;}
+ if(typeof cmpCloud==='function'&&cmpCloud()&&CMP12.ok===null)await cmp12Probe();
+ const key=cmpKey();const noR=typeof xfCfg==='function'&&xfCfg().noRubro;const rubs=S.rubros.filter(r=>r.kind!=='cobr'&&!r.sys);const sess=openSess();
+ const abiertas=(S.sessions||[]).filter(x=>!x.closedAt);const multi=abiertas.length>1&&(!(typeof cmpCloud==='function'&&cmpCloud())||CMP12.ok===true);
+ const exp=ss=>{try{return arqueoCalc(ss,arqInputs(ss)).expectedCash;}catch(e){return 0;}};
+ const cajaN=ss=>esc(ss.regName||('Caja '+ss.caja));
  modal('Pago a '+s.razon,`<div class="cmp"><p>Deuda actual: <b class="neg">${money(s.saldo)}</b></p>
   <label for="pg-m">Importe ($)</label>${numIn('pg-m',0,'Ej.: 15.000','class="cmp-in"')}
   <label for="pg-med">Medio de pago</label><select id="pg-med" class="cmp-in">${Object.entries(CMP_MEDIOS).map(([k,t])=>`<option value="${k}">${t}</option>`).join('')}</select>
-  <label for="pg-r">Rubro del egreso (obligatorio)</label><select id="pg-r" class="cmp-in"><option value="">— Elegí un rubro —</option>${rubs.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</select>
+  ${noR?'':`<label for="pg-r">Rubro del egreso (obligatorio)</label><select id="pg-r" class="cmp-in"><option value="">— Elegí un rubro —</option>${rubs.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</select>`}
   <label for="pg-ref">Referencia (recibo, cheque, transferencia)</label><input id="pg-ref" class="cmp-in" maxlength="80" autocomplete="off">
+  ${multi?`<div id="pg-box"><label class="chk"><input type="checkbox" id="pg-rep"> Repartir el efectivo entre varias cajas</label>
+   <div id="pg-reps" hidden>${abiertas.map(ss=>`<div class="row"><span class="sp">${cajaN(ss)} <small class="mut">efectivo esperado ${money(exp(ss))}</small></span>${numIn('pgc-'+ss.id,0,'0','class="cmp-in" style="max-width:130px"')}</div>`).join('')}<p class="sm" id="pg-sum" role="status"></p></div></div>`:''}
   <p class="sm mut">${sess?'Si pagás en efectivo, sale de la caja '+esc(S.tenant.caja)+' (abierta).':'No hay caja abierta: el pago en efectivo no se puede registrar hasta abrirla.'}</p></div>`,
   {okText:'Registrar pago',onOk:async w=>{const m=parseNum(val('pg-m'));if(!(m>0)){w._err('Cargá un importe mayor a cero.');return false;}
    if(Math.round(m*100)>s.saldo){w._err('El pago no puede superar la deuda ('+money(s.saldo)+').');return false;}
-   const p={idempotency_key:key,proveedor_id:s.id,monto:m,medio_pago:val('pg-med'),rubro_id:val('pg-r'),referencia:val('pg-ref')};
+   const rid=noR?sysRubro('sys-pago-proveedor','Pago a proveedores'):val('pg-r');
+   const p={idempotency_key:key,proveedor_id:s.id,monto:m,medio_pago:val('pg-med'),rubro_id:rid,referencia:val('pg-ref')};
    if(!p.rubro_id){w._err('Elegí el rubro del egreso: es obligatorio.');return false;}
-   if(p.medio_pago==='efectivo'){if(!sess){w._err('No hay caja abierta. Abrila en Caja o elegí otro medio.');return false;}p.turno_id=sess.id;}
-   try{const r=await CMP.pagar(p);toast(r.repetido?'Ese pago ya estaba registrado':'Pago registrado');cmpAfterOp();}catch(e){w._err(e.message);return false;}}});};
+   const rep=multi&&$('#pg-rep',w)&&$('#pg-rep',w).checked;
+   if(p.medio_pago==='efectivo'&&rep){const A_=[];let suma=0;for(const ss of abiertas){const raw=val('pgc-'+ss.id).trim();if(raw==='')continue;const c=cents(raw);if(isNaN(c)||c<0){w._err('Importe inválido en '+(ss.regName||'una caja')+'.');return false;}if(c===0)continue;
+     if(c>exp(ss)){w._err((ss.regName||'La caja')+' no tiene tanto efectivo (esperado '+money(exp(ss))+').');return false;}A_.push({turno_id:ss.id,monto:c/100});suma+=c;}
+    if(!A_.length){w._err('Cargá cuánto sale de cada caja.');return false;}
+    if(suma!==Math.round(m*100)){w._err('El reparto suma '+money(suma)+' y el pago es '+money(Math.round(m*100))+'.');return false;}p.asignaciones=A_;}
+   else if(p.medio_pago==='efectivo'){if(!sess){w._err('No hay caja abierta. Abrila en Caja o elegí otro medio.');return false;}p.turno_id=sess.id;}
+   try{const r=await CMP.pagar(p);toast(r.repetido?'Ese pago ya estaba registrado':'Pago registrado');cmpAfterOp();}catch(e){w._err(e.message);return false;}}});
+ const root=$('#modal-root');const sync=()=>{const on=$('#pg-rep')&&$('#pg-rep').checked&&val('pg-med')==='efectivo';const bx=$('#pg-reps');if(bx)bx.hidden=!on;
+  if(on){let sm=0;abiertas.forEach(ss=>{const c=cents(val('pgc-'+ss.id)||'0');if(!isNaN(c))sm+=c;});const tot=Math.round((parseNum(val('pg-m'))||0)*100);const d=tot-sm;const o=$('#pg-sum');if(o)o.textContent=d===0&&tot>0?'✔ El reparto cubre el pago.':(d>0?'Faltan '+money(d)+' por repartir.':'Sobran '+money(-d)+'.');}};
+ if(root)root.addEventListener('input',sync);if(root)root.addEventListener('change',sync);};
 A.cmpNc=el=>{if(!can('purchases'))return toast('Sin permiso',1);const s=cmpProv(el.dataset.id);if(!s)return;const key=cmpKey();
  modal('Nota de crédito de '+s.razon,`<div class="cmp"><p>Saldo actual: ${cmpSaldoTag(s.saldo)}</p>
   <label for="nc-m">Importe ($)</label>${numIn('nc-m',0,'Ej.: 4.500','class="cmp-in"')}
@@ -5416,6 +5459,210 @@ A.arcProbar=el=>arcaGuard(el,async()=>{ARC.wiz.steps=null;ARC.wiz.msg='Probando�
 A.arcRe=el=>arcaGuard(el,async()=>{const s=S.sales.find(x=>x.id===el.dataset.id);if(!s)return;ARC.blocked.delete(s.id);
  if(s.arca&&s.arca.estado==='rechazado'){/* ARCA rechazó: sólo vale reintentar si se corrigió algo del lado de ARCA */}
  const r=await arcaEmit(s);toast(r.ok?'CAE obtenido':(r.msg||'Pendiente'),!r.ok);await arcaRender(true);});
+
+/* =====================================================================
+   TIENDANUBE (V26.13) + PASOS PARA CONECTAR LAS INTEGRACIONES
+   Con la nube del comercio configurada, todo pasa por la función "tiendanube" del servidor:
+   el navegador no ve nunca el token de la tienda ni el secreto de la app.
+   Sin nube (demo) la conexión es una SIMULACIÓN rotulada, con datos de ejemplo.
+   ===================================================================== */
+const TNC={st:null,prods:null,ords:null,at:0,busy:'',err:'',tab:'resumen',filt:'pendientes',loading:false,fnDown:false};
+const tnReal=()=>!!(CLOUD.on&&cl.ready);
+const tnSimS=()=>{if(!S.tn)S.tn={conn:false,store:'',cfg:{stock_fuente:'sistema',precio_fuente:'off',importar_ordenes:true},prods:[],ords:[],last:0,seq:0};return S.tn;};
+const TN_ESTADO_ORD={open:'Abierta',closed:'Cerrada',cancelled:'Cancelada'};
+const TN_ESTADO_PAGO={pending:'Pago pendiente',authorized:'Pago autorizado',paid:'Pagada',partially_paid:'Pago parcial',abandoned:'Abandonada',refunded:'Reembolsada',partially_refunded:'Reembolso parcial',voided:'Anulada'};
+const TN_ESTADO_ENV={unpacked:'Sin empacar',unshipped:'Sin enviar',partially_packed:'Empaque parcial',shipped:'Enviada',delivered:'Entregada',partially_fulfilled:'Envío parcial'};
+const tnFn=(accion,extra)=>hreq('/functions/v1/tiendanube',{method:'POST',fn:true,body:Object.assign({accion,comercio:cl.comercio.id},extra||{})});
+const tnWhen=t=>t?new Date(t).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'}):'—';
+const tnStockTxt=v=>v===null||v===undefined?'ilimitado':numAR(+v,0);
+
+/* ---------- estado (real o simulado) ---------- */
+function tnSimState(){const t=tnSimS();const vinc=t.prods.filter(p=>p.vinculo==='vinculado').length;
+ return{estado:t.conn?'conectada':'desconectada',store_id:t.conn?t.store:null,config:t.cfg,ultima_sync:t.last||null,ultimo_error:null,app_configurada:true,sim:true,
+  productos:{total:t.prods.length,vinculados:vinc,sugeridos:t.prods.filter(p=>p.vinculo==='sugerido').length,sin_vincular:t.prods.filter(p=>p.vinculo==='sin_vincular').length},
+  ordenes:{total:t.ords.length,pendientes:t.ords.filter(o=>o.venta_estado==='pendiente'&&o.estado!=='cancelled').length,por_cobrar:t.ords.filter(o=>o.venta_estado==='pendiente'&&o.pago_estado!=='paid').length},eventos_error:0,
+  url_webhook:'(simulado)',url_callback:'(simulado)'};}
+async function tnRefresh(force){
+ if(TNC.loading)return;if(!force&&TNC.st&&Date.now()-TNC.at<20000)return;TNC.loading=true;
+ try{
+  if(tnReal()){
+   if(!can('config')&&user&&user.role!=='supervisor'){TNC.st={estado:'sin_permiso'};TNC.at=Date.now();return;}
+   TNC.st=await tnFn('estado');TNC.fnDown=false;TNC.err='';
+   if(TNC.st.estado==='conectada'){
+    TNC.prods=await sel('tn_productos?comercio_id=eq.'+cl.comercio.id+'&select=variant_id,product_id,sku,barcode,nombre,precio_cents,stock,producto_local,vinculo&order=nombre&limit=1000');
+    TNC.ords=await rpc('tn_ordenes_listar',{p_comercio:cl.comercio.id,p_limite:100});
+   }else{TNC.prods=[];TNC.ords=[];}
+  }else{const t=tnSimS();TNC.st=tnSimState();TNC.prods=t.prods;TNC.ords=t.ords;}
+ }catch(e){
+  if(tnReal()){TNC.st=null;TNC.fnDown=true;TNC.err=(e&&e.status===404)?'La función «tiendanube» todavía no está instalada en tu Supabase (ver paso 4).':(e&&e.net)?'No se pudo contactar a la función «tiendanube»: sin conexión, o todavía no está instalada en tu Supabase (ver paso 4).':(e&&e.message)||'No se pudo consultar Tiendanube.';}
+ }finally{TNC.loading=false;TNC.at=Date.now();if(curScreen==='integ'&&!document.querySelector('#modal-root .ov'))rerender();}}
+
+/* ---------- pasos de conexión (todas las integraciones) ---------- */
+const INT_QUIEN={vos:'Lo hacés vos',vb:'Lo hace Vincular Business',prov:'Lo hace el proveedor'};
+function tnPasos(){const st=TNC.st||{},real=tnReal();
+ const ok=(c)=>!!c;
+ return[
+  {t:'Tener la nube del sistema funcionando',q:'vb',d:'Es el servidor propio del comercio (Supabase). Sin esto Tiendanube sólo funciona como simulación de prueba.',done:ok(real||st.sim)},
+  {t:'Crear la aplicación en el Portal de Socios de Tiendanube',q:'vb',d:'Se crea una app (tipo «privada» para un solo comercio, o pública) y se obtienen el <b>ID de la app</b> y el <b>secreto</b>. En «URL de redirección» va la dirección de conexión que figura abajo. Permisos de lectura de productos y órdenes, y de escritura de productos si querés que el sistema actualice stock/precio [VERIFICAR nombres de permisos en el portal].',done:ok(st.app_configurada&&!st.sim)||!!st.sim},
+  {t:'Cargar los secretos en el servidor',q:'vb',d:'<code>TN_APP_ID</code>, <code>TN_CLIENT_SECRET</code>, <code>TN_MASTER_KEY</code> (32 bytes en base64) y <code>APP_URL</code> (la dirección de este sistema). Se cargan por el panel de Supabase, nunca en el HTML, nunca por chat.',done:ok(st.app_configurada&&!st.sim)||!!st.sim},
+  {t:'Instalar la función y la migración',q:'vb',d:'Ejecutar <code>13-tiendanube.sql</code> y desplegar la función <code>tiendanube</code> («Verify JWT» apagado: la función valida la sesión adentro). Esta pantalla lo detecta sola.',done:ok(!TNC.fnDown&&(st.app_configurada||st.sim))},
+  {t:'Autorizar la tienda',q:'vos',d:'Tocás <b>Conectar tienda</b>, iniciás sesión en Tiendanube con el usuario dueño de la tienda y aceptás los permisos. Volvés acá solo. El código dura 5 minutos.',done:st.estado==='conectada'},
+  {t:'Traer los productos y vincularlos',q:'vos',d:'<b>Traer productos</b> sugiere el vínculo por código de barras; vos confirmás cada uno. Un producto del sistema se vincula con <b>una</b> sola variante de la tienda.',done:!!(st.productos&&st.productos.vinculados>0)},
+  {t:'Elegir quién manda sobre el stock y el precio',q:'vos',d:'Por defecto manda el sistema para el stock y nadie para el precio. Podés apagarlo todo y usar la integración sólo para ver las órdenes.',done:st.estado==='conectada'&&!!(st.config&&st.config.stock_fuente)},
+  {t:'Recibir las órdenes y registrarlas como ventas',q:'vos',d:'Las órdenes llegan solas (avisos de Tiendanube) o con <b>Traer órdenes</b>. Una orden <b>nunca</b> crea una venta sola: la registrás vos cuando está paga, con una caja abierta.',done:!!(st.ordenes&&st.ordenes.total>0)}
+ ];}
+const INT_PASOS={
+ nube:{t:'Nube del sistema (Supabase)',steps:[
+  ['Crear el proyecto en Supabase y anotar la URL y la clave <b>publicable</b>','vb'],['Pegar <code>INSTALAR-TODO.sql</code> en el editor SQL y ejecutarlo una vez','vb'],['Desactivar «Confirm email» en Authentication','vb'],['Publicar el sistema con la URL y la clave publicable (nunca la clave <code>secret</code>)','vb'],['Crear el comercio desde el primer equipo y <b>guardar el código de recuperación</b> (se muestra una sola vez)','vos'],['Agregar equipos y personas desde Usuarios y permisos','vos']]},
+ arca:{t:'Facturación electrónica (ARCA)',steps:[
+  ['Tener la nube configurada y la función <code>arca</code> desplegada','vb'],['Cargar los datos del emisor (CUIT, razón social, condición frente al IVA, punto de venta «Web Services»)','vos'],['Generar la clave y el pedido de certificado (CSR) desde Administración → ARCA','vos'],['Crear el certificado en el sitio de ARCA con tu clave fiscal y pegarlo acá','vos'],['Autorizar el servicio de facturación y probar la conexión en homologación','vos'],['Recién con la prueba aprobada, pasar a producción','vos']]},
+ mp:{t:'Mercado Pago',steps:[
+  ['Tener una cuenta de vendedor y crear una aplicación en su panel de desarrolladores','prov'],['Cargar el Access Token como secreto del servidor (nunca en el HTML)','vb'],['Registrar la URL del webhook firmada','vb'],['Probar en sandbox: aprobado, rechazado, pendiente y aviso repetido','vb'],['Pasar a producción con una compra real chica','vos']],pend:true},
+ modo:{t:'MODO',steps:[
+  ['Habilitar MODO con tu banco o procesadora','prov'],['Cargar las credenciales como secreto del servidor','vb'],['Registrar el webhook y probar en sandbox','vb']],pend:true},
+ pya:{t:'PedidosYa',steps:[
+  ['Pedir el acceso a la API de integración a PedidosYa','prov'],['Cargar las credenciales en el servidor y registrar el webhook','vb'],['Probar con un pedido de prueba antes de abrirlo al público','vos']],pend:true},
+ google:{t:'Google (Drive y Gmail)',steps:[
+  ['Crear el proyecto en Google Cloud y la pantalla de consentimiento','vb'],['Cargar el ID y secreto de cliente como secretos del servidor','vb'],['Cada comercio autoriza su propia cuenta con permisos mínimos (<code>drive.file</code>, enviar correo)','vos']],pend:true},
+ wa:{t:'WhatsApp Business (envío automático)',steps:[
+  ['Tener una cuenta de WhatsApp Business verificada en Meta','prov'],['Aprobar las plantillas de mensaje','prov'],['Cargar el token como secreto del servidor y registrar el webhook','vb']],pend:true}
+};
+function intPasosHtml(){
+ const li=(s,i,done)=>`<li style="margin:.35rem 0"><span class="tag ${done?'ok':''}">${done?'✔ hecho':'○ '+(i+1)}</span> ${s.t||s[0]} <span class="tag" style="opacity:.75">${INT_QUIEN[s.q||s[1]]}</span>${s.d?`<div class="sm mut">${s.d}</div>`:''}</li>`;
+ const dn={nube:tnReal()};
+ return `<div class="card" style="margin-top:1rem"><div class="row"><h3 class="sp">Pasos para conectar cada integración</h3></div><p class="sm mut">Cada conexión tiene pasos que hacés vos, pasos que hace Vincular Business en el servidor y pasos que depende del proveedor. Los secretos <b>nunca</b> se cargan en este archivo.</p>
+ ${Object.keys(INT_PASOS).map(k=>{const g=INT_PASOS[k];return `<details style="margin:.4rem 0"><summary style="min-height:44px;cursor:pointer"><b>${g.t}</b>${g.pend&&IS_CLIENT?' <span class="tag warn">pendiente de configuración</span>':''}</summary><ol class="sm" style="list-style:none;padding:0">${g.steps.map((s,i)=>li(s,i,k==='nube'&&i<4&&dn.nube)).join('')}</ol></details>`;}).join('')}</div>`;}
+
+/* ---------- tarjeta de Tiendanube ---------- */
+function tnCard(){
+ if(!tnReal()){const t=tnSimS();TNC.st=tnSimState();TNC.prods=t.prods;TNC.ords=t.ords;TNC.fnDown=false;}
+ else if(!TNC.loading&&!TNC.fnDown&&(!TNC.st||Date.now()-TNC.at>30000))setTimeout(()=>tnRefresh(true),0);
+ const st=TNC.st,adm=can('config'),sim=!tnReal(),real=tnReal();
+ const q=new URLSearchParams(location.search);if(q.get('tn')){const ok=q.get('tn')==='ok';setTimeout(()=>{toast(ok?'Tienda de Tiendanube conectada.':'No se pudo conectar: '+(q.get('motivo')||'error'),!ok);history.replaceState(null,'',location.pathname+location.hash);TNC.at=0;tnRefresh(true);},50);}
+ const head=(tag)=>`<div class="row"><h3 class="sp">Tiendanube</h3>${sim?`<span class="tag sim">${IS_CLIENT?'REQUIERE LA NUBE':'SIMULADO'}</span>`:''}${tag}</div>`;
+ if(sim&&IS_CLIENT)return `<div class="card" style="margin-top:1rem" id="tn-card">${head('<span class="tag warn">Pendiente de configuración</span>')}<p class="sm mut">Para conectar tu tienda de Tiendanube el sistema necesita la nube del comercio (la integración corre en el servidor, no en este archivo). Seguí los pasos de abajo.</p></div>`;
+ if(!st){return `<div class="card" style="margin-top:1rem" id="tn-card">${head('<span class="tag warn">'+(TNC.fnDown?'Sin respuesta de la función':'Consultando…')+'</span>')}${TNC.err?`<div class="warnbox">${esc(TNC.err)}</div>`:'<p class="sm mut">Consultando el estado…</p>'}
+  <ol class="sm" style="list-style:none;padding:0">${tnPasos().map((s,i)=>`<li style="margin:.3rem 0"><span class="tag ${s.done?'ok':''}">${s.done?'✔':'○'}</span> ${s.t} <span class="tag" style="opacity:.75">${INT_QUIEN[s.q]}</span></li>`).join('')}</ol><button class="btn" data-act="tnReload">Volver a consultar</button></div>`;}
+ if(st.estado==='sin_permiso')return `<div class="card" style="margin-top:1rem" id="tn-card">${head('')}<p class="sm mut">Tu rol no administra la integración con Tiendanube.</p></div>`;
+ const con=st.estado==='conectada',cfg=st.config||{},P=st.productos||{},O=st.ordenes||{};
+ const tagE=`<span class="tag ${con?'ok':st.estado==='revocada'?'bad':''}">${con?'Conectada · tienda '+esc(String(st.store_id)):st.estado==='revocada'?'La tienda desinstaló la app':'Desconectada'}</span>`;
+ const tab=(k,t,n)=>`<button class="btn ${TNC.tab===k?'gold':''}" data-act="tnTab" data-k="${k}" style="min-height:44px">${t}${n?` <span class="tag">${n}</span>`:''}</button>`;
+ let body='';
+ if(!con){
+  body=`${st.estado==='revocada'?'<div class="warnbox">La tienda quitó la aplicación. Podés volver a conectarla.</div>':''}
+   ${!st.app_configurada?'<div class="warnbox">El servidor todavía no tiene cargados los datos de la app de Tiendanube (pasos 2 y 3). Mientras tanto no se puede autorizar.</div>':''}
+   ${sim?'<div class="warnbox"><b>Conexión simulada.</b> En la demo se crean productos y órdenes de <b>ejemplo</b> para mostrar el flujo; no se contacta a Tiendanube.</div>':''}
+   <ol class="sm" style="list-style:none;padding:0">${tnPasos().map((s,i)=>`<li style="margin:.4rem 0"><span class="tag ${s.done?'ok':''}">${s.done?'✔ hecho':'○ '+(i+1)}</span> <b>${s.t}</b> <span class="tag" style="opacity:.75">${INT_QUIEN[s.q]}</span><div class="sm mut">${s.d}</div></li>`).join('')}</ol>
+   ${real&&st.url_callback?`<p class="sm">Dirección de conexión (URL de redirección en el portal): <code>${esc(st.url_callback)}</code><br>Dirección de avisos (webhooks, se registra sola): <code>${esc(st.url_webhook)}</code></p>`:''}
+   <div class="row"><button class="btn gold" data-act="${sim?'tnSimConnect':'tnConnect'}" ${adm&&(st.app_configurada||sim)?'':'disabled'}>Conectar tienda${sim?' (simulado)':''}</button></div>${adm?'':'<p class="sm mut">Sólo el administrador conecta la tienda.</p>'}`;
+ }else{
+  const k=(n,l)=>`<div class="card" style="margin:0"><div class="sm mut">${l}</div><b style="font-size:1.3rem">${n}</b></div>`;
+  let panel='';
+  if(TNC.tab==='resumen'){
+   panel=`<div class="grid g2" style="margin:.5rem 0">${k(P.total||0,'Variantes en la tienda')}${k((P.vinculados||0)+' / '+(P.total||0),'Vinculadas con el sistema')}${k(O.pendientes||0,'Órdenes por registrar')}${k(O.por_cobrar||0,'…de ellas, sin pagar todavía')}</div>
+    <p class="sm mut">Última sincronización: <b>${tnWhen(st.ultima_sync)}</b>${st.eventos_error?` · <span class="tag bad">${st.eventos_error} aviso(s) con error esta semana</span>`:''}</p>${st.ultimo_error?`<div class="warnbox sm">${esc(st.ultimo_error)}</div>`:''}
+    <div class="row" style="flex-wrap:wrap;gap:.4rem"><button class="btn" data-act="tnSyncP" ${TNC.busy?'disabled':''}>Traer productos</button><button class="btn" data-act="tnSyncO" ${TNC.busy||cfg.importar_ordenes!==true?'disabled':''}>Traer órdenes</button><button class="btn" data-act="tnPush" ${TNC.busy||!adm||(cfg.stock_fuente!=='sistema'&&cfg.precio_fuente!=='sistema')?'disabled':''}>Enviar stock y precios${sim?' (simulado)':''}</button>${real&&adm?'<button class="btn" data-act="tnAvisos">Registrar avisos</button>':''}</div>${TNC.busy?`<p class="sm mut">${esc(TNC.busy)}…</p>`:''}`;
+  }else if(TNC.tab==='productos'){
+   const f=TNC.filt,rows=(TNC.prods||[]).filter(p=>f==='todos'||(f==='pendientes'?(p.vinculo==='sin_vincular'||p.vinculo==='sugerido'):p.vinculo===f));
+   const loc=S.products.filter(p=>p.active!==false).slice().sort((a,b)=>a.name.localeCompare(b.name,'es'));
+   const opt=sel=>`<option value="">— elegir producto —</option>`+loc.map(p=>`<option value="${esc(p.id)}" ${sel===p.id?'selected':''}>${esc(p.name)}${p.barcode?' · '+esc(p.barcode):''}</option>`).join('');
+   panel=`<div class="row" style="flex-wrap:wrap;gap:.3rem;margin:.4rem 0">${[['pendientes','Por revisar'],['vinculado','Vinculadas'],['ignorado','Ignoradas'],['todos','Todas']].map(([a,b])=>`<button class="btn ${f===a?'gold':''}" data-act="tnFilt" data-k="${a}" style="min-height:44px">${b}</button>`).join('')}</div>
+    <div class="tw"><table><thead><tr><th>Variante en la tienda</th><th>Código</th><th class="r">Precio</th><th class="r">Stock</th><th>Producto del sistema</th><th></th></tr></thead><tbody>${rows.map(p=>{const lp=p.producto_local?prod(p.producto_local):null;
+     return `<tr><td>${esc(p.nombre)}</td><td class="sm">${esc(p.barcode||p.sku||'—')}</td><td class="r">${p.precio_cents==null?'—':money(p.precio_cents)}</td><td class="r">${tnStockTxt(p.stock)}</td>
+     <td>${p.vinculo==='vinculado'?`<span class="tag ok">vinculado</span> ${lp?esc(lp.name):'<span class="tag bad">producto borrado</span>'}`:`<select data-tnsel="${p.variant_id}" aria-label="Producto del sistema para ${esc(p.nombre)}" style="min-height:44px;max-width:240px">${opt(p.producto_local||'')}</select>${p.vinculo==='sugerido'?' <span class="tag warn">sugerido por código</span>':''}`}</td>
+     <td class="r" style="white-space:nowrap">${p.vinculo==='vinculado'?`<button class="btn sm" data-act="tnUnlink" data-v="${p.variant_id}" style="min-height:44px">Desvincular</button>`:`<button class="btn sm gold" data-act="tnLink" data-v="${p.variant_id}" style="min-height:44px">Vincular</button> <button class="btn sm" data-act="tnIgn" data-v="${p.variant_id}" style="min-height:44px">Ignorar</button>`}</td></tr>`;}).join('')||'<tr><td colspan="6" class="mut">Nada para mostrar. Probá «Traer productos» en Resumen.</td></tr>'}</tbody></table></div>`;
+  }else if(TNC.tab==='ordenes'){
+   const rows=TNC.ords||[];
+   panel=`<div class="tw"><table><thead><tr><th>N.º</th><th>Fecha</th><th>Cliente</th><th>Estado</th><th class="r">Total</th><th></th></tr></thead><tbody>${rows.map(o=>`<tr><td><b>#${esc(String(o.numero||o.orden_id))}</b>${sim?' <span class="tag sim">ejemplo</span>':''}</td><td class="sm">${tnWhen(o.tn_creada)}</td><td>${esc((o.cliente||{}).nombre||'—')}</td>
+    <td class="sm"><span class="tag ${o.estado==='cancelled'?'bad':''}">${esc(TN_ESTADO_ORD[o.estado]||o.estado)}</span> <span class="tag ${o.pago_estado==='paid'?'ok':'warn'}">${esc(TN_ESTADO_PAGO[o.pago_estado]||o.pago_estado)}</span> <span class="tag">${esc(TN_ESTADO_ENV[o.envio_estado]||o.envio_estado)}</span></td>
+    <td class="r">${money(o.total_cents)}<div class="sm mut">${(o.items||[]).map(i=>esc(i.nombre)+' ×'+i.qty).join(', ')}</div></td>
+    <td class="r" style="white-space:nowrap">${o.venta_estado==='registrada'?'<span class="tag ok">venta registrada</span>':o.venta_estado==='ignorada'?'<span class="tag">ignorada</span>':o.estado==='cancelled'?'':`<button class="btn sm gold" data-act="tnReg" data-id="${o.orden_id}" style="min-height:44px" ${o.pago_estado==='paid'?'':'disabled title="Esperá a que esté paga"'}>Registrar venta</button> <button class="btn sm" data-act="tnOrdIgn" data-id="${o.orden_id}" style="min-height:44px">Ignorar</button>`}</td></tr>`).join('')||'<tr><td colspan="6" class="mut">Sin órdenes. Probá «Traer órdenes» en Resumen.</td></tr>'}</tbody></table></div>
+    <p class="sm mut">Registrar la venta descuenta el stock del sistema, entra a la caja abierta como transferencia ya verificada por Tiendanube y queda con el canal «tiendanube». El envío que cobró la tienda no forma parte de la venta.</p>`;
+  }else if(TNC.tab==='config'){
+   const o=(v,l,c)=>`<option value="${v}" ${c===v?'selected':''}>${l}</option>`;
+   panel=`<p class="sm mut">Definí quién manda. Con «el sistema», los cambios van del sistema hacia la tienda y no al revés. Los productos que no vinculaste nunca se tocan.</p>
+    <label for="tn-sf">Stock</label><select id="tn-sf" ${adm?'':'disabled'}>${o('sistema','Manda el sistema (se envía a la tienda)',cfg.stock_fuente)}${o('tiendanube','Manda la tienda (sólo lectura acá)',cfg.stock_fuente)}${o('off','No sincronizar',cfg.stock_fuente)}</select>
+    <label for="tn-pf">Precio</label><select id="tn-pf" ${adm?'':'disabled'}>${o('off','No sincronizar',cfg.precio_fuente)}${o('sistema','Manda el sistema (se envía a la tienda)',cfg.precio_fuente)}${o('tiendanube','Manda la tienda (sólo lectura acá)',cfg.precio_fuente)}</select>
+    <label class="chk" style="margin-top:.5rem"><input type="checkbox" id="tn-io" ${cfg.importar_ordenes===true?'checked':''} ${adm?'':'disabled'}> Traer las órdenes de la tienda (no crea ventas solas)</label>
+    <div class="row" style="margin-top:.6rem;flex-wrap:wrap;gap:.4rem"><button class="btn gold" data-act="tnCfg" ${adm?'':'disabled'}>Guardar</button><button class="btn red" data-act="tnDisc" ${adm?'':'disabled'}>Desconectar tienda</button></div>
+    <p class="sm mut">Al desconectar se borra el acceso guardado y se dan de baja los avisos. Para quitar la app por completo, hacelo también desde el administrador de Tiendanube.</p>`;
+  }else{
+   panel=`<ol class="sm" style="list-style:none;padding:0">${tnPasos().map((s,i)=>`<li style="margin:.4rem 0"><span class="tag ${s.done?'ok':''}">${s.done?'✔ hecho':'○ '+(i+1)}</span> <b>${s.t}</b> <span class="tag" style="opacity:.75">${INT_QUIEN[s.q]}</span><div class="sm mut">${s.d}</div></li>`).join('')}</ol>`;
+  }
+  body=`<div class="row" style="flex-wrap:wrap;gap:.3rem;margin:.4rem 0">${tab('resumen','Resumen')}${tab('productos','Productos',P.sin_vincular+P.sugeridos||0)}${tab('ordenes','Órdenes',O.pendientes||0)}${tab('config','Configuración')}${tab('pasos','Pasos')}</div>${panel}`;
+ }
+ return `<div class="card" style="margin-top:1rem" id="tn-card">${head(tagE)}
+  <p class="sm mut">Conectá tu tienda online: el sistema trae los productos y las órdenes, y puede enviar stock y precios. ${sim?'':'El acceso a la tienda vive sólo en el servidor.'}</p>${body}</div>`;}
+
+/* ---------- acciones ---------- */
+const tnRun=async(txt,fn)=>{if(TNC.busy)return;TNC.busy=txt;rerender();try{const r=await fn();return r;}catch(e){toast((e&&e.message)||'No se pudo completar.',1);}finally{TNC.busy='';TNC.at=0;await tnRefresh(true);}};
+A.tnReload=()=>{TNC.at=0;TNC.err='';TNC.fnDown=false;tnRefresh(true);};
+A.tnTab=el=>{TNC.tab=el.dataset.k;rerender();};
+A.tnFilt=el=>{TNC.filt=el.dataset.k;rerender();};
+A.tnConnect=()=>{if(!can('config'))return toast('Sólo el administrador.',1);
+ tnRun('Preparando la conexión',async()=>{const r=await tnFn('iniciar');if(!r||!/^https:\/\//.test(r.url||''))throw new Error('El servidor no devolvió una dirección válida.');
+  audit('TIENDANUBE_CONEXION_INICIADA','');save();
+  modal('Conectar con Tiendanube',`<p>Se abre Tiendanube en otra pestaña. Iniciá sesión con el usuario dueño de la tienda y aceptá los permisos. Al terminar volvés a este sistema solo.</p><p class="sm mut">El enlace vale 10 minutos y se usa una sola vez.</p>`,{okText:'Abrir Tiendanube',onOk:()=>{openExternal(r.url);}});});};
+A.tnDisc=()=>{if(!can('config'))return;confirmBox('Desconectar la tienda','Se borra el acceso guardado y se dan de baja los avisos. Los productos y órdenes ya traídos se conservan. ¿Seguimos?',()=>{
+ if(tnReal())tnRun('Desconectando',async()=>{await tnFn('desconectar');audit('TIENDANUBE_DESCONECTADA','');save();toast('Tienda desconectada.');});
+ else{tnSimS().conn=false;audit('TIENDANUBE_DESCONECTADA_SIM','');save();TNC.at=0;tnRefresh(true);}},'Desconectar');};
+A.tnAvisos=()=>tnRun('Registrando avisos',async()=>{const r=await tnFn('registrar_avisos');toast(r.registrados?r.registrados+' aviso(s) registrados.':'Los avisos ya estaban registrados.');});
+A.tnCfg=()=>{if(!can('config'))return;const c={stock_fuente:val('tn-sf'),precio_fuente:val('tn-pf'),importar_ordenes:!!document.getElementById('tn-io').checked};
+ tnRun('Guardando',async()=>{if(tnReal()){const r=await rpc('tn_config_guardar',{p_comercio:cl.comercio.id,p:c});if(!r.ok)throw new Error(r.error||'No se pudo guardar.');}else Object.assign(tnSimS().cfg,c);audit('TIENDANUBE_CONFIG',JSON.stringify(c));save();toast('Configuración guardada.');});};
+A.tnSyncP=()=>tnRun('Trayendo productos',async()=>{
+ if(tnReal()){const r=await tnFn('sincronizar_productos');toast(r.variantes+' variantes traídas · '+r.sugeridos+' con vínculo sugerido');}
+ else{const t=tnSimS();if(!t.prods.length)tnSimSeed();t.last=now();toast('Simulado: productos de ejemplo traídos.');}
+ audit('TIENDANUBE_PRODUCTOS','');save();});
+A.tnSyncO=()=>tnRun('Trayendo órdenes',async()=>{
+ if(tnReal()){const r=await tnFn('importar_ordenes');toast(r.total+' órdenes leídas · '+r.ok+' nuevas o cambiadas');}
+ else{const t=tnSimS();if(!t.prods.length)tnSimSeed();tnSimOrder(true);t.last=now();toast('Simulado: llegó una orden de ejemplo.');}
+ audit('TIENDANUBE_ORDENES','');save();});
+A.tnPush=()=>{if(!can('config'))return;tnRun('Enviando',async()=>{
+ if(tnReal()){const r=await tnFn('empujar');toast('Stock: '+r.stock+' · Precio: '+r.precio+' · sin cambios: '+r.sin_cambios+(r.errores?' · con error: '+r.errores:''),r.errores?1:0);}
+ else{const t=tnSimS();let n=0;t.prods.filter(p=>p.vinculo==='vinculado').forEach(p=>{const l=prod(p.producto_local);if(!l)return;const s=Math.max(0,Math.floor(l.stock));if(t.cfg.stock_fuente==='sistema'&&p.stock!==s){p.stock=s;n++;}if(t.cfg.precio_fuente==='sistema'&&p.precio_cents!==l.price){p.precio_cents=l.price;n++;}});toast('Simulado: '+n+' cambio(s) enviados a la tienda de ejemplo.');}
+ audit('TIENDANUBE_ENVIO','');save();});};
+function tnSelVal(v){const e=document.querySelector(`[data-tnsel="${v}"]`);return e?e.value:'';}
+A.tnLink=el=>{const v=+el.dataset.v,pid=tnSelVal(v);if(!pid)return toast('Elegí el producto del sistema.',1);
+ tnRun('Vinculando',async()=>{if(tnReal()){const r=await rpc('tn_vincular',{p_comercio:cl.comercio.id,p_variant:v,p_producto:pid});if(!r.ok)throw new Error(r.error);}
+  else{const t=tnSimS();if(t.prods.some(p=>p.producto_local===pid&&p.vinculo==='vinculado'&&p.variant_id!==v))throw new Error('Ese producto ya está vinculado con otra variante.');const p=t.prods.find(x=>x.variant_id===v);p.producto_local=pid;p.vinculo='vinculado';}
+  audit('TIENDANUBE_VINCULO',v+' → '+pid);save();toast('Vinculado.');});};
+const tnVinc=(v,vinc,msg)=>tnRun('Guardando',async()=>{if(tnReal()){const r=await rpc('tn_vincular',{p_comercio:cl.comercio.id,p_variant:v,p_producto:null,p_vinculo:vinc});if(!r.ok)throw new Error(r.error);}
+ else{const p=tnSimS().prods.find(x=>x.variant_id===v);p.vinculo=vinc;p.producto_local=null;}audit('TIENDANUBE_VINCULO',v+' '+vinc);save();toast(msg);});
+A.tnUnlink=el=>tnVinc(+el.dataset.v,'sin_vincular','Desvinculado.');
+A.tnIgn=el=>tnVinc(+el.dataset.v,'ignorado','Ignorada: no se sincroniza.');
+A.tnOrdIgn=el=>{const id=+el.dataset.id;confirmBox('Ignorar la orden','No se va a registrar como venta. Sigue visible en la tienda. ¿Ignorarla?',()=>tnRun('Guardando',async()=>{
+ if(tnReal()){const r=await rpc('tn_orden_registrar',{p_comercio:cl.comercio.id,p_orden:id,p_venta:null,p_ignorar:true});if(!r.ok)throw new Error(r.error);}else{tnSimS().ords.find(o=>o.orden_id===id).venta_estado='ignorada';}
+ audit('TIENDANUBE_ORDEN_IGNORADA','#'+id);save();}),'Ignorar');};
+A.tnReg=el=>{const id=+el.dataset.id,o=(TNC.ords||[]).find(x=>x.orden_id===id);if(!o)return;
+ if(o.pago_estado!=='paid')return toast('La orden todavía no está paga en Tiendanube.',1);
+ if(o.estado==='cancelled')return toast('La orden está cancelada.',1);
+ if(!openSess())return toast('Abrí una caja para registrar la venta.',1);
+ const falta=(o.items||[]).filter(i=>!i.producto_local||!prod(i.producto_local));
+ if(falta.length)return toast('Vinculá primero: '+falta.map(i=>i.nombre).join(', ')+' (pestaña Productos).',1);
+ const body=`<table class="sm"><tbody>${o.items.map(i=>`<tr><td>${esc(prod(i.producto_local).name)} × ${i.qty}</td><td class="r">${money(i.qty*i.precio_cents)}</td></tr>`).join('')}</tbody></table>
+  ${o.descuento_cents?`<p class="sm">Descuento de la tienda: − ${money(o.descuento_cents)}</p>`:''}<p><b>Total de la venta: ${money(o.items.reduce((a,i)=>a+i.qty*i.precio_cents,0)-(o.descuento_cents||0))}</b></p>
+  ${o.envio_cents?`<p class="sm mut">La tienda cobró ${money(o.envio_cents)} de envío: no entra en esta venta.</p>`:''}<p class="sm mut">Entra a la caja abierta como transferencia ya cobrada por Tiendanube. Se descuenta el stock de cada producto.</p>`;
+ modal('Registrar la orden #'+(o.numero||o.orden_id)+' como venta',body,{okText:'Registrar venta',onOk:async w=>{
+  const saleId=uid();
+  try{if(tnReal()){const r=await rpc('tn_orden_registrar',{p_comercio:cl.comercio.id,p_orden:id,p_venta:saleId});if(!r.ok){w._err(r.error||'No se pudo reservar la orden.');return false;}if(r.repetido){toast('Esa orden ya fue registrada como venta.',1);TNC.at=0;tnRefresh(true);return;}}}
+  catch(e){w._err((e&&e.message)||'Sin conexión: no se registró nada.');return false;}
+  const lines=o.items.map(i=>{const p=prod(i.producto_local);return{pid:p.id,name:p.name,rubro:p.rubro,qty:i.qty,price:i.precio_cents,cost:p.cost,unit:p.unit,list:p.price};});
+  const r=commitSale('transferencia',false,'tiendanube',lines,{saleId,extraDisc:o.descuento_cents||0,tnOrder:id,pdSkip:true});
+  if(r.err){if(tnReal()){try{await rpc('tn_orden_liberar',{p_comercio:cl.comercio.id,p_orden:id,p_venta:saleId});}catch(e){}}w._err(r.err);return false;}
+  if(!tnReal()){const so=tnSimS().ords.find(x=>x.orden_id===id);so.venta_estado='registrada';so.venta_local=r.sale.id;}
+  audit('TIENDANUBE_VENTA','#'+(o.numero||id)+' → '+r.sale.n);save();toast('Venta '+r.sale.n+' registrada.');TNC.at=0;tnRefresh(true);setTimeout(rerender,60);}});};
+
+/* ---------- simulación de la demo (datos de EJEMPLO) ---------- */
+A.tnSimConnect=()=>{const t=tnSimS();t.conn=true;t.store='EJEMPLO-001';tnSimSeed();t.last=now();audit('TIENDANUBE_CONECTADA_SIM','');save();TNC.at=0;toast('Tienda de ejemplo conectada (simulado).');tnRefresh(true);};
+function tnSimSeed(){const t=tnSimS();if(t.prods.length)return;const ps=S.products.filter(p=>p.active!==false).slice(0,6);
+ ps.forEach((p,i)=>t.prods.push({variant_id:9000+i,product_id:900+i,sku:'',barcode:p.barcode||'',nombre:p.name+' (ejemplo)',precio_cents:p.price,stock:Math.max(0,Math.floor(p.stock)),producto_local:i<4?p.id:null,vinculo:i<3?'sugerido':i===3?'sugerido':'sin_vincular'}));
+ t.prods.push({variant_id:9099,product_id:999,sku:'EJ-1',barcode:'',nombre:'Producto sólo de la tienda (ejemplo)',precio_cents:99000,stock:null,producto_local:null,vinculo:'sin_vincular'});
+ tnSimOrder(false);tnSimOrder(true);}
+function tnSimOrder(paid){const t=tnSimS();const pr=t.prods.filter(p=>p.vinculo==='vinculado'||p.vinculo==='sugerido').filter(p=>p.producto_local);if(!pr.length)return;
+ t.seq=(t.seq||0)+1;const a=pr[(t.seq)%pr.length],b=pr[(t.seq+1)%pr.length];const items=[{variant_id:a.variant_id,nombre:a.nombre,qty:1,precio_cents:a.precio_cents,producto_local:a.producto_local}];if(b!==a)items.push({variant_id:b.variant_id,nombre:b.nombre,qty:2,precio_cents:b.precio_cents,producto_local:b.producto_local});
+ const sub=items.reduce((s,i)=>s+i.qty*i.precio_cents,0);const idn=7000+t.seq;
+ t.ords.unshift({orden_id:idn,numero:100+t.seq,estado:'open',pago_estado:paid?'paid':'pending',envio_estado:'unpacked',total_cents:sub,subtotal_cents:sub,descuento_cents:0,envio_cents:0,moneda:'ARS',medio_pago:'ejemplo',cliente:{nombre:['Ana (ejemplo)','Luis (ejemplo)','Marta (ejemplo)'][t.seq%3]},items,tn_creada:new Date().toISOString(),tn_actualizada:new Date().toISOString(),venta_estado:'pendiente',venta_local:null});}
+/* aceptar la sugerencia del selector sin tocar nada más: el valor ya viene preseleccionado en el <select> */
 
 /* =====================================================================
    MENÚ PÚBLICO: MODALIDAD «LOCAL» O «TIENDA CON ENVÍOS» (V26.10 · 4.26)
