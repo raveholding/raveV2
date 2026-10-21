@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-20 12:06 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-21 04:32 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -880,9 +880,9 @@ function allocFees(s){const fee=s.fee||0;const tots=s.items.map(lineTotal);const
 const repartRubros=()=>S.rubros.filter(r=>r.kind==='rubro'&&r.reparte);
 function arqInputs(sess){const d=S.arqDraft[sess.id]||{};const emp=S.employees.find(e=>e.id===d.empId)||null;
  const hrs=parseNum(d.hours);const rt=(d.rate!==undefined&&d.rate!=='')?cents(d.rate):(emp?emp.rate:0);
- const mer=cents(d.merienda),gas=cents(d.gastos),dec=(d.declared===undefined||d.declared==='')?NaN:cents(d.declared);
- const taxes={};repartRubros().forEach(r=>{const t=d.taxes&&d.taxes[r.id];taxes[r.id]=(t!==undefined&&t!=='')?(cents(t)||0):(S.cfg.tax[r.id]||0);});
- return{emp,hours:isNaN(hrs)?0:hrs,rate:isNaN(rt)?0:rt,merienda:isNaN(mer)?0:mer,gastosManual:isNaN(gas)?0:gas,declared:dec,taxes,
+ const gas=cents(d.gastos),dec=(d.declared===undefined||d.declared==='')?NaN:cents(d.declared);
+ const taxes={};repartRubros().forEach(r=>{const t=d.taxes&&d.taxes[r.id];taxes[r.id]=(t!==undefined&&t!=='')?(cents(t)||0):(S.cfg.tax[r.id]!==undefined?(S.cfg.tax[r.id]||0):3000000);});
+ return{emp,hours:isNaN(hrs)?0:hrs,rate:isNaN(rt)?0:rt,merienda:0,gastosManual:isNaN(gas)?0:gas,declared:dec,taxes,
   payFromCash:d.payFromCash!==undefined?!!d.payFromCash:S.cfg.payFromCash,detailAll:!!d.detailAll,mono:d.mono!==false,notes:d.notes||''};}
 function arqueoCalc(sess,inp){
  const sales=S.sales.filter(s=>s.sessId===sess.id&&s.status==='ok');
@@ -891,22 +891,27 @@ function arqueoCalc(sess,inp){
  let aCtaCte=0,vueltoTot=0;
  sales.forEach(s=>{const L=salePays(s);L.forEach(pp=>{const m=byMethod[pp.m]||(byMethod[pp.m]={n:0,gross:0,fee:0});m.n++;m.gross+=pp.a;m.fee+=(L.length>1?(pp.fee||0):(s.fee||0));});total+=s.total;aCtaCte+=saleFiadoAmt(s);vueltoTot+=s.vuelto||0;});
  const cobrado=total-aCtaCte;
- const R={};S.rubros.forEach(r=>R[r.id]={sold:0,profit:0,fees:0,mov:0,items:{}});
- sales.forEach(s=>{const fees=allocFees(s);s.items.forEach((it,i)=>{const q=R[it.rubro];if(!q)return;const t=lineTotal(it);q.sold+=t;q.profit+=t-lineCost(it);q.fees+=fees[i];const e=q.items[it.name]||(q.items[it.name]={qty:0,total:0});e.qty+=it.qty;e.total+=t;});});
+ const R={};S.rubros.forEach(r=>R[r.id]={sold:0,profit:0,fees:0,mov:0,items:{},cash:0,dig:0,fia:0,ing:0,egr:0});
+ sales.forEach(s=>{const fees=allocFees(s);s.items.forEach((it,i)=>{const q=R[it.rubro];if(!q)return;const t=lineTotal(it);q.sold+=t;q.profit+=t-lineCost(it);q.fees+=fees[i];const e=q.items[it.name]||(q.items[it.name]={qty:0,total:0});e.qty+=it.qty;e.total+=t;});
+  {const tots=s.items.map(lineTotal);const T=tots.reduce((a,b)=>a+b,0);
+   if(T>0)salePays(s).forEach(pp=>{const k=pp.m==='efectivo'?'cash':(pp.m==='fiado'?'fia':'dig');let acc=0;s.items.forEach((it,i)=>{const sh=i===tots.length-1?pp.a-acc:Math.round(pp.a*tots[i]/T);acc+=sh;if(R[it.rubro])R[it.rubro][k]+=sh;});});}});
  const movs=S.movs.filter(m=>m.sessId===sess.id);let ing=0,egr=0,gAuto=0;
- movs.forEach(m=>{if(m.type==='ingreso')ing+=m.amount;else egr+=m.amount;const r=rub(m.rubro);if(!r)return;
+ movs.forEach(m=>{if(m.type==='ingreso')ing+=m.amount;else egr+=m.amount;const r=rub(m.rubro);if(!r)return;if(r.kind==='rubro'&&R[r.id]){if(m.type==='ingreso')R[r.id].ing+=m.amount;else R[r.id].egr+=m.amount;}
   if(r.kind==='shared'){if(m.type==='egreso')gAuto+=m.amount;}else if(S.cfg.movAffectProfit){R[r.id].mov+=(m.type==='ingreso'?m.amount:-m.amount);}});
- const sueldo=Math.round(inp.hours*inp.rate),mer=inp.merienda,gastos=gAuto+inp.gastosManual;
- const rp=repartRubros(),n=rp.length;const sS=split(sueldo,n),sM=split(mer,n),sG=split(gastos,n);
+ const sueldo=Math.round(inp.hours*inp.rate),mer=0,gastos=gAuto+inp.gastosManual;
+ const rp=repartRubros(),n=rp.length;const sS=split(sueldo,n),sM=split(mer,n),gaS=split(gAuto,n),gmS=split(inp.gastosManual,n),sG=gaS.map((v,i)=>v+gmS[i]);
  const reparte=rp.map((r,i)=>{const q=R[r.id];const base=q.profit-q.fees+q.mov;const pre=base-sS[i]-sM[i]-sG[i];const tax=inp.taxes[r.id]||0;
-  const cubierto=Math.max(0,Math.min(pre,tax));return{id:r.id,name:r.name,owner:r.owner,sold:q.sold,profit:q.profit-q.fees,mov:q.mov,sueldo:sS[i],merienda:sM[i],gastos:sG[i],base,pre,tax,cubierto,falta:tax-cubierto,net:pre-tax};});
- const otros=S.rubros.filter(r=>r.kind==='rubro'&&!r.reparte).map(r=>{const q=R[r.id];return{id:r.id,name:r.name,owner:r.owner,sold:q.sold,profit:q.profit-q.fees,mov:q.mov,net:q.profit-q.fees+q.mov};});
+  const cubierto=Math.max(0,Math.min(pre,tax));const fis=q.cash+q.ing-q.egr-gaS[i]-(inp.payFromCash?(sS[i]+gmS[i]):0);
+  return{id:r.id,name:r.name,owner:r.owner,sold:q.sold,profit:q.profit-q.fees,mov:q.mov,sueldo:sS[i],merienda:0,gastos:sG[i],base,pre,tax,cubierto,falta:tax-cubierto,net:pre-tax,cash:q.cash,dig:q.dig,fia:q.fia,ing:q.ing,egr:q.egr,fis};});
+ const pool=(S.cfg.profitMode||'pool')==='pool'&&n>0;const netSum=reparte.reduce((a,r)=>a+r.net,0);const fin=split(netSum,n);reparte.forEach((r,i)=>{r.final=pool?fin[i]:r.net;});
+ const otros=S.rubros.filter(r=>r.kind==='rubro'&&!r.reparte).map(r=>{const q=R[r.id];return{id:r.id,name:r.name,owner:r.owner,sold:q.sold,profit:q.profit-q.fees,mov:q.mov,net:q.profit-q.fees+q.mov,cash:q.cash,dig:q.dig,fia:q.fia,ing:q.ing,egr:q.egr,fis:q.cash+q.ing-q.egr};});
  const cashSales=(byMethod.efectivo||{}).gross||0;const tr=(typeof transfersFor==='function')?transfersFor(sess):{tin:0,tout:0,list:[]};
- const paid=inp.payFromCash?(sueldo+mer+inp.gastosManual):0;
+ const paid=inp.payFromCash?(sueldo+inp.gastosManual):0;
  const expectedCash=sess.opening+cashSales+ing-egr-paid+tr.tin-tr.tout;
  const declared=inp.declared;const diff=isNaN(declared)?0:declared-expectedCash;
+ const fondo=sess.opening+tr.tin-tr.tout;const fisSum=reparte.concat(otros).reduce((a,r)=>a+r.fis,0);const resto=expectedCash-fondo-fisSum;
  return{total,cobrado,aCtaCte,vueltoTot,count:sales.length,byMethod,pend:{n:pend.length,total:pend.reduce((a,s)=>a+s.total,0)},rub:R,ing,egr,gAuto,gManual:inp.gastosManual,gastos,sueldo,merienda:mer,
-  detMissing:typeof pdMissingCount==='function'?pdMissingCount(sess):0,empName:inp.emp?inp.emp.name:'',hours:inp.hours,rate:inp.rate,reparte,otros,cashSales,paid,opening:sess.opening,tin:tr.tin,tout:tr.tout,transfers:tr.list,expectedCash,declared:isNaN(declared)?null:declared,diff,
+  detMissing:typeof pdMissingCount==='function'?pdMissingCount(sess):0,empName:inp.emp?inp.emp.name:'',hours:inp.hours,rate:inp.rate,reparte,otros,pool,netSum,fondo,resto,cashSales,paid,opening:sess.opening,tin:tr.tin,tout:tr.tout,transfers:tr.list,expectedCash,declared:isNaN(declared)?null:declared,diff,
   movs:movs.map(m=>({ts:m.ts,type:m.type,rubro:m.rubroName||rubName(m.rubro),concept:m.concept,amount:m.amount,user:m.user}))};}
 function buildReport(a,dayKey,who,inp){
  const L=[];const P=(t,cls)=>L.push({t,cls:cls||''});
@@ -918,17 +923,22 @@ function buildReport(a,dayKey,who,inp){
  if(a.vueltoTot>0)P('Vuelto entregado en el turno : '+money(a.vueltoTot)+' (ya descontado del efectivo)');
  if(a.pend.n)P('⚠ Cobros digitales pendientes de confirmar: '+a.pend.n+' · '+money(a.pend.total),'w');
  if(a.detMissing)P('⚠ Cobros digitales sin el detalle del comprobante: '+a.detMissing,'w');
- P('');P('POR RUBRO :','h');
- a.reparte.concat(a.otros).forEach(r=>{let t=r.name+(r.owner?' ('+r.owner+')':'')+' : vendió '+money(r.sold)+' · ganancia '+money(r.profit);if(r.mov)t+=' · mov. '+money(r.mov);P(t);});
- if(a.sueldo||a.merienda||a.gastos){P('');P((a.empName?a.empName.toUpperCase():'EMPLEADO')+' :'+(a.hours?' '+numAR(a.hours)+' hs × '+money(a.rate):''),'h');
-  a.reparte.forEach(r=>P('SUELDO '+(r.owner||r.name)[0].toUpperCase()+' : '+money(r.sueldo)));
-  a.reparte.forEach(r=>P('MERIENDA '+(r.owner||r.name)[0].toUpperCase()+' : '+money(r.merienda)));
-  P('GASTOS : '+money(a.gastos)+(a.gAuto&&a.gManual?' (caja '+money(a.gAuto)+' + otros '+money(a.gManual)+')':'')+' · se reparte');}
- if(a.reparte.length){P('');P('IMPUESTOS :','h');
- a.reparte.forEach(r=>{P(r.owner.toUpperCase()+' : '+money(r.tax)+(r.falta>0?' · NO CUBIERTO, faltan '+money(r.falta):''),r.falta>0?'w':'');});
- P('');P('GANANCIA :','h');
- a.reparte.forEach(r=>P(r.owner.toUpperCase()+' : '+money(r.net),r.net<0?'w':''));
- a.otros.forEach(r=>P(r.name+(r.owner?' ('+r.owner+')':'')+' : '+money(r.net),r.net<0?'w':''));}
+ P('');P('POR RUBRO (cada rubro es una persona) :','h');
+ a.reparte.concat(a.otros).forEach(r=>{P('');P((r.owner?r.owner.toUpperCase()+' — ':'')+r.name,'h');
+  P('  Vendió : '+money(r.sold));P('  Ganancia de ventas : '+money(r.profit));
+  if(r.ing||r.egr)P('  Movimientos : ingresos '+money(r.ing)+' · egresos '+money(r.egr));
+  P('  Efectivo cobrado : '+money(r.cash||0)+(r.dig?' · digital '+money(r.dig):'')+(r.fia?' · a cuenta corriente '+money(r.fia):''));
+  P('  CAJA FÍSICA DEL RUBRO : '+money(r.fis||0),'h');});
+ if(a.fondo)P('');if(a.fondo)P('Fondo de apertura y traspasos (no son de ningún rubro) : '+money(a.fondo));
+ if(a.reparte.length){P('');P('LIQUIDACIÓN :','h');
+  if(a.sueldo)P((a.empName?a.empName.toUpperCase():'EMPLEADO')+(a.hours?' '+numAR(a.hours)+' hs × '+money(a.rate):'')+' = '+money(a.sueldo)+' · a medias:');
+  a.reparte.forEach(r=>{if(a.sueldo)P('  Sueldo '+(r.owner||r.name)+' : - '+money(r.sueldo));});
+  if(a.gastos)a.reparte.forEach(r=>P('  Gastos '+(r.owner||r.name)+' : - '+money(r.gastos)+(r===a.reparte[0]&&a.gAuto&&a.gManual?' (caja '+money(a.gAuto)+' + otros '+money(a.gManual)+', a medias)':'')));
+  a.reparte.forEach(r=>P('  Impuesto '+(r.owner||r.name)+' (se separa) : - '+money(r.tax)+(r.falta>0?' · NO CUBIERTO, faltan '+money(r.falta):''),r.falta>0?'w':''));
+  P('');P(a.pool?'GANANCIA (lo que queda; se divide a partes iguales) :':'GANANCIA DE CADA UNO :','h');
+  a.reparte.forEach(r=>P('  Ganancia propia de '+(r.owner||r.name)+' (ventas − sueldo − gastos − impuesto) : '+money(r.net),r.net<0?'w':''));
+  if(a.pool){P('  TOTAL A DIVIDIR : '+money(a.netSum),a.netSum<0?'w':'h');a.reparte.forEach(r=>P('  A '+(r.owner||r.name).toUpperCase()+' LE CORRESPONDE : '+money(r.final),r.final<0?'w':'h'));}
+  a.otros.forEach(r=>P(r.name+(r.owner?' ('+r.owner+')':'')+' : '+money(r.net),r.net<0?'w':''));}
  if(a.declared!==null){P('');P('EFECTIVO : esperado '+money(a.expectedCash)+' · declarado '+money(a.declared)+' · '+(a.diff===0?'sin diferencia':(a.diff>0?'sobrante ':'faltante ')+money(Math.abs(a.diff))),a.diff<0?'w':'');}
  const det=a.reparte.concat(a.otros).filter(r=>(inp.detailAll||!S.rubros.find(x=>x.id===r.id).reparte)&&r.sold>0);
  det.forEach(r=>{P('');P(r.name+(r.owner?' ('+r.owner+')':'')+' — total vendido '+money(r.sold),'h');Object.keys(a.rub[r.id].items).forEach(k=>{const it=a.rub[r.id].items[k];P('  · '+k+' x'+numAR(it.qty,3)+' — '+money(it.total));});});
@@ -962,7 +972,7 @@ function addMov(type,rubroId,concept,amount){const e=validRubro(rubroId,type);if
  audit(type==='ingreso'?'INGRESO_CAJA':'EGRESO_CAJA',rubName(rubroId)+' · '+m.concept+' · '+money(amount));emit('cash.movement',{type,rubro:rubroId,amount});save();return'';}
 function movModal(type,pref){if(!can('cash_mov'))return toast('Sin permiso',1);if(!openSess()){toast('Abrí la caja primero (Caja → Abrir caja)',1);return;}
  const opts=S.rubros.filter(r=>type==='egreso'?r.kind!=='cobr':r.kind!=='shared');
- const w=modal(type==='ingreso'?'Ingreso de efectivo':'Egreso de efectivo',`<label for="mv-r">Rubro (obligatorio)</label><select id="mv-r"><option value="">— Elegí un rubro —</option>${opts.map(r=>`<option value="${r.id}">${esc(r.name)}${r.owner?' ('+esc(r.owner)+')':''}</option>`).join('')}</select>
+ const w=modal(type==='ingreso'?'Ingreso de efectivo':'Egreso de efectivo',`<p class="sm mut">${type==='ingreso'?'Suma efectivo a la caja del rubro que elijas.':'Resta de la caja del rubro que elijas (por ejemplo, un pago entre socios).'}</p><label for="mv-r">Rubro / persona de quien es la caja (obligatorio)</label><select id="mv-r"><option value="">— Elegí un rubro —</option>${opts.map(r=>`<option value="${r.id}">${esc(r.name)}${r.owner?' ('+esc(r.owner)+')':''}</option>`).join('')}</select>
  <label for="mv-c">Motivo / concepto</label><input id="mv-c" maxlength="120" placeholder="Ej.: pago a proveedor, reintegro, retiro" autocomplete="off" value="${esc(pref||'')}">
  <label for="mv-a">Importe ($)</label>${numIn('mv-a',0,'0')}`,{okText:'Guardar',onOk:w=>{const e=addMov(type,val('mv-r'),val('mv-c'),cents(val('mv-a')));if(e){w._err(e);return false;}toast('Movimiento guardado');rerender();}});}
 A.mov=el=>movModal(el.dataset.type);
@@ -1114,6 +1124,7 @@ reg('caja','Caja','cash','cash_mov',()=>{const s=openSess();
  return `<div class="row"><h1 class="sp">Caja ${S.tenant.caja}${cashHdr(s)}</h1>${expBar('movimientos')}<button class="btn gold" data-act="nav" data-id="arqueo">Arqueo y cierre →</button></div>
  ${old?`<div class="errbox">Esta caja se abrió el ${dmy(dkey(s.openedAt))} y sigue abierta: hay días con ventas sin cierre.</div>`:''}
  <div class="grid g4"><div class="card kpi"><b>${money(s.opening)}</b><span>Apertura (${esc(s.openedBy)} · ${fmtDT(s.openedAt)})</span></div><div class="card kpi"><b>${money(a.total)}</b><span>Ventas confirmadas (${a.count})</span></div><div class="card kpi"><b>${money(a.cobrado)}</b><span>Cobrado real hoy</span></div>${a.aCtaCte?`<div class="card kpi"><b class="neg">${money(a.aCtaCte)}</b><span>A cuenta corriente (no entró a caja)</span></div>`:''}<div class="card kpi"><b>${money(a.expectedCash)}</b><span>Efectivo esperado hoy</span></div>${a.pend.n?`<div class="card kpi"><b class="neg">${a.pend.n}</b><span>Cobros digitales pendientes · ${money(a.pend.total)}</span></div>`:''}</div>
+ ${typeof rubCashCard==='function'?rubCashCard(s):''}
  <div class="row" style="margin:1rem 0"><button class="btn" data-act="mov" data-type="ingreso">+ Ingreso de efectivo</button><button class="btn" data-act="mov" data-type="egreso">− Egreso de efectivo</button></div>
  <div class="card"><h3>Movimientos</h3><div class="tw"><table><thead><tr><th>Hora</th><th>Tipo</th><th>Rubro</th><th>Concepto</th><th class="r">Importe</th><th>Usuario</th><th></th></tr></thead><tbody>${ms.map(m=>`<tr><td>${hm(m.ts)}</td><td>${m.type==='ingreso'?'<span class="tag ok">Ingreso</span>':'<span class="tag bad">Egreso</span>'}</td><td>${esc(m.rubroName)}</td><td>${esc(m.concept)}</td><td class="r">${m.type==='ingreso'?'':'- '}${money(m.amount)}</td><td>${esc(m.user)}</td><td>${typeof expBtn==='function'?expBtn('mov',m.id,'Expediente'):''}</td></tr>`).join('')||'<tr><td colspan="7" class="mut">Sin movimientos.</td></tr>'}</tbody></table></div></div>
  ${xferPendingCard(s)}
@@ -1133,24 +1144,24 @@ reg('arqueo','Arqueo / cierre','list','close_cash',()=>{const s=openSess();if(!s
  <div class="grid g2" style="align-items:start"><div class="card"><h3>1 · Sueldo del empleado</h3>
  <label for="aq-emp">Empleado</label><select id="aq-emp" data-aq="empId"><option value="">— Sin empleado —</option>${emps.map(e=>`<option value="${e.id}" ${d.empId===e.id?'selected':''}>${esc(e.name)}</option>`).join('')}</select>
  <div class="grid g2"><div><label for="aq-h">Horas trabajadas</label><input id="aq-h" data-aq="hours" inputmode="decimal" placeholder="0" value="${esc(d.hours||'')}" autocomplete="off"><div class="sm mut" id="aq-fich"></div></div><div><label for="aq-r">Valor hora ($)</label><input id="aq-r" data-aq="rate" inputmode="decimal" placeholder="valor del empleado" value="${esc(d.rate||'')}" autocomplete="off"></div></div>
- <div class="grid g2"><div><label for="aq-m">Merienda ($) — entra en el sueldo final</label><input id="aq-m" data-aq="merienda" inputmode="decimal" placeholder="0" value="${esc(d.merienda||'')}" autocomplete="off"></div><div><label for="aq-g">Otros gastos del día ($)</label><input id="aq-g" data-aq="gastos" inputmode="decimal" placeholder="0" value="${esc(d.gastos||'')}" autocomplete="off"></div></div>
- <p class="sm mut">Sueldo, merienda y gastos se reparten en partes iguales entre: <b>${rp.map(r=>esc(r.owner)).join(' y ')||'(nadie: marcá rubros que reparten en Configuración)'}</b>. Los egresos de caja con rubro "Gastos generales" se suman solos a los gastos.</p>
+ <label for="aq-g">Otros gastos del día ($)</label><input id="aq-g" data-aq="gastos" inputmode="decimal" placeholder="0" value="${esc(d.gastos||'')}" autocomplete="off">
+ <p class="sm mut">El sueldo (la merienda ya está incluida en las horas) y los gastos se reparten a medias entre: <b>${rp.map(r=>esc(r.owner)).join(' y ')||'(nadie: marcá rubros que reparten en Configuración)'}</b>. Los egresos de caja con rubro "Gastos generales" se suman solos a los gastos.</p>
  <h3 style="margin-top:1rem">2 · Impuestos del día (editable)</h3><div class="grid g2">${rp.map(r=>`<div><label for="aq-t-${r.id}">${esc(r.owner)} (${esc(r.name)}) $</label><input id="aq-t-${r.id}" data-aq="tax" data-rid="${r.id}" inputmode="decimal" placeholder="${esc(pesosStr(S.cfg.tax[r.id]||0)||'0')}" value="${esc((d.taxes&&d.taxes[r.id])||'')}" autocomplete="off"></div>`).join('')}</div>
- <p class="sm mut">Orden: primero se separa el sueldo del empleado, después el impuesto de cada uno y lo que sobra es ganancia. Si no alcanza, se marca en rojo.</p>
+ <p class="sm mut">Orden: sueldo a medias → gastos → impuesto (editable, por defecto $30.000 cada uno) → lo que sobra es la ganancia. Si no alcanza, se marca en rojo.</p>${can('config')?`<label for="aq-pm">La ganancia final</label><select id="aq-pm"><option value="pool" ${(S.cfg.profitMode||'pool')==='pool'?'selected':''}>se suma y se divide a partes iguales</option><option value="each" ${S.cfg.profitMode==='each'?'selected':''}>cada uno se queda con la suya</option></select>`:''}
  <h3 style="margin-top:1rem">3 · Efectivo</h3><label for="aq-d">Efectivo contado en caja ($)</label><input id="aq-d" data-aq="declared" inputmode="decimal" placeholder="Escribí el número" value="${esc(d.declared||'')}" autocomplete="off">
- <label class="chk"><input type="checkbox" data-aq="payFromCash" id="aq-pc" ${(d.payFromCash!==undefined?d.payFromCash:S.cfg.payFromCash)?'checked':''}> El sueldo, la merienda y los gastos manuales se pagaron de la caja</label>
+ <label class="chk"><input type="checkbox" data-aq="payFromCash" id="aq-pc" ${(d.payFromCash!==undefined?d.payFromCash:S.cfg.payFromCash)?'checked':''}> El sueldo y los gastos manuales se pagaron de la caja</label>
  <label class="chk"><input type="checkbox" data-aq="detailAll" ${d.detailAll?'checked':''}> Incluir detalle de productos de todos los rubros</label>
  <label class="chk"><input type="checkbox" data-aq="mono" ${d.mono!==false?'checked':''}> Formato monoespaciado de WhatsApp (\`\`\`)</label>
  <label for="aq-n">Observaciones del cierre</label><input id="aq-n" data-aq="notes" maxlength="200" value="${esc(d.notes||'')}"></div>
- <div class="card"><div class="row"><h3 class="sp">Texto para WhatsApp</h3></div><div class="rep" id="arq-prev" aria-live="polite"></div><div id="arq-warn"></div>
+ <div><div class="card" id="arq-tabs"></div><div class="card"><div class="row"><h3 class="sp">Texto para WhatsApp</h3></div><div class="rep" id="arq-prev" aria-live="polite"></div><div id="arq-warn"></div>
  <div class="row" style="margin-top:.8rem"><button class="btn" data-act="arqCopy">Copiar</button><button class="btn" data-act="arqWa">WhatsApp</button><button class="btn" data-act="arqWeb">WhatsApp Web</button><button class="btn" data-act="arqMail">Correo</button></div>
- <button class="btn gold" style="width:100%;margin-top:.8rem;min-height:52px" data-act="arqClose">Confirmar cierre de caja</button></div></div>`;},
+ <button class="btn gold" style="width:100%;margin-top:.8rem;min-height:52px" data-act="arqClose">Confirmar cierre de caja</button></div></div></div>`;},
  ()=>{arqPreview();arqFich();},'Operación');
 function arqFich(){const s=openSess();if(!s)return;const d=arqDraft(s);const el=$('#aq-fich');if(!el)return;if(!d.empId){el.textContent='';return;}const h=hoursOn(d.empId,dkey(s.openedAt)===dkey(now())?dkey(now()):dkey(s.openedAt));
  el.innerHTML=h.h>0||h.flag?`Fichaje: <b>${numAR(h.h,2)} hs</b>${h.flag?' ⚠ falta fichar entrada o salida':''} <button class="btn sm" data-act="arqUseFich">Usar</button>`:'Sin fichadas hoy.';}
 A.arqUseFich=()=>{const s=openSess();const d=arqDraft(s);const h=hoursOn(d.empId,dkey(now()));d.hours=h.h?numAR(h.h,2):'';audit('ARQUEO_HORAS_FICHAJE',empName(d.empId)+' '+d.hours+' hs');save();rerender();};
 function arqCtx(){const s=openSess();if(!s)return null;const inp=arqInputs(s);const a=arqueoCalc(s,inp);const L=buildReport(a,dkey(now()),user.name,inp);return{s,inp,a,L};}
-function arqPreview(){const c=arqCtx();if(!c)return;const p=$('#arq-prev');if(p)p.innerHTML=reportHTML(c.L);const w=$('#arq-warn');if(w){let h='';if(c.a.pend.n)h+=`<div class="warnbox">Hay ${c.a.pend.n} cobro(s) digital(es) pendiente(s) que NO están en el total.</div>`;if(c.a.detMissing)h+=`<div class="warnbox">${c.a.detMissing} cobro(s) digital(es) sin el detalle del comprobante: completalos en «Cobros a conciliar» (Caja).</div>`;
+function arqPreview(){const c=arqCtx();if(!c)return;const p=$('#arq-prev');if(p)p.innerHTML=reportHTML(c.L);const tb=$('#arq-tabs');if(tb)tb.innerHTML=arqTablesHTML(c.a);const w=$('#arq-warn');if(w){let h='';if(c.a.pend.n)h+=`<div class="warnbox">Hay ${c.a.pend.n} cobro(s) digital(es) pendiente(s) que NO están en el total.</div>`;if(c.a.detMissing)h+=`<div class="warnbox">${c.a.detMissing} cobro(s) digital(es) sin el detalle del comprobante: completalos en «Cobros a conciliar» (Caja).</div>`;
  const f=c.a.reparte.filter(r=>r.falta>0);if(f.length)h+=`<div class="errbox">Impuesto no cubierto: ${f.map(r=>esc(r.owner)+' faltan '+money(r.falta)).join(' · ')}</div>`;w.innerHTML=h;}}
 document.addEventListener('input',e=>{const t=e.target;if(!t.dataset||!t.dataset.aq||curScreen!=='arqueo')return;const s=openSess();if(!s)return;const d=arqDraft(s);const k=t.dataset.aq;
  if(k==='tax'){d.taxes[t.dataset.rid]=t.value;}else if(t.type==='checkbox'){d[k]=t.checked;}else if(k==='empId'){return;}else d[k]=t.value;save();arqPreview();});
@@ -1170,7 +1181,7 @@ A.arqClose=()=>{const c=arqCtx();if(!c)return;if(c.a.declared===null)return toas
 const verifyClosure=c=>c.hash===sha256(JSON.stringify({data:c.data,text:c.text,ts:c.ts,user:c.user,sess:c.sessId}));
 reg('cierres','Cajas cerradas','lock','close_cash',()=>`<div class="row"><h1 class="sp">Cajas cerradas</h1>${expBar('cierres')}</div><div class="card"><div class="tw"><table><thead><tr><th>Fecha</th><th>Caja</th><th>Cerró</th><th class="r">Ventas</th><th class="r">Diferencia</th><th>Sello</th><th></th></tr></thead><tbody>${S.closures.slice().reverse().map(c=>`<tr><td>${fmtDT(c.ts)}</td><td>${c.caja}${c.regName?' · '+esc(c.regName):''}</td><td>${esc(c.user)}</td><td class="r">${money(c.data.total)}</td><td class="r ${c.data.diff<0?'neg':''}">${money(c.data.diff)}</td><td class="sm mut">${c.hash.slice(0,10)}…</td><td class="r"><button class="btn sm" data-act="clview" data-id="${c.id}">Ver detalle</button></td></tr>`).join('')||'<tr><td colspan="7" class="mut">Todavía no hay cierres.</td></tr>'}</tbody></table></div></div>`,null,'Operación');
 A.clview=el=>{const c=S.closures.find(x=>x.id===el.dataset.id);if(!c)return;const ok=verifyClosure(c);
- const w=modal('Cierre de caja '+fmtDT(c.ts),`<div class="${ok?'okbox':'errbox'}">Integridad: ${ok?'verificada (el sello coincide)':'ALTERADO: el sello no coincide'} · SHA-256 ${c.hash.slice(0,16)}…</div><div class="rep">${esc(c.text)}</div>
+ const w=modal('Cierre de caja '+fmtDT(c.ts),`<div class="${ok?'okbox':'errbox'}">Integridad: ${ok?'verificada (el sello coincide)':'ALTERADO: el sello no coincide'} · SHA-256 ${c.hash.slice(0,16)}…</div>${c.data&&c.data.reparte&&c.data.reparte[0]&&c.data.reparte[0].fis!==undefined&&typeof arqTablesHTML==='function'?arqTablesHTML(c.data):''}<div class="rep">${esc(c.text)}</div>
  <h3 style="margin-top:.8rem">Movimientos (con rubro)</h3><div class="tw"><table><tbody>${c.data.movs.map(m=>`<tr><td>${hm(m.ts)}</td><td>${esc(m.type)}</td><td>${esc(m.rubro)}</td><td>${esc(m.concept)}</td><td class="r">${money(m.amount)}</td></tr>`).join('')||'<tr><td class="mut">Sin movimientos</td></tr>'}</tbody></table></div>
  ${typeof xferAfterHTML==='function'?xferAfterHTML(c):''}
  <h3 style="margin-top:.8rem">Notas de revisión (sólo se agregan)</h3>${c.notes.map(n=>`<p class="sm">${fmtDT(n.ts)} · ${esc(n.user)}: ${esc(n.text)}</p>`).join('')||'<p class="sm mut">Sin notas.</p>'}<label for="cn">Agregar nota</label><input id="cn" maxlength="200">
@@ -2362,6 +2373,34 @@ function expRoute(h){
  history.replaceState(null,'',back);showPanel(curScreen&&SCREENS[curScreen]?curScreen:'inicio');
  setTimeout(()=>expOpen(m[1],decodeURIComponent(m[2])),60);}
 function expPending(){if(expPendingHash&&user){const h=expPendingHash;expPendingHash='';setTimeout(()=>expRoute(h),200);}}
+
+/* ===== V26.11 · Caja y cierre por rubro (cada rubro es una persona) =====
+   Tablas claras de: vendió · ganancia · movimientos · efectivo físico del rubro, y la liquidación
+   (sueldo a medias → impuesto editable → ganancia). Sólo muestra: el cálculo vive en arqueoCalc(). */
+function rcRows(a){return (a.reparte||[]).concat(a.otros||[]);}
+function rcTableHTML(a){const R=rcRows(a);if(!R.length)return'<p class="mut">No hay rubros cargados.</p>';
+ const mv=r=>(r.ing||r.egr)?`${r.ing?'<span class="ok">+ '+money(r.ing)+'</span>':''}${r.ing&&r.egr?'<br>':''}${r.egr?'<span class="neg">- '+money(r.egr)+'</span>':''}`:'—';
+ const tr=r=>`<tr><td><b>${esc(r.owner||r.name)}</b><div class="sm mut">${esc(r.name)}</div></td><td class="r"><b class="${(r.fis||0)<0?'neg':''}">${money(r.fis||0)}</b><div class="sm mut">cobró en efectivo ${money(r.cash||0)}${r.dig?'<br>digital '+money(r.dig):''}${r.fia?'<br>cta. cte. '+money(r.fia):''}</div></td><td class="r">${money(r.sold)}</td><td class="r">${money(r.profit)}</td><td class="r">${mv(r)}</td></tr>`;
+ const tot=R.reduce((o,r)=>{o.sold+=r.sold;o.profit+=r.profit;o.fis+=r.fis||0;return o;},{sold:0,profit:0,fis:0});
+ return `<div class="tw"><table><thead><tr><th>Rubro / persona</th><th class="r">Caja física del rubro</th><th class="r">Vendió</th><th class="r">Ganancia de ventas</th><th class="r">Movimientos</th></tr></thead><tbody>${R.map(tr).join('')}<tr><td><b>Total rubros</b></td><td class="r"><b>${money(tot.fis)}</b></td><td class="r">${money(tot.sold)}</td><td class="r">${money(tot.profit)}</td><td></td></tr></tbody></table></div>
+ <p class="sm mut">«Caja física del rubro» = efectivo que cobró + ingresos − egresos${a.paid?' − su parte del sueldo y gastos pagados de la caja':''}. Sumado al fondo de apertura y traspasos (${money(a.fondo||0)}) da el efectivo esperado en el cajón: <b>${money(a.expectedCash)}</b>${a.resto?` <span class="neg">(diferencia sin rubro: ${money(a.resto)})</span>`:''}.</p>`;}
+function rcLiqHTML(a){if(!(a.reparte||[]).length)return'<p class="mut">Marcá en Configuración qué rubros reparten (los socios) para ver la liquidación.</p>';
+ const rp=a.reparte;const row=(l,f,cls)=>`<tr class="${cls||''}"><td>${l}</td>${rp.map(r=>`<td class="r">${f(r)}</td>`).join('')}</tr>`;
+ return `<div class="tw"><table><thead><tr><th>Paso</th>${rp.map(r=>`<th class="r">${esc(r.owner||r.name)}</th>`).join('')}</tr></thead><tbody>
+ ${row('1 · Ganancia de sus ventas (con sus movimientos)',r=>money(r.base))}
+ ${row('2 · Sueldo'+(a.empName?' de '+esc(a.empName):'')+' (a medias'+(a.hours?' · '+numAR(a.hours)+' hs × '+money(a.rate):'')+')',r=>'- '+money(r.sueldo))}
+ ${row('3 · Gastos (a medias)',r=>'- '+money(r.gastos))}
+ ${row('4 · Impuesto que se separa',r=>'- '+money(r.tax)+(r.falta>0?'<div class="sm neg">no alcanza: faltan '+money(r.falta)+'</div>':''))}
+ ${row('= Ganancia propia',r=>`<b class="${r.net<0?'neg':''}">${money(r.net)}</b>`,'tot')}
+ ${a.pool?`<tr><td><b>5 · Ganancia total a dividir</b> (suma de las dos)</td><td class="r" colspan="${rp.length}"><b>${money(a.netSum)}</b></td></tr>
+ ${row('<b>6 · Le corresponde a cada uno (partes iguales)</b>',r=>`<b class="${r.final<0?'neg':''}">${money(r.final)}</b>`,'tot')}`:''}
+ </tbody></table></div>`;}
+function arqTablesHTML(a){return `<h3>Por rubro</h3>${rcTableHTML(a)}<h3 style="margin-top:1rem">Liquidación</h3>${rcLiqHTML(a)}`;}
+/* tarjeta viva en Caja: cuánto tiene físicamente cada rubro ahora */
+function rubCashCard(s){if(!s)return'';let a;try{a=arqueoCalc(s,arqInputs(s));}catch(e){return'';}
+ return `<div class="card"><h3>Caja de cada rubro (ahora)</h3>${rcTableHTML(a)}<p class="sm mut">Un <b>ingreso</b> suma a la caja del rubro que elijas; un <b>egreso</b> le resta. Ejemplo: si Juan le debe $1.000 a Nico, Nico cobra un producto suyo y se hace un <b>egreso de $1.000 del rubro de Juan</b>: Nico suma por la venta, Juan resta, y el cajón queda igual.</p></div>`;}
+A.profitMode=el=>{if(!can('config'))return toast('Sólo el administrador',1);const v=el.value==='each'?'each':'pool';if((S.cfg.profitMode||'pool')===v)return;S.cfg.profitMode=v;audit('CONFIG_GANANCIA',v==='pool'?'se divide a partes iguales':'cada uno la suya');save();rerender();};
+document.addEventListener('change',e=>{const t=e.target;if(t&&t.id==='aq-pm')A.profitMode(t);});
 
 /* =====================================================================
    ASISTENTE CONVERSACIONAL (V26 · 4.13) — texto y voz opcional
