@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-22 03:19 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-22 03:41 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -608,7 +608,7 @@ function seedProducts(){return SEED_PRODS.map((p,i)=>({id:p.id,name:p.nom,sub:p.
  .concat([{id:'granel-1',name:'Maní con cáscara a granel',sub:'ejemplo para probar la balanza',grupo:'',rubro:'promo',price:850000,cost:610000,stock:12.5,unit:'kg',barcode:'',plu:'12',menu:false,active:true,desc:'',demo:true}]);}
 const BUILD_VER=(typeof window!=='undefined'&&window.RAVE_BUILD&&window.RAVE_BUILD.ver)||'sin dato';
 const IS_CLIENT=!!(typeof window!=='undefined'&&window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente');
-const DEF=()=>{const d=DEF0();if(IS_CLIENT)return clientClean(d);const r=wsDemoSeed(d);if(typeof comboDemoSeed==='function')comboDemoSeed(r);return r;};
+const DEF=()=>{const d=DEF0();if(IS_CLIENT)return clientClean(d);const r=wsDemoSeed(d);if(typeof comboDemoSeed==='function')comboDemoSeed(r);if(typeof isKiniBuild==='function'&&isKiniBuild())kiniBase(r);return r;};
 /* DEMO: canal mayorista encendido con datos rotulados «ejemplo» (el sistema del cliente nace apagado y sin esto) */
 function wsDemoSeed(d){d.cfg=d.cfg||{};if(!d.cfg.wholesale)d.cfg.wholesale={on:true,example:true,allowClub:false,grace:0,levels:[{id:'d',name:'Display'},{id:'f',name:'Fardo'},{id:'p',name:'Pallet'}]};
  wsDemoPres(d.products);d.cfg.wholesale.seeded=1;return wsDemoCust(d);}
@@ -2596,6 +2596,58 @@ function arqOwnerHTML(s){const d=arqDraft(s);
 function bizDemoBanner(){if(IS_CLIENT||!user||user.role!=='admin')return'';
  return`<div class="card" style="margin-bottom:1rem"><div class="row"><span class="sp">Demo: estás viendo un <b>${ownerMode()?'mayorista de un solo dueño':'almacén con rubros por responsable'}</b>.</span><button class="btn sm" data-act="nav" data-id="config">Cambiar tipo de negocio</button></div></div>`;}
 
+/* ===== Demo «Kini Distribuidora» (compilación `kini`) =====
+   Sólo existe en la demo publicada en KiniDistribuidoraDemo. Arranca como MAYORISTA DE UN SOLO DUEÑO, con:
+   · Caja 1, Caja 2 y Caja principal ABIERTAS con efectivo de ejemplo (perfil «varias cajas + caja principal»).
+   · Proveedores de ejemplo con deuda, una orden de compra pendiente y precios mayoristas por presentación.
+   Todo rotulado «ejemplo». «Borrar todo y empezar vacío» deja el sistema sin datos para probarlo desde cero. */
+function isKiniBuild(){return!!(typeof window!=='undefined'&&window.RAVE_BUILD&&window.RAVE_BUILD.profile==='kini');}
+function kiniBase(d){
+ d.tenant=Object.assign({},d.tenant,{name:'Kini Distribuidora',legal:'Kini Distribuidora (demo de ejemplo)',slogan:'Distribuidora mayorista · demo',address:'(dirección de ejemplo)',phone:'',wa:'',ig:'',fb:'',caja:1,regId:'r1'});
+ d.cfg.biz='owner';d.cfg.cashProfile='main';d.cfg.xfer=Object.assign({},d.cfg.xfer||{},{strict:false,selfAuth:true,ownerV:1});
+ d.cfg.tax={};d.cfg.ticket=Object.assign({},d.cfg.ticket,{msg:'¡Gracias por su compra!'});
+ if(!d.rubros.some(r=>r.id==='sys-gen'))d.rubros.push({id:'sys-gen',name:'Caja del negocio',kind:'sysgen',color:'#6b7280',sys:true,reparte:false,owner:'',active:true});
+ d.rubros.forEach(r=>{r.owner='';r.reparte=false;});
+ d.registers=[{id:'r1',code:'1',name:'Caja 1',type:'operational',branchId:'',parentId:'rp',active:true},
+  {id:'r2',code:'2',name:'Caja 2',type:'operational',branchId:'',parentId:'rp',active:true},
+  {id:'rp',code:'P',name:'Caja principal',type:'main',branchId:'',parentId:'',active:true}];
+ const t=Math.max(Date.now()-2*3600000,new Date().setHours(0,5,0,0));
+ d.sessions=[{id:'k-s1',caja:1,regId:'r1',regName:'Caja 1',branchId:'',openedBy:'ADMIN',openedAt:t,opening:15000000,closedAt:0},
+  {id:'k-s2',caja:2,regId:'r2',regName:'Caja 2',branchId:'',openedBy:'Mostrador (ejemplo)',openedAt:t,opening:10000000,closedAt:0},
+  {id:'k-sp',caja:3,regId:'rp',regName:'Caja principal',branchId:'',openedBy:'ADMIN',openedAt:t,opening:80000000,closedAt:0}];
+ return d;}
+/* proveedores, deudas y una orden pendiente: se cargan con el mismo motor que usa la pantalla (validaciones reales) */
+async function kiniSeedAsync(){if(!isKiniBuild()||!S.cfg||S.cfg.kiniSeeded)return;S.cfg.kiniSeeded=1;
+ const prev=user;user=user||{id:'u1',name:'ADMIN',role:'admin'};
+ const prods=S.products.filter(p=>p.unit==='u'&&!isKit(p)&&!p.archived&&p.price>0);const pick=(i)=>prods[i%prods.length];
+ const cost=p=>Math.max(100,Math.round((p.cost||p.price*0.7)/100));
+ try{
+  const P=[['Bebidas del Norte S.A. (ejemplo)','30712345671','Responsable Inscripto','ventas@ejemplo.com','(0387) 400-0001','Parque industrial, lote 4 (ejemplo)'],
+   ['Vinos Andinos S.R.L. (ejemplo)','30698765433','Responsable Inscripto','pedidos@ejemplo.com','(0261) 400-0002','Mendoza (ejemplo)'],
+   ['Hielo y Afines (ejemplo)','20301234563','Monotributista','','(0387) 400-0003','Salta (ejemplo)']];
+  const ids=[];
+  for(const [rs,cuit,iva,mail,tel,dir] of P){if(!arcaCuitOk(cuit))continue;const r=await LOCAL.supSave({razon_social:rs,cuit,condicion_iva:iva,email:mail||undefined,telefono:tel,direccion:dir});ids.push(r.id);}
+  if(ids[0])await LOCAL.recibir({idempotency_key:'kini-ej-rem-1',proveedor_id:ids[0],tipo_comprobante:'Factura',nro_comprobante:'0001-00001234',condicion_pago:'credito',observaciones:'Compra de ejemplo a cuenta corriente',
+   items:[0,1,2].map(i=>({producto_id:pick(i).id,cantidad:24,precio_costo:cost(pick(i))}))});
+  if(ids[1])await LOCAL.recibir({idempotency_key:'kini-ej-rem-2',proveedor_id:ids[1],tipo_comprobante:'Remito',nro_comprobante:'R-0008821',condicion_pago:'credito',observaciones:'Remito de ejemplo',
+   items:[3,4].map(i=>({producto_id:pick(i).id,cantidad:12,precio_costo:cost(pick(i))}))});
+  if(ids[2])await LOCAL.recibir({idempotency_key:'kini-ej-rem-3',proveedor_id:ids[2],tipo_comprobante:'Remito',nro_comprobante:'R-0000150',condicion_pago:'credito',
+   items:[{producto_id:(prod('ej-hielo')||pick(5)).id,cantidad:50,precio_costo:900}]});
+  if(ids[0])await LOCAL.ocSave({idempotency_key:'kini-ej-oc-1',proveedor_id:ids[0],estado:'Solicitada',observaciones:'Orden de ejemplo pendiente de recibir',
+   items:[5,6].map(i=>({producto_id:pick(i).id,cantidad:48,precio_costo_pactado:cost(pick(i))}))});
+ }catch(e){console.warn('kiniSeed',e&&e.message);}
+ user=prev;audit('DEMO_EJEMPLOS','Kini: proveedores, deudas y orden de ejemplo');save();}
+/* «Borrar todo y empezar vacío»: sin productos, clientes, proveedores, ventas ni cajas abiertas. Quedan los usuarios, las cajas definidas y la configuración */
+function emptyState(){const d=DEF();
+ d.products=[];d.customers=[];d.sales=[];d.sessions=[];d.movs=[];d.closures=[];d.seq={};d.suppliers=[];d.pOrders=[];d.receipts=[];d.supLedger=[];
+ d.transfers=[];d.transferEvents=[];d.payDetails=[];d.coupons=[];d.plans=[];d.agreements=[];d.creditOv=[];d.creditUse=[];d.punches=[];d.tasks=[];
+ d.rubros=d.rubros.filter(r=>r.kind!=='rubro'||r.id==='x');
+ if(isKiniBuild()||d.cfg.biz==='owner')d.rubros.push({id:uid(),name:'General',owner:'',reparte:false,alcohol:false,kind:'rubro',color:'#2f6f8f',mNom:'General',mTitle:'General',mHint:'',layout:'rows'});
+ else d.rubros.unshift({id:uid(),name:'General',owner:'',reparte:false,alcohol:false,kind:'rubro',color:'#2f6f8f',mNom:'General',mTitle:'General',mHint:'',layout:'rows'});
+ if(d.cfg.wholesale){d.cfg.wholesale.example=false;}d.cfg.comboSeeded=1;d.cfg.kiniSeeded=1;d.cfg.emptyStart=1;return d;}
+A.emptyDemo=()=>confirmBox('Borrar todo y empezar vacío','Se borran productos, clientes, proveedores, ventas, cajas y movimientos de esta demo en este navegador. Quedan los usuarios (ADMIN 1234) y las cajas definidas, cerradas. Para volver a los ejemplos usá «Volver a los datos de ejemplo».',
+ ()=>{S=emptyState();audit('DEMO_VACIA','se empezó de cero sin ejemplos');save();pos.lines=[];if(typeof pubReload==='function')pubReload();rerender();toast('Demo vacía: cargá tus productos y abrí una caja');},'Borrar todo');
+
 /* =====================================================================
    ASISTENTE CONVERSACIONAL (V26 · 4.13) — texto y voz opcional
    - ActionRegistry = lista blanca. El texto se interpreta con reglas locales
@@ -3953,7 +4005,7 @@ A.audVer=()=>{const b=verifyAudit();toast(b?'Cadena rota en el registro '+b:'Cad
 reg('config','Configuración','gear','config',()=>`<h1>Configuración</h1><p class="sm mut">Sistema RAVE · ${IS_CLIENT?'versión del cliente':'demo de evaluación'} · compilada ${esc(BUILD_VER)}</p>${bizCard()}<div class="grid g2"><div class="card"><h3>Comercio</h3><label for="cf-n">Nombre comercial</label><input id="cf-n" value="${esc(S.tenant.name)}" maxlength="60"><label for="cf-c">Número de caja</label><input id="cf-c" inputmode="numeric" value="${S.tenant.caja}">${ownerMode()?'':`<label class="chk"><input type="checkbox" id="cf-m" ${S.cfg.movAffectProfit?'checked':''}> Los ingresos/egresos con rubro afectan la ganancia de ese rubro</label><label class="chk"><input type="checkbox" id="cf-p" ${S.cfg.payFromCash?'checked':''}> Sueldo y gastos manuales se pagan de la caja (valor inicial del arqueo)</label>`}<label class="chk"><input type="checkbox" id="cf-ng" ${negOK()?'checked':''}> Permitir vender sin stock (el stock queda en negativo y se marca en rojo; cada producto puede exigir stock)</label><button class="btn gold" style="margin-top:.6rem" data-act="cfgSave">Guardar</button></div>
  ${ownerMode()?catCardOwner():`<div class="card"><h3>Rubros, responsables y reparto</h3><p class="sm mut">"Reparte" = comparte sueldo del empleado, gastos e impuestos con los otros rubros marcados. Los que no reparten sólo informan ventas y ganancia.</p>${S.rubros.filter(r=>r.kind==='rubro').map(r=>`<div class="rubrow"><div class="rubhead"><b class="sp"><i class="rdot" style="background:${safeColor(r.color)}"></i>${esc(r.name)}</b><button class="btn sm" data-act="rubEdit" data-id="${r.id}" aria-label="Editar rubro ${esc(r.name)}">Editar</button><button class="btn sm red" data-act="rubDel" data-id="${r.id}" aria-label="Eliminar rubro ${esc(r.name)}">Eliminar</button></div><div class="rubbody"><label class="rublbl">Responsable<input data-rown="${r.id}" value="${esc(r.owner)}" maxlength="40" aria-label="Responsable de ${esc(r.name)}"></label><label class="chk rubchk"><input type="checkbox" data-rrep="${r.id}" ${r.reparte?'checked':''}> reparte</label>${r.reparte?`<label class="rublbl">Impuesto diario ($)<input inputmode="decimal" data-rtax="${r.id}" placeholder="0" value="${esc(pesosStr(S.cfg.tax[r.id]||0))}" aria-label="Impuesto diario de ${esc(r.name)}"></label>`:''}</div></div>`).join('')}<button class="btn sm" data-act="rubAdd">+ Rubro</button></div>`}</div>
  ${cashCfgCard()}${typeof payCfgCard==='function'?payCfgCard():''}${typeof wsCfgCard==='function'?wsCfgCard():''}${typeof assistCfgCard==='function'?assistCfgCard():''}
- ${IS_CLIENT?`<div class="card" style="margin-top:1rem"><h3>Respaldo</h3><div class="row"><button class="btn" data-act="backupDl">Descargar respaldo</button></div><p class="sm mut">${CLOUD.on?'Tus datos se guardan en la nube y en este equipo (cifrados). El respaldo es una copia de seguridad que podés guardar aparte.':'Con la nube sin configurar, los datos viven sólo en este equipo: descargá un respaldo seguido.'}</p></div>`:`<div class="card" style="margin-top:1rem"><h3>Datos de la demo</h3><div class="row"><button class="btn gold" data-act="loadEx">Cargar jornada de ejemplo (6/10)</button><button class="btn" data-act="backupDl">Descargar respaldo</button><label class="btn" for="rs-f">Restaurar respaldo</label><input type="file" id="rs-f" accept=".json" hidden><button class="btn red" data-act="resetDemo">Empezar de cero</button></div><p class="sm mut">${ownerMode()?'La jornada de ejemplo abre la caja y carga ventas de ejemplo para ver el arqueo y cierre del dueño.':'La jornada de ejemplo abre la caja y carga ventas de ejemplo con el sueldo del empleado (8 hs) y gastos $4.500, para ver el arqueo completo con el reparto entre rubros.'}</p></div>`}`,
+ ${IS_CLIENT?`<div class="card" style="margin-top:1rem"><h3>Respaldo</h3><div class="row"><button class="btn" data-act="backupDl">Descargar respaldo</button></div><p class="sm mut">${CLOUD.on?'Tus datos se guardan en la nube y en este equipo (cifrados). El respaldo es una copia de seguridad que podés guardar aparte.':'Con la nube sin configurar, los datos viven sólo en este equipo: descargá un respaldo seguido.'}</p></div>`:`<div class="card" style="margin-top:1rem"><h3>Datos de la demo</h3><div class="row"><button class="btn gold" data-act="loadEx">Cargar jornada de ejemplo (6/10)</button><button class="btn" data-act="backupDl">Descargar respaldo</button><label class="btn" for="rs-f">Restaurar respaldo</label><input type="file" id="rs-f" accept=".json" hidden><button class="btn" data-act="resetDemo">Volver a los datos de ejemplo</button><button class="btn red" data-act="emptyDemo">Borrar todo y empezar vacío</button></div><p class="sm mut">${ownerMode()?'La jornada de ejemplo abre la caja y carga ventas de ejemplo para ver el arqueo y cierre del dueño.':'La jornada de ejemplo abre la caja y carga ventas de ejemplo con el sueldo del empleado (8 hs) y gastos $4.500, para ver el arqueo completo con el reparto entre rubros.'}</p></div>`}`,
  ()=>{const f=$('#rs-f');f&&f.addEventListener('change',async e=>{try{const j=JSON.parse(await e.target.files[0].text());if(!j.state||!j.state.rubros)throw new Error('formato');S=mergeDefaults(j.state);audit('RESTAURAR_RESPALDO','');save();toast('Respaldo restaurado');rerender();}catch(err){toast('Archivo de respaldo inválido',1);}});},'Sistema');
 document.addEventListener('change',e=>{const t=e.target;if(curScreen!=='config'||!t.dataset)return;if(t.dataset.rown){rub(t.dataset.rown).owner=t.value.trim();audit('RUBRO_RESPONSABLE',t.dataset.rown+' '+t.value);save();}
  else if(t.dataset.rrep){rub(t.dataset.rrep).reparte=t.checked;if(t.checked&&S.cfg.tax[t.dataset.rrep]===undefined)S.cfg.tax[t.dataset.rrep]=3000000;audit('RUBRO_REPARTE',t.dataset.rrep+' '+t.checked);save();rerender();}
@@ -3970,7 +4022,7 @@ A.rubDel=el=>{if(!can('edit_products'))return toast('Sin permiso',1);const id=el
  if(prods.length){if(!others.length)return toast('Es '+(ownerMode()?'la única categoría':'el único rubro')+': creá otr'+(ownerMode()?'a':'o')+' antes de eliminarl'+(ownerMode()?'a':'o'),1);
   modal('Eliminar '+RW()+' «'+r.name+'»','<p>Tiene <b>'+prods.length+'</b> producto'+(prods.length===1?'':'s')+'. Elegí a qué '+RW()+' pasarlos:</p><label for="rd-d">Pasar los productos a</label><select id="rd-d">'+others.map(o=>'<option value="'+esc(o.id)+'">'+esc(o.name)+'</option>').join('')+'</select>'+(hist?'<p class="sm mut">Como tiene ventas o movimientos anteriores, no se borra: se archiva para conservar los reportes.</p>':''),{okText:hist?'Pasar y archivar':'Pasar y eliminar',onOk:w=>{fin(val('rd-d'));}});return;}
  confirmBox((hist?'Archivar ':'Eliminar ')+RW(),hist?'«'+r.name+'» tiene ventas o movimientos anteriores: no se borra, se archiva (deja de aparecer, el historial queda).':'Se elimina '+(ownerMode()?'la categoría':'el rubro')+' «'+r.name+'». No tiene productos ni movimientos.',()=>fin(null),hist?'Archivar':'Eliminar');};
-A.resetDemo=()=>confirmBox('Empezar de cero','Se borran todos los datos de esta demo en este navegador.',()=>{S=DEF();demoExtras();audit('RESET_DEMO','');save();pos.lines=[];pubReload();rerender();toast('Demo reiniciada');},'Borrar todo');
+A.resetDemo=()=>confirmBox('Volver a los datos de ejemplo','Se borra lo que cargaste en esta demo (en este navegador) y vuelven los datos de ejemplo.',async()=>{S=DEF();demoExtras();if(typeof kiniSeedAsync==='function')await kiniSeedAsync();audit('RESET_DEMO','');save();pos.lines=[];pubReload();rerender();toast('Demo reiniciada');},'Borrar todo');
 function loadExample(){if(openSess())return 'Ya hay una caja abierta: cerrala antes de cargar el ejemplo.';
  const sess={id:uid(),caja:S.tenant.caja,openedBy:'ADMIN',openedAt:now(),opening:0,closedAt:0};S.sessions.push(sess);
  const L=(pid,q)=>{const p=prod(pid);return{pid,name:p.name,rubro:p.rubro,qty:q,price:p.price,cost:p.cost,unit:p.unit,list:p.price};};
@@ -4630,7 +4682,7 @@ reg('inicio','Resumen','home',null,()=>{const D=dbData();const cv=can('view_cost
  const sel=(id,opts,cur)=>`<select id="${id}" aria-label="${id}" style="max-width:190px">${opts.map(([v,t])=>`<option value="${v}" ${cur===v?'selected':''}>${esc(t)}</option>`).join('')}</select>`;
  return `<div class="row"><h1 class="sp">Resumen del negocio</h1><span class="sm mut">Actualizado ${fmtDT(now())} · zona America/Argentina/Salta</span></div>
  ${typeof bizDemoBanner==='function'?bizDemoBanner():''}
- <div class="card noprint" style="margin-bottom:1rem"><div class="row"><b>Filtros</b>${sel('dbp',Object.entries(dbPerTxt),dbF.per)}${sel('dbm',[['','Todos los medios'],...Object.entries(MET)],dbF.met)}${sel('dbd',[['','Con y sin ARCA'],['arca','Sólo con ARCA'],['int','Sólo internos']],dbF.doc)}${sel('dbr',[['','Todos los '+RWs()],...S.rubros.filter(r=>r.kind==='rubro').map(r=>[r.id,r.name])],dbF.rub)}<button class="btn sm" data-act="dbReset">Restablecer</button>
+ <div class="card noprint" style="margin-bottom:1rem"><div class="row"><b>Filtros</b>${sel('dbp',Object.entries(dbPerTxt),dbF.per)}${sel('dbm',[['','Todos los medios'],...Object.entries(MET)],dbF.met)}${sel('dbd',[['','Con y sin ARCA'],['arca','Sólo con ARCA'],['int','Sólo internos']],dbF.doc)}${sel('dbr',[['',ownerMode()?'Todas las categorías':'Todos los rubros'],...S.rubros.filter(r=>r.kind==='rubro').map(r=>[r.id,r.name])],dbF.rub)}<button class="btn sm" data-act="dbReset">Restablecer</button>
   <span class="sp"></span><button class="btn sm gold" data-act="nav" data-id="vender">Ir a Vender →</button></div><p class="sm mut" style="margin:.4rem 0 0">Período: <b>${dbPerTxt[dbF.per]}</b>${D.a!=='0000-00-00'?' ('+dmy(D.a)+' a '+dmy(D.b)+')':''} · sólo ventas confirmadas (sin anuladas ni cobros pendientes) · ${dbF.doc?(dbF.doc==='arca'?'sólo comprobantes con ARCA':'sólo tickets internos'):'comprobantes con y sin ARCA, sin mezclar en los totales de ARCA'}</p></div>
  ${oldOpen?`<div class="errbox">La caja se abrió el ${dmy(dkey(sess.openedAt))} y sigue abierta: hay días con ventas sin cierre. <a href="#panel/arqueo">Ir al arqueo</a></div>`:''}
  <div class="grid g4"><div class="card kpi"><b>${money(tot)}</b><span>Ventas netas (${n} operaciones)</span></div><div class="card kpi"><b>${money(n?Math.round(tot/n):0)}</b><span>Ticket promedio = ventas ÷ operaciones</span></div>${cv?`<div class="card kpi"><b>${money(prof)}</b><span>Margen bruto estimado (ventas − costo − comisiones; sin impuestos ni sueldos). ${IS_CLIENT?'Con los costos que cargaste':'Costos de la demo: de ejemplo'}</span></div>`:''}<div class="card kpi"><b>${money(disc)}</b><span>Descuentos otorgados (cupones y membresías)</span></div></div>
@@ -5997,7 +6049,7 @@ function pubReload(){const f=document.getElementById('pubframe');if(f)f.srcdoc=b
 /* ================= ARRANQUE ================= */
 window.RAVE={get S(){return S;},set S(v){S=v;},sha256,arqueoCalc,buildReport,reportText,loadExample,parseNum,cents,money,parseCSV,sugPrice,punch,clubJoin,parseBirth,safeUrl,verifyAudit,verifyClosure,webhook,commitSale,addMov,validRubro,get user(){return user;},set user(v){user=v;},showMenu,route,A,pos,
  applyBenefit,allocDisc,verifyStampCode,commitStamp,stampsOf,debtOf,fiadoPay,custById,cardCode,redeemReward,memberActive,pubCatalog,pubCoupons,pubCouponInfo,parseScale,escposTicket,ticketText,printSale,demoExtras,legalDocs,addByCode,posBen,pubCard,pubCardCode,pubCardLogin};
-(async()=>{if(CLOUD.on||(window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente')){S=DEF();S.users=[];if(CLOUD.on){await cloudBoot();}else{route();}return;}const st=await loadState();if(st&&st.v===3){S=mergeDefaults(st);}else{S=DEF();demoExtras();}route();try{devBoot();}catch(e){console.warn('devBoot',e);}})();
+(async()=>{if(CLOUD.on||(window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente')){S=DEF();S.users=[];if(CLOUD.on){await cloudBoot();}else{route();}return;}const st=await loadState();if(st&&st.v===3){S=mergeDefaults(st);}else{S=DEF();demoExtras();}if(typeof kiniSeedAsync==='function'){try{await kiniSeedAsync();}catch(e){}}route();try{devBoot();}catch(e){console.warn('devBoot',e);}})();
 setTimeout(()=>{try{cardMirrorInit();}catch(e){console.warn('cardMirror',e);}},0);
 
 </script>
