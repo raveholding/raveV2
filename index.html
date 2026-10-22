@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-21 23:11 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-22 01:10 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -608,7 +608,7 @@ function seedProducts(){return SEED_PRODS.map((p,i)=>({id:p.id,name:p.nom,sub:p.
  .concat([{id:'granel-1',name:'Maní con cáscara a granel',sub:'ejemplo para probar la balanza',grupo:'',rubro:'promo',price:850000,cost:610000,stock:12.5,unit:'kg',barcode:'',plu:'12',menu:false,active:true,desc:'',demo:true}]);}
 const BUILD_VER=(typeof window!=='undefined'&&window.RAVE_BUILD&&window.RAVE_BUILD.ver)||'sin dato';
 const IS_CLIENT=!!(typeof window!=='undefined'&&window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente');
-const DEF=()=>{const d=DEF0();return IS_CLIENT?clientClean(d):wsDemoSeed(d);};
+const DEF=()=>{const d=DEF0();if(IS_CLIENT)return clientClean(d);const r=wsDemoSeed(d);if(typeof comboDemoSeed==='function')comboDemoSeed(r);return r;};
 /* DEMO: canal mayorista encendido con datos rotulados «ejemplo» (el sistema del cliente nace apagado y sin esto) */
 function wsDemoSeed(d){d.cfg=d.cfg||{};if(!d.cfg.wholesale)d.cfg.wholesale={on:true,example:true,allowClub:false,grace:0,levels:[{id:'d',name:'Display'},{id:'f',name:'Fardo'},{id:'p',name:'Pallet'}]};
  wsDemoPres(d.products);d.cfg.wholesale.seeded=1;return wsDemoCust(d);}
@@ -636,7 +636,7 @@ function clientClean(d){d.products=d.products.filter(p=>!/granel-1/.test(p.id)).
 const DEF0=()=>({v:3,
  tenant:{name:'RAVE',legal:'Almacén y Licorería RAVE',slogan:'Almacén y Licorería · Salta',wa:'5493874574892',address:'Urquiza 1052, Salta, Argentina',phone:'(387) 4 57 48 92',cuit:'',iva:'',caja:1,ig:'RAVE_LICORERIA',fb:'LICORERIA_RAVE'},
  rubros:SEED_RUBROS.map(r=>({...r})),branches:[],registers:[],transfers:[],transferEvents:[],payDetails:[],
- cfg:{permNotice:{ack:true},xfer:{strict:true,closedMode:'transito',approvalOver:0,transitAlertH:0,selfAuth:false},cashProfile:'simple',negStock:true,tax:{promo:3000000,vino:3000000},fee:{qr:0,modo:0,debito:0,credito:0,pedidosya:0},movAffectProfit:true,payFromCash:true,scaleMode:'peso',ticket:{w:80,msg:'¡Gracias por tu compra! Seguinos en Instagram @rave_licoreria',showLogo:true,legal:true}},
+ cfg:{biz:'rubros',permNotice:{ack:true},xfer:{strict:true,closedMode:'transito',approvalOver:0,transitAlertH:0,selfAuth:true,ownerV:1},cashProfile:'simple',negStock:true,tax:{promo:3000000,vino:3000000},fee:{qr:0,modo:0,debito:0,credito:0,pedidosya:0},movAffectProfit:true,payFromCash:true,scaleMode:'peso',ticket:{w:80,msg:'¡Gracias por tu compra! Seguinos en Instagram @rave_licoreria',showLogo:true,legal:true}},
  products:seedProducts(),
  sales:[],sessions:[],movs:[],closures:[],seq:{},
  suppliers:[],pOrders:[],receipts:[],supLedger:[],
@@ -689,10 +689,15 @@ let saveT;function save(){if(CLOUD_HOOK){CLOUD_HOOK.persist();return;}clearTimeo
 /* "Proveedores y compras" es un permiso nuevo: si ningún rol lo tiene todavía (datos anteriores), lo reciben administrador y supervisor; si ya existe, se respeta lo que el dueño decidió */
 function rolesMigrate(r){if(!r)return r;if(Array.isArray(r.admin))for(const p of['transfer_funds','customers_admin'])if(!r.admin.includes(p))r.admin.push(p); /* transfer_funds y customers_admin NUNCA se otorgan en silencio a otros roles (4.23.1 / 4.24.3) */
  for(const perm of['purchases','price_lists','credit_ov','audit_read','pay_detail_edit']){const any=Object.values(r).some(a=>Array.isArray(a)&&a.includes(perm));if(!any){if(Array.isArray(r.supervisor))r.supervisor.push(perm);if(Array.isArray(r.admin))r.admin.push(perm);}}return r;}
-function mergeDefaults(st){const d=DEF();for(const k of Object.keys(d)){if(st[k]===undefined)st[k]=d[k];}rolesMigrate(st.roles);if(st.cfg&&st.cfg.permNotice===undefined)st.cfg.permNotice={ack:false};if(!IS_CLIENT&&st.cfg&&st.cfg.wholesale===undefined)wsDemoSeed(st);wsMigrate(st);return st;}
+function mergeDefaults(st){const d=DEF();for(const k of Object.keys(d)){if(st[k]===undefined)st[k]=d[k];}rolesMigrate(st.roles);if(st.cfg&&st.cfg.permNotice===undefined)st.cfg.permNotice={ack:false};if(!IS_CLIENT&&st.cfg&&st.cfg.wholesale===undefined)wsDemoSeed(st);wsMigrate(st);bizMigrate(st);if(!IS_CLIENT&&typeof comboDemoSeed==='function')comboDemoSeed(st);return st;}
+/* V26.14: el viejo «perfil sin rubros» de traspasos pasa a ser el tipo de negocio; el dueño (administrador) mueve fondos con su propia autorización */
+function bizMigrate(st){if(!st.cfg)return;if(!st.cfg.biz)st.cfg.biz=(st.cfg.xfer&&st.cfg.xfer.noRubro)?'owner':'rubros';
+ st.cfg.xfer=st.cfg.xfer||{};if(!st.cfg.xfer.ownerV){st.cfg.xfer.selfAuth=true;st.cfg.xfer.ownerV=1;}}
 
 /* ---------- Permisos, auditoría ---------- */
 const can=p=>!!user&&(user.role==='admin'||(S.roles[user.role]||[]).includes(p));
+/* V26.14: dar o quitar permisos y crear usuarios es SÓLO del administrador (no es un permiso delegable) */
+const isAdm=()=>!!user&&user.role==='admin';
 function audit(action,detail,meta){const prev=S.audit.length?S.audit[S.audit.length-1].hash:'GENESIS';const e={id:uid(),ts:now(),user:user?user.name:'sistema',action,detail:String(detail||'').slice(0,400),prev};
  /* V26.9 · 4.23.6/4.23.8: datos estructurados opcionales (entidad, id, valor anterior/nuevo, motivo) y rol; no entran al hash (el encadenado de siempre sigue verificando) */
  if(user&&user.role)e.role=user.role;if(meta){if(meta.ent)e.ent=String(meta.ent).slice(0,40);if(meta.eid)e.eid=String(meta.eid).slice(0,80);if(meta.old!=null)e.old=String(meta.old).slice(0,300);if(meta.nw!=null)e.nw=String(meta.nw).slice(0,300);if(meta.reason)e.reason=String(meta.reason).slice(0,300);}
@@ -736,8 +741,20 @@ const rubName=id=>(S.rubros.find(r=>r.id===id)||{name:'(sin rubro)'}).name;
 const rub=id=>S.rubros.find(r=>r.id===id);
 const UNITS={u:'und',kg:'kg',l:'lt'};const unitLbl=u=>UNITS[u]||u;
 const negOK=()=>S.cfg.negStock!==false;
-const canOver=p=>negOK()&&!(p&&p.needStock);
-const stockTxt=p=>(p.stock<0?'−'+Math.abs(p.stock):String(p.stock).replace('.',','))+' '+unitLbl(p.unit);
+/* ===== V26.14 · Tipo de negocio =====
+   · 'rubros' (por defecto, Almacén RAVE): cada rubro es una persona; reparto, sueldo, impuesto y caja por rubro.
+   · 'owner'  (mayorista / un solo dueño): NO hay rubros por persona. Los productos se agrupan en «categorías» (sólo para ordenar
+     inventario y menú); el dinero es todo del dueño: ningún movimiento pide rubro (se usa un concepto interno oculto, «Caja del negocio»,
+     porque el servidor exige rubro en todo movimiento) y el arqueo es el de un solo dueño (sin sueldo, merienda, impuestos ni reparto). */
+const BIZ_TYPES={rubros:'Almacén con rubros por responsable (cada rubro es una persona)',owner:'Mayorista / un solo dueño (sin rubros por persona)'};
+const ownerMode=()=>!!(typeof S!=='undefined'&&S&&S.cfg&&S.cfg.biz==='owner');
+const RW=cap=>ownerMode()?(cap?'Categoría':'categoría'):(cap?'Rubro':'rubro');
+const RWs=cap=>ownerMode()?(cap?'Categorías':'categorías'):(cap?'Rubros':'rubros');
+function ensureRubro(id,name,kind){let r=S.rubros.find(x=>x.id===id);if(!r){r={id,name,kind:kind||'sysgen',color:'#6b7280',sys:true,reparte:false,owner:'',active:true};S.rubros.push(r);}return r.id;}
+/* concepto interno de todo el dinero del dueño (ingresos, egresos, pagos): sirve para ingreso y egreso */
+const ownerRubro=()=>ensureRubro('sys-gen','Caja del negocio','sysgen');
+const canOver=p=>negOK()&&!(p&&p.needStock)&&!(typeof isKit==='function'&&isKit(p)&&p.kit.some(k=>{const c=prod(k.pid);return c&&c.needStock;}));
+const stockTxt=p=>{const v=(typeof isKit==='function'&&isKit(p))?kitStock(p):p.stock;return(v<0?'−'+Math.abs(v):String(v).replace('.',','))+' '+unitLbl(p.unit)+(typeof isKit==='function'&&isKit(p)?' (combo)':'');};
 const empName=id=>(S.employees.find(e=>e.id===id)||{name:'—'}).name;
 const openSess=()=>S.sessions.find(s=>!s.closedAt&&(s.caja===undefined||s.caja===S.tenant.caja)); /* la sesión abierta de ESTE equipo (otros equipos tienen la suya) */
 const saleOk=s=>s.status==='ok';
@@ -877,11 +894,12 @@ function hoursOn(empId,day){const ps=S.punches.filter(p=>p.empId===empId&&dkey(p
  if(open!==null){if(day===dkey(now())&&now()-open<16*3600e3)ms+=now()-open;else flag=true;}
  return{h:ms/3600e3,flag};}
 function allocFees(s){const fee=s.fee||0;const tots=s.items.map(lineTotal);const T=tots.reduce((a,b)=>a+b,0);if(!fee||!T)return s.items.map(()=>0);let acc=0;return tots.map((t,i)=>{if(i===tots.length-1)return fee-acc;const f=Math.round(fee*t/T);acc+=f;return f;});}
-const repartRubros=()=>S.rubros.filter(r=>r.kind==='rubro'&&r.reparte);
+const repartRubros=()=>ownerMode()?[]:S.rubros.filter(r=>r.kind==='rubro'&&r.reparte);
 function arqInputs(sess){const d=S.arqDraft[sess.id]||{};const emp=S.employees.find(e=>e.id===d.empId)||null;
  const hrs=parseNum(d.hours);const rt=(d.rate!==undefined&&d.rate!=='')?cents(d.rate):(emp?emp.rate:0);
  const gas=cents(d.gastos),dec=(d.declared===undefined||d.declared==='')?NaN:cents(d.declared);
  const taxes={};repartRubros().forEach(r=>{const t=d.taxes&&d.taxes[r.id];taxes[r.id]=(t!==undefined&&t!=='')?(cents(t)||0):(S.cfg.tax[r.id]!==undefined?(S.cfg.tax[r.id]||0):3000000);});
+ if(ownerMode())return{emp:null,hours:0,rate:0,merienda:0,gastosManual:0,declared:dec,taxes:{},payFromCash:false,detailAll:!!d.detailAll,mono:d.mono!==false,notes:d.notes||''};
  return{emp,hours:isNaN(hrs)?0:hrs,rate:isNaN(rt)?0:rt,merienda:0,gastosManual:isNaN(gas)?0:gas,declared:dec,taxes,
   payFromCash:d.payFromCash!==undefined?!!d.payFromCash:S.cfg.payFromCash,detailAll:!!d.detailAll,mono:d.mono!==false,notes:d.notes||''};}
 function arqueoCalc(sess,inp){
@@ -910,10 +928,10 @@ function arqueoCalc(sess,inp){
  const expectedCash=sess.opening+cashSales+ing-egr-paid+tr.tin-tr.tout;
  const declared=inp.declared;const diff=isNaN(declared)?0:declared-expectedCash;
  const fondo=sess.opening+tr.tin-tr.tout;const fisSum=reparte.concat(otros).reduce((a,r)=>a+r.fis,0);const resto=expectedCash-fondo-fisSum;
- return{total,cobrado,aCtaCte,vueltoTot,count:sales.length,byMethod,pend:{n:pend.length,total:pend.reduce((a,s)=>a+s.total,0)},rub:R,ing,egr,gAuto,gManual:inp.gastosManual,gastos,sueldo,merienda:mer,
+ return{owner:ownerMode(),sessId:sess.id,total,cobrado,aCtaCte,vueltoTot,count:sales.length,byMethod,pend:{n:pend.length,total:pend.reduce((a,s)=>a+s.total,0)},rub:R,ing,egr,gAuto,gManual:inp.gastosManual,gastos,sueldo,merienda:mer,
   detMissing:typeof pdMissingCount==='function'?pdMissingCount(sess):0,empName:inp.emp?inp.emp.name:'',hours:inp.hours,rate:inp.rate,reparte,otros,pool,netSum,fondo,resto,cashSales,paid,opening:sess.opening,tin:tr.tin,tout:tr.tout,transfers:tr.list,expectedCash,declared:isNaN(declared)?null:declared,diff,
   movs:movs.map(m=>({ts:m.ts,type:m.type,rubro:m.rubroName||rubName(m.rubro),concept:m.concept,amount:m.amount,user:m.user}))};}
-function buildReport(a,dayKey,who,inp){
+function buildReport(a,dayKey,who,inp){if(a.owner&&typeof buildReportOwner==='function')return buildReportOwner(a,dayKey,who,inp);
  const L=[];const P=(t,cls)=>L.push({t,cls:cls||''});
  P(dmy(dayKey)+' '+DIAS[dowOfKey(dayKey)]+' cerró '+who,'h');P('');
  P('MOSTRADOR TOTAL : '+money(a.total)+' ('+a.count+' venta'+(a.count===1?'':'s')+')','h');
@@ -952,7 +970,8 @@ async function copyText(t){try{await navigator.clipboard.writeText(t);toast('Cop
 /* ===== Eventos asíncronos (cola) y webhooks simulados ===== */
 function emit(type,data){S.events.push({id:uid(),ts:now(),type,status:'nuevo',data:data||{}});if(S.events.length>300)S.events.splice(0,S.events.length-300);save();setTimeout(processQueue,1200);}
 function processQueue(){if(S.simOffline)return 0;let n=0;S.events.forEach(e=>{if(e.status==='nuevo'){e.status='procesado';e.processedAt=now();n++;}});if(n)save();return n;}
-function restock(s){s.items.forEach(it=>{const p=S.products.find(x=>x.id===it.pid);if(p)p.stock=Math.round((p.stock+it.qty)*1000)/1000;});}
+function restock(s){s.items.forEach(it=>{if(Array.isArray(it.kit)&&it.kit.length){it.kit.forEach(k=>{const c=S.products.find(x=>x.id===k.pid);if(c)c.stock=Math.round((c.stock+it.qty*k.qty)*1000)/1000;});return;}
+ const p=S.products.find(x=>x.id===it.pid);if(p)p.stock=Math.round((p.stock+it.qty)*1000)/1000;});}
 function webhook(saleId,evId,res){
  if(S.seenEvents[evId]){emit('webhook.duplicado',{ev:evId});return'dup';}
  if(S.simOffline)return'offline';
@@ -971,6 +990,7 @@ function addMov(type,rubroId,concept,amount){const e=validRubro(rubroId,type);if
  const m={id:uid(),ts:now(),sessId:openSess().id,type,rubro:rubroId,rubroName:rubName(rubroId),concept:concept.trim().slice(0,120),amount,user:user.name};S.movs.push(m);
  audit(type==='ingreso'?'INGRESO_CAJA':'EGRESO_CAJA',rubName(rubroId)+' · '+m.concept+' · '+money(amount));emit('cash.movement',{type,rubro:rubroId,amount});save();return'';}
 function movModal(type,pref){if(!can('cash_mov'))return toast('Sin permiso',1);if(!openSess()){toast('Abrí la caja primero (Caja → Abrir caja)',1);return;}
+ if(ownerMode())return movModalOwner(type,pref);
  const opts=S.rubros.filter(r=>!r.sys&&(type==='egreso'?r.kind!=='cobr':r.kind!=='shared'));
  const w=modal(type==='ingreso'?'Ingreso de efectivo':'Egreso de efectivo',`<p class="sm mut">${type==='ingreso'?'Suma efectivo a la caja del rubro que elijas.':'Resta de la caja del rubro que elijas (por ejemplo, un pago entre socios).'}</p><label for="mv-r">Rubro / persona de quien es la caja (obligatorio)</label><select id="mv-r"><option value="">— Elegí un rubro —</option>${opts.map(r=>`<option value="${r.id}">${esc(r.name)}${r.owner?' ('+esc(r.owner)+')':''}</option>`).join('')}</select>
  <label for="mv-c">Motivo / concepto</label><input id="mv-c" maxlength="120" placeholder="Ej.: pago a proveedor, reintegro, retiro" autocomplete="off" value="${esc(pref||'')}">
@@ -984,28 +1004,28 @@ let invSel=new Set();
 const canDelItems=()=>!!user&&user.role==='admin'; /* V26 4.16: sólo el rol Administrador; no es un permiso delegable */
 const RUB_COLORS=['#c9963e','#7b2d3b','#6b6a5a','#2f6f8f','#3d7a4f','#8a6fb0','#b5543a','#2b7a78','#a0527c','#5d6d3f'];
 const safeColor=c=>/^#[0-9a-fA-F]{6}$/.test(String(c||''))?c:'#8a6fb0';
-const prodStatus=p=>p.stock<0?'neg':(p.stock===0?'zero':(p.stock<=5?'low':'ok'));
+const prodStatus=p=>{const v=stockOf(p);return v<0?'neg':(v===0?'zero':(v<=5?'low':'ok'));};
 reg('inventario','Inventario','box','edit_products',()=>{
  const R=S.rubros.filter(r=>r.kind==='rubro');const q=invF.q.toLowerCase();
  const base=S.products.filter(p=>(invF.arch?!!p.archived:!p.archived)&&(!q||p.name.toLowerCase().includes(q)||(p.sub||'').toLowerCase().includes(q)||(p.barcode||'').includes(q))&&(!invF.low||p.stock<=5));
  const L=base.filter(p=>!invF.rub||p.rubro===invF.rub);const cv=can('view_cost');
  const cnt=id=>base.filter(p=>p.rubro===id).length;
- const tabs=`<div class="rtabs" role="tablist" aria-label="Rubros"><button type="button" role="tab" class="rtab ${invF.rub?'':'on'}" data-act="irub" data-id="" aria-selected="${!invF.rub}">Todos <b>${base.length}</b></button>${R.map(r=>`<button type="button" role="tab" class="rtab ${invF.rub===r.id?'on':''}" data-act="irub" data-id="${r.id}" aria-selected="${invF.rub===r.id}" style="--rc:${safeColor(r.color)}"><i class="rdot" style="background:${safeColor(r.color)}"></i>${esc(r.name)} <b>${cnt(r.id)}</b></button>`).join('')}<button type="button" class="rtab add" data-act="rubEdit" data-id="">+ Rubro</button></div>`;
+ const tabs=`<div class="rtabs" role="tablist" aria-label="${RWs(1)}"><button type="button" role="tab" class="rtab ${invF.rub?'':'on'}" data-act="irub" data-id="" aria-selected="${!invF.rub}">Todos <b>${base.length}</b></button>${R.map(r=>`<button type="button" role="tab" class="rtab ${invF.rub===r.id?'on':''}" data-act="irub" data-id="${r.id}" aria-selected="${invF.rub===r.id}" style="--rc:${safeColor(r.color)}"><i class="rdot" style="background:${safeColor(r.color)}"></i>${esc(r.name)} <b>${cnt(r.id)}</b></button>`).join('')}<button type="button" class="rtab add" data-act="rubEdit" data-id="">+ ${RW(1)}</button></div>`;
  const negN=S.products.filter(p=>p.stock<0&&!p.archived).length;const cd=canDelItems();const nArch=S.products.filter(p=>p.archived).length;
  const vis=new Set(L.map(p=>p.id));[...invSel].forEach(id=>{if(!vis.has(id))invSel.delete(id);});
  const row=p=>{const r=rub(p.rubro);const col=safeColor(r&&r.color);const st=prodStatus(p);
-  return `<tr class="st-${st}" style="--rc:${col}">${cd?`<td class="ck"><input type="checkbox" class="isel" data-id="${p.id}" ${invSel.has(p.id)?'checked':''} aria-label="Seleccionar ${esc(p.name)}"></td>`:''}<td class="rb" data-sv="${esc(p.name)}"><b>${esc(p.name)}</b>${p.sub?` <span class="mut sm">${esc(p.sub)}</span>`:''}${p.archived?' <span class="tag bad">archivado</span>':(p.active?'':' <span class="tag bad">inactivo</span>')}${p.needStock?' <span class="tag warn" title="No se vende sin stock">exige stock</span>':''}${p.demo?' <span class="tag sim" title="Costo y stock de ejemplo">ej.</span>':''}</td><td><span class="rchip" style="--rc:${col}"><i class="rdot" style="background:${col}"></i>${esc(rubName(p.rubro))}</span></td><td class="r">${money(p.price)}${p.unit!=='u'?' <span class="mut sm">/ '+unitLbl(p.unit)+'</span>':''}</td>${wsInvTd(p)}${cv?`<td class="r">${money(p.cost)}</td><td class="r">${p.price&&p.cost>0?numAR((p.price-p.cost)/p.price*100,1)+' %':'—'}</td>`:''}<td class="r">${st==='neg'?`<span class="tag bad" title="Se vendió sin stock">${esc(stockTxt(p))}</span>`:st==='zero'?`<span class="tag bad">0 ${esc(unitLbl(p.unit))}</span>`:st==='low'?`<span class="tag warn">${esc(stockTxt(p))}</span>`:esc(stockTxt(p))}${wsStockSub(p)}</td><td>${p.menu?'<span class="tag ok">publicado</span>':'—'}</td><td class="r">${p.archived?(cd?`<button class="btn sm" data-act="prest" data-id="${p.id}">Restaurar</button>`:''):`<button class="btn sm" data-act="pedit" data-id="${p.id}">Editar</button> <button class="btn sm" data-act="padj" data-id="${p.id}">Stock</button>${cd?` <button class="btn sm danger" data-act="pdel" data-id="${p.id}" aria-label="Eliminar ${esc(p.name)}">Eliminar</button>`:''}`}</td></tr>`;};
- const head=`<thead><tr>${cd?'<th class="ck" data-nosort><input type="checkbox" id="isel-all" aria-label="Seleccionar todos los artículos visibles"></th>':''}<th>Producto</th><th>Rubro</th><th class="r">Precio</th>${wsInvTh()}${cv?'<th class="r">Costo</th><th class="r">Margen</th>':''}<th class="r">Stock</th><th>Menú</th><th></th></tr></thead>`;
+  return `<tr class="st-${st}" style="--rc:${col}">${cd?`<td class="ck"><input type="checkbox" class="isel" data-id="${p.id}" ${invSel.has(p.id)?'checked':''} aria-label="Seleccionar ${esc(p.name)}"></td>`:''}<td class="rb" data-sv="${esc(p.name)}"><b>${esc(p.name)}</b>${p.sub?` <span class="mut sm">${esc(p.sub)}</span>`:''}${p.archived?' <span class="tag bad">archivado</span>':(p.active?'':' <span class="tag bad">inactivo</span>')}${p.needStock?' <span class="tag warn" title="No se vende sin stock">exige stock</span>':''}${isKit(p)?` <span class="tag" title="Al venderlo se descuenta cada artículo">combo</span><div class="sm mut">${esc(kitTxt(p))}</div>`:''}${p.demo?' <span class="tag sim" title="Costo y stock de ejemplo">ej.</span>':''}</td><td><span class="rchip" style="--rc:${col}"><i class="rdot" style="background:${col}"></i>${esc(rubName(p.rubro))}</span></td><td class="r">${money(p.price)}${p.unit!=='u'?' <span class="mut sm">/ '+unitLbl(p.unit)+'</span>':''}</td>${wsInvTd(p)}${cv?`<td class="r">${money(p.cost)}</td><td class="r">${p.price&&p.cost>0?numAR((p.price-p.cost)/p.price*100,1)+' %':'—'}</td>`:''}<td class="r">${st==='neg'?`<span class="tag bad" title="Se vendió sin stock">${esc(stockTxt(p))}</span>`:st==='zero'?`<span class="tag bad">0 ${esc(unitLbl(p.unit))}</span>`:st==='low'?`<span class="tag warn">${esc(stockTxt(p))}</span>`:esc(stockTxt(p))}${wsStockSub(p)}</td><td>${p.menu?'<span class="tag ok">publicado</span>':'—'}</td><td class="r">${p.archived?(cd?`<button class="btn sm" data-act="prest" data-id="${p.id}">Restaurar</button>`:''):`<button class="btn sm" data-act="pedit" data-id="${p.id}">Editar</button> <button class="btn sm" data-act="padj" data-id="${p.id}">Stock</button>${cd?` <button class="btn sm danger" data-act="pdel" data-id="${p.id}" aria-label="Eliminar ${esc(p.name)}">Eliminar</button>`:''}`}</td></tr>`;};
+ const head=`<thead><tr>${cd?'<th class="ck" data-nosort><input type="checkbox" id="isel-all" aria-label="Seleccionar todos los artículos visibles"></th>':''}<th>Producto</th><th>${RW(1)}</th><th class="r">Precio</th>${wsInvTh()}${cv?'<th class="r">Costo</th><th class="r">Margen</th>':''}<th class="r">Stock</th><th>Menú</th><th></th></tr></thead>`;
  const colspan=(cv?8:6)+(cd?1:0)+wsInvCols();
  let body='';
  if(invF.group&&!invF.rub){R.forEach(r=>{const l=L.filter(p=>p.rubro===r.id);if(!l.length)return;const col=safeColor(r.color);
-   body+=`<tr class="rgroup" style="--rc:${col}"><td colspan="${colspan}"><i class="rdot" style="background:${col}"></i><b>${esc(r.name)}</b> <span class="mut sm">${l.length} producto${l.length===1?'':'s'}${r.menuOn===false?' · fuera del menú':''}${r.age?' · +18':''}${r.alcohol?' · alcohol':''}</span> <button class="btn sm" data-act="rubEdit" data-id="${r.id}">Editar rubro</button></td></tr>`+l.map(row).join('');});
-  const sin=L.filter(p=>!rub(p.rubro));if(sin.length)body+=`<tr class="rgroup"><td colspan="${colspan}"><b>Sin rubro</b></td></tr>`+sin.map(row).join('');}
+   body+=`<tr class="rgroup" style="--rc:${col}"><td colspan="${colspan}"><i class="rdot" style="background:${col}"></i><b>${esc(r.name)}</b> <span class="mut sm">${l.length} producto${l.length===1?'':'s'}${r.menuOn===false?' · fuera del menú':''}${r.age?' · +18':''}${r.alcohol?' · alcohol':''}</span> <button class="btn sm" data-act="rubEdit" data-id="${r.id}">Editar ${RW()}</button></td></tr>`+l.map(row).join('');});
+  const sin=L.filter(p=>!rub(p.rubro));if(sin.length)body+=`<tr class="rgroup"><td colspan="${colspan}"><b>Sin ${RW()}</b></td></tr>`+sin.map(row).join('');}
  else body=L.map(row).join('');
  const cur=invF.rub?rub(invF.rub):null;
  return `<div class="row"><h1 class="sp">Inventario</h1>${expBar('productos')}<button class="btn gold" data-act="pedit" data-id="">+ Producto</button></div>
  ${negN?`<div class="errbox">${negN} producto${negN===1?'':'s'} con stock negativo (se vendió sin stock). Cargá la compra o ajustá el stock para regularizar.</div>`:''}
- <div class="card">${tabs}<div class="row" style="margin-top:.7rem"><input id="iq" placeholder="Buscar por nombre, presentación o código…" value="${esc(invF.q)}" style="max-width:320px" aria-label="Buscar producto"><label class="chk" style="margin:0"><input type="checkbox" id="ig" ${invF.group?'checked':''}> Agrupar por rubro</label><label class="chk" style="margin:0"><input type="checkbox" id="il" ${invF.low?'checked':''}> Sólo stock bajo / negativo</label>${cd||nArch?`<label class="chk" style="margin:0"><input type="checkbox" id="ia" ${invF.arch?'checked':''}> Ver archivados (${nArch})</label>`:''}${cur?`<button class="btn sm" data-act="rubEdit" data-id="${cur.id}">Editar rubro «${esc(cur.name)}»</button>`:''}</div>
+ <div class="card">${tabs}<div class="row" style="margin-top:.7rem"><input id="iq" placeholder="Buscar por nombre, presentación o código…" value="${esc(invF.q)}" style="max-width:320px" aria-label="Buscar producto"><label class="chk" style="margin:0"><input type="checkbox" id="ig" ${invF.group?'checked':''}> Agrupar por ${RW()}</label><label class="chk" style="margin:0"><input type="checkbox" id="il" ${invF.low?'checked':''}> Sólo stock bajo / negativo</label>${cd||nArch?`<label class="chk" style="margin:0"><input type="checkbox" id="ia" ${invF.arch?'checked':''}> Ver archivados (${nArch})</label>`:''}${cur?`<button class="btn sm" data-act="rubEdit" data-id="${cur.id}">Editar ${RW()} «${esc(cur.name)}»</button>`:''}</div>
  ${cd&&invSel.size?`<div class="selbar" role="region" aria-label="Acciones sobre la selección"><b>${invSel.size}</b> seleccionado${invSel.size===1?'':'s'} <button class="btn sm danger" data-act="pdelSel">Eliminar…</button> <button class="btn sm" data-act="parchSel">Archivar…</button> <button class="btn sm ghost" data-act="pselClr">Quitar selección</button></div>`:(cd&&!invF.arch?'<p class="sm mut" style="margin:.4rem 0 0">Administrador: tildá artículos para eliminarlos o archivarlos. Los que tienen historial no se borran: se archivan.</p>':'')}
  <div class="tw"><table class="inv">${head}<tbody>${body||`<tr><td colspan="${colspan}" class="mut">No hay productos con este filtro.</td></tr>`}</tbody></table></div></div>
  <p class="sm mut">Venta sin stock: ${negOK()?'<b>permitida</b> (queda en negativo y se marca en rojo)':'<b>bloqueada</b>'} · se cambia en Configuración o por producto ("exigir stock"). El costo y el margen sólo los ven los roles con permiso. Eliminar y archivar es sólo del Administrador; un artículo con ventas o movimientos no se borra: se archiva y el historial queda intacto.</p>`;},()=>{
@@ -1015,43 +1035,47 @@ reg('inventario','Inventario','box','edit_products',()=>{
 A.irub=el=>{invF.rub=el.dataset.id||'';rerender();};
 A.rubEdit=el=>{if(!can('edit_products'))return toast('Sin permiso',1);const r=el&&el.dataset.id?rub(el.dataset.id):null;if(el&&el.dataset.id&&(!r||r.kind!=='rubro'))return;
  const col=safeColor(r?r.color:RUB_COLORS[S.rubros.filter(x=>x.kind==='rubro').length%RUB_COLORS.length]);
- const w=modal(r?'Editar rubro':'Nuevo rubro',`<label for="rb-n">Nombre del rubro</label><input id="rb-n" maxlength="40" value="${esc(r?r.name:'')}" autocomplete="off">
+ const w=modal((r?'Editar ':'Nuevo'+(ownerMode()?'a ':' '))+RW(),`<label for="rb-n">Nombre de la ${ownerMode()?'categoría':'rubro'}</label><input id="rb-n" maxlength="40" value="${esc(r?r.name:'')}" autocomplete="off">
  <label>Color (para distinguirlo en inventario, Vender y reportes)</label><div class="row" id="rb-cols">${RUB_COLORS.map(c=>`<button type="button" class="swatch ${c.toLowerCase()===col.toLowerCase()?'on':''}" data-col="${c}" style="background:${c}" aria-label="Color ${c}"></button>`).join('')}</div><input type="hidden" id="rb-c" value="${col}">
- <div class="grid g2"><div><label for="rb-o">Responsable (opcional)</label><input id="rb-o" maxlength="40" value="${esc(r?r.owner:'')}"></div><div><label for="rb-l">Diseño en el menú</label><select id="rb-l">${[['grid','Grilla (promos)'],['rows','Filas (lista)'],['bodegas','Por bodega / grupo']].map(([v,t])=>`<option value="${v}" ${(r?r.layout:'grid')===v?'selected':''}>${t}</option>`).join('')}</select></div></div>
+ <div class="grid g2">${ownerMode()?'<input type="hidden" id="rb-o" value="">':`<div><label for="rb-o">Responsable (opcional)</label><input id="rb-o" maxlength="40" value="${esc(r?r.owner:'')}"></div>`}<div><label for="rb-l">Diseño en el menú</label><select id="rb-l">${[['grid','Grilla (promos)'],['rows','Filas (lista)'],['bodegas','Por bodega / grupo']].map(([v,t])=>`<option value="${v}" ${(r?r.layout:'grid')===v?'selected':''}>${t}</option>`).join('')}</select></div></div>
  <label for="rb-m">Nombre en el menú digital</label><input id="rb-m" maxlength="30" value="${esc(r?(r.mNom||r.name):'')}">
- <label class="chk"><input type="checkbox" id="rb-sh" ${!r||r.menuOn!==false?'checked':''}> Mostrar este rubro en el menú digital</label>
+ <label class="chk"><input type="checkbox" id="rb-sh" ${!r||r.menuOn!==false?'checked':''}> Mostrar esta ${RW()} en el menú digital</label>
  <label class="chk"><input type="checkbox" id="rb-a" ${r&&r.alcohol?'checked':''}> Vende alcohol (se oculta fuera del horario permitido)</label>
  <label class="chk"><input type="checkbox" id="rb-g" ${r&&r.age?'checked':''}> Sólo mayores de 18 (tabaco): sin promociones ni descuentos</label>`,
- {okText:'Guardar rubro',onOk:w=>{const n=val('rb-n').trim();if(!n)return w._err('Falta el nombre.'),false;if(S.rubros.some(x=>norm(x.name)===norm(n)&&(!r||x.id!==r.id)))return w._err('Ya existe un rubro con ese nombre.'),false;
+ {okText:'Guardar rubro',onOk:w=>{const n=val('rb-n').trim();if(!n)return w._err('Falta el nombre.'),false;if(S.rubros.some(x=>norm(x.name)===norm(n)&&(!r||x.id!==r.id)))return w._err('Ya existe '+(ownerMode()?'una categoría':'un rubro')+' con ese nombre.'),false;
   const c=safeColor(val('rb-c'));const d={name:n,owner:val('rb-o').trim(),color:c,layout:val('rb-l'),mNom:val('rb-m').trim()||n,mTitle:r&&r.mTitle?r.mTitle:n,menuOn:$('#rb-sh',w).checked,alcohol:$('#rb-a',w).checked,age:$('#rb-g',w).checked};
   if(r){Object.assign(r,d);audit('RUBRO_EDITAR',n);}else{S.rubros.splice(S.rubros.findIndex(x=>x.kind==='shared'),0,Object.assign({id:uid(),reparte:false,kind:'rubro',mHint:''},d));audit('RUBRO_ALTA',n);}
-  save();rerender();pubRefresh();toast('Rubro guardado');}});
+  save();rerender();pubRefresh();toast(RW(1)+' guardad'+(ownerMode()?'a':'o'));}});
  w.addEventListener('click',e=>{const b=e.target.closest('.swatch');if(!b)return;$('#rb-c',w).value=b.dataset.col;$$('.swatch',w).forEach(x=>x.classList.toggle('on',x===b));});};
 A.pedit=el=>{const p=S.products.find(x=>x.id===el.dataset.id)||null;const cv=can('view_cost');
  const w=modal(p?'Editar producto':'Nuevo producto',`<label for="pm-n">Nombre</label><input id="pm-n" value="${esc(p?p.name:'')}" maxlength="80">
- <div class="grid g2"><div><label for="pm-r">Rubro (a quién pertenece)</label><select id="pm-r"><option value="">— Elegí —</option>${S.rubros.filter(r=>r.kind==='rubro').map(r=>`<option value="${r.id}" ${p&&p.rubro===r.id?'selected':''}>${esc(r.name)}${r.owner?' ('+esc(r.owner)+')':''}</option>`).join('')}</select></div>
+ <div class="grid g2"><div><label for="pm-r">${ownerMode()?'Categoría':'Rubro (a quién pertenece)'}</label><select id="pm-r"><option value="">— Elegí —</option>${S.rubros.filter(r=>r.kind==='rubro').map(r=>`<option value="${r.id}" ${p&&p.rubro===r.id?'selected':''}>${esc(r.name)}${r.owner&&!ownerMode()?' ('+esc(r.owner)+')':''}</option>`).join('')}</select></div>
  <div><label for="pm-u">Unidad</label><select id="pm-u">${['u','kg','l'].map(u=>`<option value="${u}" ${p&&p.unit===u?'selected':''}>${unitLbl(u)}</option>`).join('')}</select></div></div>
  ${cv?`<div class="grid g3"><div><label for="pm-c">Costo ($)</label>${numIn('pm-c',p?p.cost:0)}</div><div><label for="pm-t">Cálculo</label><select id="pm-t"><option value="recargo">Recargo sobre costo</option><option value="margen">Margen bruto sobre precio</option></select></div><div><label for="pm-p">Porcentaje (%)</label><input id="pm-p" inputmode="decimal" placeholder="30" autocomplete="off"></div></div><p id="pm-s" class="sm mut">Ingresá costo y porcentaje para ver el precio sugerido.</p>`:''}
  <label for="pm-f">Precio final de venta ($)</label>${numIn('pm-f',p?p.price:0)}<p id="pm-x" class="sm mut"></p>
  <div class="grid g2"><div><label for="pm-st">Stock (<span id="pm-ul">und</span>)</label><input id="pm-st" inputmode="decimal" placeholder="0" value="${p?esc(String(p.stock).replace('.',',')):''}" autocomplete="off"></div><div><label for="pm-b">Código de barras</label><input id="pm-b" value="${esc(p?p.barcode:'')}"></div></div>
  ${wsProdBlock(p)}
+ ${comboBlock(p)}
  <div class="grid g3"><div><label for="pm-sub">Presentación (ej. 750 ml)</label><input id="pm-sub" maxlength="40" value="${esc(p&&p.sub?p.sub:'')}"></div><div><label for="pm-gr">Grupo / bodega (menú)</label><input id="pm-gr" maxlength="40" value="${esc(p&&p.grupo?p.grupo:'')}"></div><div><label for="pm-plu">PLU de balanza (si es por peso)</label><input id="pm-plu" inputmode="numeric" maxlength="5" value="${esc(p&&p.plu?p.plu:'')}"></div></div>
  <label for="pm-d">Descripción (menú)</label><input id="pm-d" value="${esc(p?p.desc:'')}" maxlength="120"><label for="pm-e">Nombre en inglés (opcional)</label><input id="pm-e" value="${esc(p&&p.en?p.en:'')}" maxlength="80">
  <label class="chk"><input type="checkbox" id="pm-m" ${p&&p.menu?'checked':''}> Publicar en menú digital</label><label class="chk"><input type="checkbox" id="pm-a" ${!p||p.active?'checked':''}> Activo</label><label class="chk"><input type="checkbox" id="pm-ns" ${p&&p.needStock?'checked':''}> Exigir stock (no permitir vender sin stock este producto)</label>`,
  {okText:'Guardar',onOk:w=>{const name=val('pm-n').trim(),rubro=val('pm-r'),pr=cents(val('pm-f')),st=parseNum(val('pm-st')===''?'0':val('pm-st'));let cost=p?p.cost:0;if(cv){const c=cents(val('pm-c')===''?'0':val('pm-c'));if(isNaN(c)||c<0)return w._err('Costo inválido.'),false;cost=c;}
-  if(!name)return w._err('Falta el nombre.'),false;if(!rubro||!rub(rubro))return w._err('Elegí el rubro del producto.'),false;if(!(pr>0))return w._err('El precio de venta debe ser mayor a cero.'),false;if(isNaN(st)||(st<0&&!(p&&st===p.stock)&&!negOK()))return w._err('Stock inválido (no puede ser negativo).'),false;
+  if(!name)return w._err('Falta el nombre.'),false;if(!rubro||!rub(rubro))return w._err('Elegí '+(ownerMode()?'la categoría':'el rubro')+' del producto.'),false;if(!(pr>0))return w._err('El precio de venta debe ser mayor a cero.'),false;if(isNaN(st)||(st<0&&!(p&&st===p.stock)&&!negOK()))return w._err('Stock inválido (no puede ser negativo).'),false;
   const bc=val('pm-b').trim();if(bc&&S.products.some(x=>x.barcode===bc&&(!p||x.id!==p.id)))return w._err('Ya existe otro producto con ese código de barras.'),false;
   const plu=val('pm-plu').trim();if(plu&&!/^\d{1,5}$/.test(plu))return w._err('El PLU son hasta 5 números.'),false;if(plu&&S.products.some(x=>x.plu&&String(+x.plu)===String(+plu)&&(!p||x.id!==p.id)))return w._err('Ese PLU ya lo usa otro producto.'),false;
   const W=wsProdRead(p,pr,bc,cost);if(W&&W.err)return w._err(W.err),false;
+  const K=comboRead(w,p);if(K.err)return w._err(K.err),false;
   const d={name,sub:val('pm-sub').trim(),grupo:val('pm-gr').trim(),plu,rubro,unit:val('pm-u'),price:pr,cost,stock:st,barcode:bc,desc:val('pm-d').trim(),en:val('pm-e').trim(),menu:$('#pm-m',w).checked,active:$('#pm-a',w).checked,needStock:$('#pm-ns',w).checked};
   if(W){if(JSON.stringify(W.pres)!==JSON.stringify((p&&p.pres)||[])||W.floor!==((p&&p.floor)||0))audit('PRESENTACIONES_PRODUCTO',name+' · '+(W.pres.map(k=>wsLvName(k.lv)+' ×'+k.qty+' '+money(k.unit)+'/u').join(' · ')||'sin presentaciones')+(W.floor?' · piso '+money(W.floor):''));d.pres=W.pres;d.floor=W.floor;if(W.warns.length)setTimeout(()=>toast('Ojo: '+W.warns.join('; ')+'.',1),400);}
-  if(p&&p.stock!==st)d.hist=true;
+  if(K.kit){d.kit=K.kit;d.unit='u';d.stock=p?p.stock:0;if(cv&&!(cost>0))d.cost=kitCost({kit:K.kit});}else if(p&&isKit(p)){d.kit=[];}
+  if(K.kit&&JSON.stringify(K.kit)!==JSON.stringify((p&&p.kit)||[]))audit('COMBO_COMPOSICION',name+' = '+kitTxt({kit:K.kit}));else if(!K.kit&&p&&isKit(p))audit('COMBO_QUITADO',name);
+  if(p&&p.stock!==d.stock)d.hist=true;
   if(p){if(p.price!==pr||p.cost!==cost)audit('PRECIO_PRODUCTO',p.name+': precio '+money(p.price)+' → '+money(pr)+(p.cost!==cost?' · costo '+money(p.cost)+' → '+money(cost):''));Object.assign(p,d);audit('EDITAR_PRODUCTO',name);}
   else{S.products.push(Object.assign({id:uid()},d));audit('ALTA_PRODUCTO',name+' · '+rubName(rubro));}save();rerender();toast('Producto guardado');}});
  const upd=()=>{const ul=$('#pm-ul',w);if(ul)ul.textContent=unitLbl(val('pm-u'));if(!cv)return;const c=cents(val('pm-c')),pc=parseNum(val('pm-p')),sg=sugPrice(c,val('pm-t'),pc);const s=$('#pm-s',w);
   if(val('pm-p')==='')s.textContent='Ingresá costo y porcentaje para ver el precio sugerido.';else if(isNaN(sg))s.textContent=val('pm-t')==='margen'?'El margen debe estar entre 0 y menos de 100 %.':'Porcentaje o costo inválido.';else s.innerHTML='Precio sugerido: <b>'+money(sg)+'</b> <button class="btn sm" type="button" id="pm-use">Usar sugerido</button>';
   const f=cents(val('pm-f'));const x=$('#pm-x',w);if(!isNaN(f)&&!isNaN(c)&&c>0){x.textContent='Con ese precio: recargo '+numAR((f-c)/c*100,1)+' % · margen bruto '+numAR((f-c)/f*100,1)+' %';}else x.textContent='';};
- wsProdBind(w,cv);w.addEventListener('input',upd);w.addEventListener('change',upd);w.addEventListener('click',e=>{if(e.target.id==='pm-use'){const sg=sugPrice(cents(val('pm-c')),val('pm-t'),parseNum(val('pm-p')));if(!isNaN(sg)){$('#pm-f',w).value=pesosStr(sg);upd();}}});upd();};
+ wsProdBind(w,cv);comboBind(w,p);w.addEventListener('input',upd);w.addEventListener('change',upd);w.addEventListener('click',e=>{if(e.target.id==='pm-use'){const sg=sugPrice(cents(val('pm-c')),val('pm-t'),parseNum(val('pm-p')));if(!isNaN(sg)){$('#pm-f',w).value=pesosStr(sg);upd();}}});upd();};
 /* ===== V26 · 4.16 Eliminación protegida de artículos (sólo Administrador) =====
    · Borrado físico SOLO si no hay ventas, movimientos ni otras referencias; con historial se ARCHIVA (borrado lógico).
    · El servidor vuelve a validar todo (06-v26.sql): ocultar el botón no es seguridad.
@@ -1107,7 +1131,7 @@ A.prest=el=>{if(!canDelItems())return toast('Sólo el Administrador',1);const p=
  const dup=p.barcode&&S.products.some(x=>x!==p&&!x.archived&&x.barcode===p.barcode);if(dup)return toast('No se puede restaurar: otro artículo usa el mismo código de barras.',1);
  const dp=p.plu&&S.products.some(x=>x!==p&&!x.archived&&x.plu&&String(+x.plu)===String(+p.plu));if(dp)return toast('No se puede restaurar: otro artículo usa el mismo PLU.',1);
  p.archived=false;p.active=true;delete p.archivedAt;audit('INV_RESTAURAR',p.name);save();rerender();toast('Artículo restaurado');};
-A.padj=el=>{const p=prod(el.dataset.id);const PR=wsOn()?wsPres(p):[];
+A.padj=el=>{const p=prod(el.dataset.id);if(isKit(p))return toast('Un combo no tiene stock propio: se ajusta el stock de cada artículo ('+kitTxt(p)+').',1);const PR=wsOn()?wsPres(p):[];
  const w=modal('Ajustar stock · '+p.name,`<p>Stock actual: <b class="${p.stock<0?'negs':''}">${esc(stockTxt(p))}</b>${wsStockSub(p)}</p>${PR.length?`<label for="aj-u">Contar en</label><select id="aj-u"><option value="1">Unidad</option>${PR.map(k=>`<option value="${k.qty}">${esc(wsLvName(k.lv))} (${numAR(k.qty,3)} u)</option>`).join('')}</select>`:''}<label for="aj-d">Cantidad a sumar o restar (use - para restar)</label><input id="aj-d" inputmode="decimal" placeholder="0" autocomplete="off"><p class="sm mut" id="aj-eq"></p><label for="aj-m">Motivo</label><input id="aj-m" maxlength="100">`,
  {onOk:w=>{const mul=PR.length?(+val('aj-u')||1):1;const d0=parseNum(val('aj-d'));const d=Math.round(d0*mul*1000)/1000;if(isNaN(d)||d===0)return w._err('Ingresá una cantidad distinta de cero.'),false;if(val('aj-m').trim().length<3)return w._err('El motivo es obligatorio.'),false;if(p.stock+d<0&&!canOver(p))return w._err('El stock no puede quedar negativo (este producto exige stock o la venta sin stock está bloqueada).'),false;
   stockAdjust(p,d,val('aj-m')+(mul>1?' ('+d0+' × '+numAR(mul,3)+' u)':''));rerender();}});
@@ -1124,9 +1148,9 @@ reg('caja','Caja','cash','cash_mov',()=>{const s=openSess();
  return `<div class="row"><h1 class="sp">Caja ${S.tenant.caja}${cashHdr(s)}</h1>${expBar('movimientos')}<button class="btn gold" data-act="nav" data-id="arqueo">Arqueo y cierre →</button></div>
  ${old?`<div class="errbox">Esta caja se abrió el ${dmy(dkey(s.openedAt))} y sigue abierta: hay días con ventas sin cierre.</div>`:''}
  <div class="grid g4"><div class="card kpi"><b>${money(s.opening)}</b><span>Apertura (${esc(s.openedBy)} · ${fmtDT(s.openedAt)})</span></div><div class="card kpi"><b>${money(a.total)}</b><span>Ventas confirmadas (${a.count})</span></div><div class="card kpi"><b>${money(a.cobrado)}</b><span>Cobrado real hoy</span></div>${a.aCtaCte?`<div class="card kpi"><b class="neg">${money(a.aCtaCte)}</b><span>A cuenta corriente (no entró a caja)</span></div>`:''}<div class="card kpi"><b>${money(a.expectedCash)}</b><span>Efectivo esperado hoy</span></div>${a.pend.n?`<div class="card kpi"><b class="neg">${a.pend.n}</b><span>Cobros digitales pendientes · ${money(a.pend.total)}</span></div>`:''}</div>
- ${typeof rubCashCard==='function'?rubCashCard(s):''}
+ ${ownerMode()?'':(typeof rubCashCard==='function'?rubCashCard(s):'')}
  <div class="row" style="margin:1rem 0"><button class="btn" data-act="mov" data-type="ingreso">+ Ingreso de efectivo</button><button class="btn" data-act="mov" data-type="egreso">− Egreso de efectivo</button></div>
- <div class="card"><h3>Movimientos</h3><div class="tw"><table><thead><tr><th>Hora</th><th>Tipo</th><th>Rubro</th><th>Concepto</th><th class="r">Importe</th><th>Usuario</th><th></th></tr></thead><tbody>${ms.map(m=>`<tr><td>${hm(m.ts)}</td><td>${m.type==='ingreso'?'<span class="tag ok">Ingreso</span>':'<span class="tag bad">Egreso</span>'}</td><td>${esc(m.rubroName)}</td><td>${esc(m.concept)}</td><td class="r">${m.type==='ingreso'?'':'- '}${money(m.amount)}</td><td>${esc(m.user)}</td><td>${typeof expBtn==='function'?expBtn('mov',m.id,'Expediente'):''}</td></tr>`).join('')||'<tr><td colspan="7" class="mut">Sin movimientos.</td></tr>'}</tbody></table></div></div>
+ <div class="card"><h3>Movimientos</h3><div class="tw"><table><thead><tr><th>Hora</th><th>Tipo</th>${ownerMode()?'':'<th>Rubro</th>'}<th>Concepto</th><th class="r">Importe</th><th>Usuario</th><th></th></tr></thead><tbody>${ms.map(m=>`<tr><td>${hm(m.ts)}</td><td>${m.type==='ingreso'?'<span class="tag ok">Ingreso</span>':'<span class="tag bad">Egreso</span>'}</td>${ownerMode()?'':`<td>${esc(m.rubroName)}</td>`}<td>${esc(m.concept)}</td><td class="r">${m.type==='ingreso'?'':'- '}${money(m.amount)}</td><td>${esc(m.user)}</td><td>${typeof expBtn==='function'?expBtn('mov',m.id,'Expediente'):''}</td></tr>`).join('')||`<tr><td colspan="${ownerMode()?6:7}" class="mut">Sin movimientos.</td></tr>`}</tbody></table></div></div>
  ${xferPendingCard(s)}
  ${cajaSalesCard(s)}
  ${typeof pdConcilCard==='function'?pdConcilCard():''}`;},()=>{if(typeof xfOpenSync==='function')xfOpenSync();},'Operación');
@@ -1139,6 +1163,7 @@ A.voidsale=el=>{const s=S.sales.find(x=>x.id===el.dataset.id);if(!s)return;modal
 /* ===== Arqueo ===== */
 function arqDraft(sess){return S.arqDraft[sess.id]||(S.arqDraft[sess.id]={taxes:{}});}
 reg('arqueo','Arqueo / cierre','list','close_cash',()=>{const s=openSess();if(!s)return `<h1>Arqueo</h1><div class="card"><p>No hay caja abierta. Abrila en <a href="#panel/caja">Caja</a>.</p></div>`;
+ if(ownerMode())return arqOwnerHTML(s);
  const d=arqDraft(s);const emps=S.employees.filter(e=>e.active);const rp=repartRubros();
  return `<div class="row"><h1 class="sp">Arqueo y detalle de reparto</h1><span class="tag warn">Vista previa · todavía no cierra la caja</span></div>
  <div class="grid g2" style="align-items:start"><div class="card"><h3>1 · Sueldo del empleado</h3>
@@ -1181,8 +1206,8 @@ A.arqClose=()=>{const c=arqCtx();if(!c)return;if(c.a.declared===null)return toas
 const verifyClosure=c=>c.hash===sha256(JSON.stringify({data:c.data,text:c.text,ts:c.ts,user:c.user,sess:c.sessId}));
 reg('cierres','Cajas cerradas','lock','close_cash',()=>`<div class="row"><h1 class="sp">Cajas cerradas</h1>${expBar('cierres')}</div><div class="card"><div class="tw"><table><thead><tr><th>Fecha</th><th>Caja</th><th>Cerró</th><th class="r">Ventas</th><th class="r">Diferencia</th><th>Sello</th><th></th></tr></thead><tbody>${S.closures.slice().reverse().map(c=>`<tr><td>${fmtDT(c.ts)}</td><td>${c.caja}${c.regName?' · '+esc(c.regName):''}</td><td>${esc(c.user)}</td><td class="r">${money(c.data.total)}</td><td class="r ${c.data.diff<0?'neg':''}">${money(c.data.diff)}</td><td class="sm mut">${c.hash.slice(0,10)}…</td><td class="r"><button class="btn sm" data-act="clview" data-id="${c.id}">Ver detalle</button></td></tr>`).join('')||'<tr><td colspan="7" class="mut">Todavía no hay cierres.</td></tr>'}</tbody></table></div></div>`,null,'Operación');
 A.clview=el=>{const c=S.closures.find(x=>x.id===el.dataset.id);if(!c)return;const ok=verifyClosure(c);
- const w=modal('Cierre de caja '+fmtDT(c.ts),`<div class="${ok?'okbox':'errbox'}">Integridad: ${ok?'verificada (el sello coincide)':'ALTERADO: el sello no coincide'} · SHA-256 ${c.hash.slice(0,16)}…</div>${c.data&&c.data.reparte&&c.data.reparte[0]&&c.data.reparte[0].fis!==undefined&&typeof arqTablesHTML==='function'?arqTablesHTML(c.data):''}<div class="rep">${esc(c.text)}</div>
- <h3 style="margin-top:.8rem">Movimientos (con rubro)</h3><div class="tw"><table><tbody>${c.data.movs.map(m=>`<tr><td>${hm(m.ts)}</td><td>${esc(m.type)}</td><td>${esc(m.rubro)}</td><td>${esc(m.concept)}</td><td class="r">${money(m.amount)}</td></tr>`).join('')||'<tr><td class="mut">Sin movimientos</td></tr>'}</tbody></table></div>
+ const w=modal('Cierre de caja '+fmtDT(c.ts),`<div class="${ok?'okbox':'errbox'}">Integridad: ${ok?'verificada (el sello coincide)':'ALTERADO: el sello no coincide'} · SHA-256 ${c.hash.slice(0,16)}…</div>${c.data&&c.data.owner&&typeof ownerTablesHTML==='function'?ownerTablesHTML(c.data):(c.data&&c.data.reparte&&c.data.reparte[0]&&c.data.reparte[0].fis!==undefined&&typeof arqTablesHTML==='function'?arqTablesHTML(c.data):'')}<div class="rep">${esc(c.text)}</div>
+ <h3 style="margin-top:.8rem">Movimientos${c.data&&c.data.owner?'':' (con rubro)'}</h3><div class="tw"><table><tbody>${c.data.movs.map(m=>`<tr><td>${hm(m.ts)}</td><td>${esc(m.type)}</td>${c.data.owner?'':`<td>${esc(m.rubro)}</td>`}<td>${esc(m.concept)}</td><td class="r">${money(m.amount)}</td></tr>`).join('')||'<tr><td class="mut">Sin movimientos</td></tr>'}</tbody></table></div>
  ${typeof xferAfterHTML==='function'?xferAfterHTML(c):''}
  <h3 style="margin-top:.8rem">Notas de revisión (sólo se agregan)</h3>${c.notes.map(n=>`<p class="sm">${fmtDT(n.ts)} · ${esc(n.user)}: ${esc(n.text)}</p>`).join('')||'<p class="sm mut">Sin notas.</p>'}<label for="cn">Agregar nota</label><input id="cn" maxlength="200">
  <div class="row" style="margin-top:.6rem">${typeof expBtn==='function'?expBtn('cierre',c.id):''}<button class="btn" data-act="clcopy" data-id="${c.id}">Copiar texto</button><button class="btn" data-act="clwa" data-id="${c.id}">WhatsApp</button><button class="btn" data-act="clsales" data-id="${c.id}">Ver ventas del turno</button><button class="btn" onclick="window.print()">Imprimir</button></div>`,{okText:'Guardar nota',onOk:()=>{const t=val('cn').trim();if(t){c.notes.push({ts:now(),user:user.name,text:t});audit('NOTA_CIERRE',t);save();}}});};
@@ -1237,8 +1262,10 @@ function payCheck(pays,total,cust,recv){
 function commitSale(method,arca,channel,lines,opts){
  opts=opts||{};
  const sess=openSess();if(!sess)return{err:'No hay caja abierta.'};lines=lines||pos.lines;if(!lines.length)return{err:'La operación está vacía.'};
- const need={};lines.forEach(l=>need[l.pid]=(need[l.pid]||0)+l.qty);
- for(const pid in need){const p=prod(pid);if(!p||!p.active)return{err:'Producto no disponible.'};if(!canOver(p)&&need[pid]>p.stock+1e-9)return{err:'Sin stock suficiente de '+p.name+' (hay '+p.stock+'). Este producto exige stock.'};}
+ for(const l of lines){const p=prod(l.pid);if(!p||!p.active)return{err:'Producto no disponible.'};if(isKit(p)&&kitComps(p).length!==p.kit.length)return{err:'Al combo «'+p.name+'» le falta un artículo que ya no existe: revisalo en Inventario.'};if(isKit(p)&&!Number.isInteger(l.qty))return{err:'Los combos se venden por unidad entera.'};}
+ /* V26.14: los combos se abren en sus artículos: se descuenta cada uno (nunca el combo) */
+ const need=kitNeed(lines);
+ for(const pid in need){const p=prod(pid);if(!p)return{err:'Producto no disponible.'};if(!canOver(p)&&need[pid]>p.stock+1e-9)return{err:'Sin stock suficiente de '+p.name+' (hay '+p.stock+'). Este producto exige stock.'};}
  for(const l of lines){if(!(l.qty>0)||!(l.price>0))return{err:'Cantidad y precio deben ser mayores a cero.'};}
  /* beneficio: se recalcula acá (en la versión con servidor, en el servidor) */
  const cust=opts.custId?custById(opts.custId):null;
@@ -1258,7 +1285,7 @@ function commitSale(method,arca,channel,lines,opts){
  const c=S.tenant.caja;S.seq[c]=(S.seq[c]||0)+1;const digital=method==='qr'||method==='modo';
  pays.forEach(p=>{p.fee=(digital||p.m==='fiado')?0:Math.round(p.a*((S.cfg.fee[p.m]||0))/100);});
  const fiadoAmt=pc.fiadoAmt;
- const sale={id:opts.saleId||uid(),n:c+'-'+S.seq[c],ts:now(),user:user?user.name:'sistema',caja:c,sessId:sess.id,items:lines.map((l,i)=>({pid:l.pid,name:l.name,rubro:l.rubro,qty:l.qty,price:l.price,cost:l.cost,list:l.list,disc:alloc[i]||0,...(W&&l.rule?{lr:l.rule,ll:l.lst||'',lb:l.base||0}:{})})),total,method,
+ const sale={id:opts.saleId||uid(),n:c+'-'+S.seq[c],ts:now(),user:user?user.name:'sistema',caja:c,sessId:sess.id,items:lines.map((l,i)=>({pid:l.pid,name:l.name,rubro:l.rubro,qty:l.qty,price:l.price,cost:isKit(prod(l.pid))?kitCost(prod(l.pid)):l.cost,list:l.list,disc:alloc[i]||0,...(isKit(prod(l.pid))?{kit:kitSnap(l.pid)}:{}),...(W&&l.rule?{lr:l.rule,ll:l.lst||'',lb:l.base||0}:{})})),total,method,
   doc:arca?'factura_pendiente_cae':'ticket_interno',status:digital?'pendiente':'ok',fee:0,channel:channel||'local',cust:cust?cust.id:'',custName:cust?cust.name+' '+cust.last:'',
   coupon:ben.kind==='coupon'?ben.code:'',benefit:ben.disc?{kind:ben.kind,label:ben.label,disc:ben.disc}:null,recv:opts.recv||0,fiado:fiadoAmt>0,
   pays,fiadoAmt,paid:total-fiadoAmt,balance:fiadoAmt,vuelto:pc.vuelto,pstate:fiadoAmt<=0?'pagada':(fiadoAmt>=total?'pendiente':'parcial')};
@@ -1279,18 +1306,18 @@ function commitSale(method,arca,channel,lines,opts){
 
 function posGrid(){const g=$('#pgrid');if(!g)return;const q=pos.q.trim().toLowerCase();
  const list=S.products.filter(p=>p.active&&(!pos.rub||p.rubro===pos.rub)&&(!q||pfull(p).toLowerCase().includes(q)||(p.barcode&&p.barcode.includes(q))));
- g.innerHTML=list.map(p=>wsTile(p,`<button class="pbtn" data-act="padd" data-id="${p.id}" ${(p.stock<=0&&!canOver(p))?'disabled':''}><b>${esc(p.name)}</b>${p.sub?`<span>${esc(p.sub)}</span>`:''}<span><i class="rdot" style="background:${rub(p.rubro)?safeColor(rub(p.rubro).color):'#999'}"></i>${esc(rubName(p.rubro))}</span><span>${money(p.price)}${p.unit!=='u'?' / '+unitLbl(p.unit):''} · <span class="${p.stock<0?'negs':''}">stock ${stockTxt(p)}</span></span></button>`)).join('')||'<p class="mut">Sin resultados.</p>';}
+ g.innerHTML=list.map(p=>wsTile(p,`<button class="pbtn" data-act="padd" data-id="${p.id}" ${(stockOf(p)<=0&&!canOver(p))?'disabled':''}><b>${esc(p.name)}</b>${p.sub?`<span>${esc(p.sub)}</span>`:''}<span><i class="rdot" style="background:${rub(p.rubro)?safeColor(rub(p.rubro).color):'#999'}"></i>${esc(rubName(p.rubro))}</span><span>${money(p.price)}${p.unit!=='u'?' / '+unitLbl(p.unit):''} · <span class="${stockOf(p)<0?'negs':''}">stock ${stockTxt(p)}</span></span></button>`)).join('')||'<p class="mut">Sin resultados.</p>';}
 function posCart(){const c=$('#pcart');if(!c)return;const sess=openSess();if(typeof wsRecalc==='function'){wsRecalc();wsGridSync();}
  const fb=$('#fbar');if(fb)fb.innerHTML=fbarHTML();
  c.innerHTML=(sess?'':`<div class="warnbox">No hay caja abierta. <a href="#panel/caja">Abrí la caja</a> para vender.</div>`)+
  (pos.lines.length?pos.lines.map((l,i)=>`<div class="cline" style="${i===pos.sel?'background:#fbf5e8;border-radius:10px;padding:.5rem':''}"><div class="row"><b class="sp">${esc(l.name)}</b><span class="tag">${esc(rubName(l.rubro))}</span><button class="btn sm red" data-act="prm" data-i="${i}" aria-label="Quitar">✕</button></div>
-  <div class="f"><div><label>Cant.${l.unit!=='u'?' ('+unitLbl(l.unit)+')':''}</label><input inputmode="decimal" data-line="${i}" data-fld="qty" value="${esc(String(l.qty).replace('.',','))}"></div><div><label>Precio $</label><input inputmode="decimal" data-line="${i}" data-fld="price" value="${esc(pesosStr(l.price))}"></div><div><label>Importe $</label><input inputmode="decimal" data-line="${i}" data-fld="amt" value="${esc(pesosStr(lineTotal(l)))}"></div></div>${(()=>{const q=prod(l.pid);return q&&qtyIn(l.pid)>q.stock+1e-9?`<div class="tag bad" style="margin-top:.3rem">Sin stock: quedará en negativo (${stockTxt({stock:q.stock-qtyIn(l.pid),unit:q.unit})})</div>`:'';})()}${typeof wsLineInfo==='function'?wsLineInfo(l,i):''}${l.price!==l.list?`<div class="sm warn tag warn" style="margin-top:.3rem">Precio de lista ${money(l.list)} · modificado</div>`:''}${(l.unit!=='u'&&scaleReady())?`<button class="btn sm" data-act="pesar" data-i="${i}">⚖ Pesar</button>`:''}</div>`).join(''):'<p class="mut">Tocá un producto o pasá el lector de código de barras.</p>')+
+  <div class="f"><div><label>Cant.${l.unit!=='u'?' ('+unitLbl(l.unit)+')':''}</label><input inputmode="decimal" data-line="${i}" data-fld="qty" value="${esc(String(l.qty).replace('.',','))}"></div><div><label>Precio $</label><input inputmode="decimal" data-line="${i}" data-fld="price" value="${esc(pesosStr(l.price))}"></div><div><label>Importe $</label><input inputmode="decimal" data-line="${i}" data-fld="amt" value="${esc(pesosStr(lineTotal(l)))}"></div></div>${(()=>{const q=prod(l.pid);if(q&&isKit(q)){const short=kitComps(q).filter(x=>{const n=kitNeed(pos.lines)[x.pid]||0;return n>x.p.stock+1e-9;});return`<div class="sm mut" style="margin-top:.2rem">Combo: descuenta ${esc(kitTxt(q))}</div>`+(short.length?`<div class="tag bad" style="margin-top:.3rem">Sin stock: ${short.map(x=>esc(pfull(x.p))).join(', ')} quedará en negativo</div>`:'');}return q&&qtyIn(l.pid)>q.stock+1e-9?`<div class="tag bad" style="margin-top:.3rem">Sin stock: quedará en negativo (${stockTxt({stock:q.stock-qtyIn(l.pid),unit:q.unit})})</div>`:'';})()}${typeof wsLineInfo==='function'?wsLineInfo(l,i):''}${l.price!==l.list?`<div class="sm warn tag warn" style="margin-top:.3rem">Precio de lista ${money(l.list)} · modificado</div>`:''}${(l.unit!=='u'&&scaleReady())?`<button class="btn sm" data-act="pesar" data-i="${i}">⚖ Pesar</button>`:''}</div>`).join(''):'<p class="mut">Tocá un producto o pasá el lector de código de barras.</p>')+
  `${typeof wsCartBar==='function'?wsCartBar():''}<div class="row" style="margin:.7rem 0"><span class="sp mut">Total</span><span class="total">${money(posTotal())}</span></div>
  <p class="sm ${pos.arca?'':'mut'}">${pos.arca?'Documento: Factura electrónica (el CAE se pide a ARCA al cobrar)':'Documento: Ticket interno — DOCUMENTO NO VÁLIDO COMO FACTURA'}</p>
  <p class="sm mut">Medio elegido: <b>${esc(MET[pos.method]||pos.method)}</b></p>
  <button class="btn gold" style="width:100%;min-height:56px;font-size:1.1rem" data-act="cobrar" ${pos.lines.length?'':'disabled'}>Cobrar (F12)</button>
  <div class="row" style="margin-top:.6rem"><button class="btn sm sp" data-act="mov" data-type="ingreso">Ingreso de efectivo</button><button class="btn sm sp" data-act="mov" data-type="egreso">Egreso de efectivo</button></div>`;}
-A.padd=el=>{const p=prod(el.dataset.id);if(!p)return;const cur=qtyIn(p.id);const step=1;if(!canOver(p)&&cur+step>p.stock){toast('Sin stock suficiente de '+p.name+' (este producto exige stock)',1);return;}if(cur+step>p.stock)toast('Sin stock: se vende igual y queda en negativo ('+p.name+')');
+A.padd=el=>{const p=prod(el.dataset.id);if(!p)return;const cur=qtyIn(p.id);const step=1;if(!canOver(p)&&cur+step>stockOf(p)){toast('Sin stock suficiente de '+p.name+' (este producto exige stock)',1);return;}if(cur+step>stockOf(p))toast('Sin stock: se vende igual y queda en negativo ('+p.name+')');
  const L=pos.lines.find(l=>l.pid===p.id);if(L){L.qty+=step;pos.sel=pos.lines.indexOf(L);}else{pos.lines.push({pid:p.id,name:pfull(p),rubro:p.rubro,qty:1,price:p.price,cost:p.cost,unit:p.unit,list:p.price});pos.sel=pos.lines.length-1;}posCart();};
 A.prm=el=>{pos.lines.splice(+el.dataset.i,1);pos.sel=pos.lines.length-1;posCart();};
 A.prub=el=>{pos.rub=el.dataset.id;$$('[data-act="prub"]').forEach(b=>b.classList.toggle('on',b.dataset.id===pos.rub));posGrid();};
@@ -1298,11 +1325,11 @@ A.parca=()=>{pos.arca=!pos.arca;audit('ARCA_OPERACION',pos.arca?'Con ARCA':'Sin 
 A.pclear=()=>{if(!pos.lines.length)return;confirmBox('Borrar la operación','Se descartan todas las líneas del ticket en curso.',()=>{confirmBox('Segunda confirmación','¿Seguro? Esta acción queda en auditoría.',()=>{audit('BORRAR_OPERACION',pos.lines.length+' líneas · '+money(posTotal()));pos.lines=[];pos.sel=-1;pos.cust='';pos.chanSet=null;pos.coupon='';posCart();},'Sí, borrar');},'Continuar');};
 function lineEdit(i,fld,v){const L=pos.lines[i];if(!L)return;const bad=m=>{toast(m,1);posCart();};
  if(fld==='qty'){const q=parseNum(v);if(!(q>0))return bad('La cantidad debe ser mayor a cero.');if(L.unit==='u'&&!Number.isInteger(q))return bad('Este producto se vende por unidad entera.');
-  const p=prod(L.pid);const other=qtyIn(L.pid)-L.qty;if(!canOver(p)&&other+q>p.stock+1e-9)return bad('Sin stock suficiente (hay '+p.stock+').');L.qty=Math.round(q*1000)/1000;}
+  const p=prod(L.pid);const other=qtyIn(L.pid)-L.qty;if(isKit(p)&&!Number.isInteger(q))return bad('Los combos se venden por unidad entera.');if(!canOver(p)&&other+q>stockOf(p)+1e-9)return bad('Sin stock suficiente (hay '+stockOf(p)+').');L.qty=Math.round(q*1000)/1000;}
  else if(fld==='price'){const c=cents(v);if(!(c>0))return bad('El precio debe ser mayor a cero.');const old=L.price;L.price=c;L.man=1;if(old!==c)audit('PRECIO_LINEA',L.name+' lista '+money(L.list)+' → aplicado '+money(c));}
  else if(fld==='amt'){const c=cents(v);if(!(c>0))return bad('El importe debe ser mayor a cero.');const old=L.price;
   if(L.unit==='u'){L.price=Math.max(1,Math.round(c/L.qty));L.man=1;}else L.qty=Math.round(c/L.price*1000)/1000;
-  const p=prod(L.pid);if(!canOver(p)&&qtyIn(L.pid)>p.stock+1e-9){L.qty=Math.max(0.001,p.stock);return bad('Sin stock suficiente.');}
+  const p=prod(L.pid);if(!canOver(p)&&qtyIn(L.pid)>stockOf(p)+1e-9){L.qty=Math.max(0.001,stockOf(p));return bad('Sin stock suficiente.');}
   if(old!==L.price)audit('PRECIO_LINEA',L.name+' lista '+money(L.list)+' → aplicado '+money(L.price)+' (por importe)');}
  pos.sel=i;posCart();}
 document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.line!==undefined)lineEdit(+t.dataset.line,t.dataset.fld,t.value);});
@@ -1576,6 +1603,12 @@ SCREENS.cajasx.show=cashOn;
 const XF_DEF={strict:false,closedMode:'transito',approvalOver:0,transitAlertH:0,selfAuth:false,noRubro:false};
 const xfCfg=()=>Object.assign({},XF_DEF,(S.cfg&&S.cfg.xfer)||{});
 const xfStrict=()=>!!xfCfg().strict;
+/* V26.14: sin rubros por persona (tipo de negocio «un solo dueño» o el viejo perfil) */
+const xfNoRub=()=>ownerMode()||!!xfCfg().noRubro;
+/* V26.14: el dueño (administrador) mueve fondos entre cajas abiertas o cerradas con su propia autorización; queda registrado igual */
+const xfIsOwner=()=>!!user&&user.role==='admin';
+function xfOwnerAuth(){if(!xfIsOwner())return null;S.cfg.xfer=S.cfg.xfer||{};if(S.cfg.xfer.selfAuth!==true){S.cfg.xfer.selfAuth=true;audit('CONFIG_TRASPASOS','el administrador autoriza sus propios traspasos');}
+ return{id:xfMe(),name:user.name,method:xfCloud()?'clave_admin':'pin_admin',self:true};}
 /* quién puede emitir y recibir: con la bandera, sólo `transfer_funds`; sin ella, como hasta ahora (arqueo y cierre) o `transfer_funds` */
 const xfCan=()=>!!user&&(can('config')||(xfStrict()?can('transfer_funds'):(can('close_cash')||can('transfer_funds'))));
 const xfCloud=()=>{try{return typeof CLOUD!=='undefined'&&!!CLOUD.on&&!!cl&&!!cl.ready;}catch(e){return false;}};
@@ -1657,15 +1690,16 @@ function xferCreate(o){
  if(!Number.isInteger(o.amount)||!(o.amount>0))return'El importe debe ser mayor a cero.';
  if(o.amount>100000000000)return'El importe es demasiado grande.';
  const fs=xfRegState(o.from),ts=xfRegState(o.to);
- if((fs.st==='cerrada'||ts.st==='cerrada')&&!xfStrict())return'Las dos cajas tienen que estar abiertas para traspasar. Para mover fondos con una caja cerrada hace falta el permiso de traspasos (Usuarios y permisos).';
+ if((fs.st==='cerrada'||ts.st==='cerrada')&&!xfStrict()&&!xfIsOwner())return'Las dos cajas tienen que estar abiertas para traspasar. Para mover fondos con una caja cerrada hace falta el permiso de traspasos (Usuarios y permisos).';
  if(brOn()&&(fr.branchId||'')!==(to.branchId||'')&&fr.type!=='main'&&to.type!=='main')return'Entre sucursales distintas sólo se traspasa desde o hacia una caja principal.';
- if(xfCfg().noRubro&&!o.rubro)o.rubro=xfSysRubro();
+ if(xfNoRub()&&!o.rubro)o.rubro=xfSysRubro();
  const e=o.rubro==='sys-traspaso'?'':(validRubro(o.rubro,'ingreso')||validRubro(o.rubro,'egreso'));if(e)return e;
  if(!o.motivo||o.motivo.trim().length<3)return'Escribí el motivo (mínimo 3 letras).';
  let avail;if(fs.st==='abierta'){const ss=openOf(o.from);avail=arqueoCalc(ss,arqInputs(ss)).expectedCash;}else avail=xfSuggested(o.from).amount;
  if(o.amount>avail&&!o.force)return fs.st==='abierta'?'La caja de origen no tiene efectivo suficiente (esperado '+money(avail)+').':'La caja de origen está cerrada y su fondo retenido es '+money(avail)+': no alcanza.';
  const why=xfReasons(o.from,o.to,o.amount,o.rev);let auth=o.auth||null;
  if(why.length){
+  if((!auth||!auth.id)&&xfIsOwner())auth=xfOwnerAuth();
   if(!auth||!auth.id||!['pin_admin','clave_admin'].includes(auth.method))return'Esta operación necesita la autorización de un administrador ('+why.join('; ')+').';
   if(auth.id===xfMe()&&!auth.self)return'El autorizante tiene que ser un administrador distinto de quien emite.';
  }else if(!auth||!auth.id)auth={id:xfMe(),name:user.name,method:'permiso_propio'};
@@ -1709,7 +1743,8 @@ function xfBalance(t){const ev=xfEvs(t);const rc=ev.find(e=>e.kind==='recibido'|
 /* ================= interfaz ================= */
 function xfRubOpts(){return S.rubros.filter(r=>r.kind==='rubro').map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('');}
 async function xfModalSync(w){const f=val('xf-f'),t=val('xf-t'),a=cents(val('xf-a'));const rv=w.dataset.rev||'';
- const why=xfReasons(f,t,isNaN(a)?0:a,rv);const ab=w.querySelector('#xf-ab');if(!ab)return;ab.hidden=!why.length;
+ const why=xfReasons(f,t,isNaN(a)?0:a,rv);const ab=w.querySelector('#xf-ab');if(!ab)return;ab.hidden=!why.length||xfIsOwner();
+ const ob=w.querySelector('#xf-own');if(ob)ob.hidden=!(why.length&&xfIsOwner());if(ob&&!ob.hidden)ob.textContent='Como dueño (administrador) lo autorizás vos: '+why.join('; ')+'. Queda registrado con tu nombre.';
  const r=w.querySelector('#xf-ar');if(r)r.textContent='Motivo: '+why.join('; ')+'.';
  const dst=w.querySelector('#xf-ds');if(dst){const fs=xfRegState(f),ts=xfRegState(t);const cl2=[];
   cl2.push('Origen: '+(fs.st==='abierta'?'caja abierta':'caja CERRADA (se descuenta del fondo retenido: sugerido '+money(xfSuggested(f).amount)+')'));
@@ -1726,19 +1761,21 @@ async function xfOpenModal(o){ /* o: {rev?:transfer, title} */
  <label for="xf-f">Desde</label><select id="xf-f" ${rv?'disabled':''}>${regs.map(opt).join('')}</select>
  <label for="xf-t">Hacia</label><select id="xf-t" ${rv?'disabled':''}>${regs.map(opt).join('')}</select>
  <label for="xf-a">Importe ($)</label>${numIn('xf-a',rv?rv.amount:0,'0')}
- ${xfCfg().noRubro?'':`<label for="xf-r">Rubro (obligatorio)</label><select id="xf-r"><option value="">— Elegí un rubro —</option>${xfRubOpts()}</select>`}
+ ${xfNoRub()?'':`<label for="xf-r">Rubro (obligatorio)</label><select id="xf-r"><option value="">— Elegí un rubro —</option>${xfRubOpts()}</select>`}
  <label for="xf-m">Motivo / concepto</label><input id="xf-m" maxlength="200" placeholder="Ej.: retiro de excedente a caja principal" autocomplete="off" value="${rv?esc('Reversa: '+rv.motivo):''}">
  <p class="sm mut" id="xf-ds"></p>
+ <p class="sm okbox" id="xf-own" hidden></p>
  ${xfAuthHTML()}
  <p class="sm mut">Es un movimiento interno: sale del efectivo de una caja y entra en el de la otra. No suma como venta, ingreso ni egreso.</p>`,
  {okText:rv?'Revertir':'Traspasar',onOk:async w2=>{
   const f=val('xf-f'),t=val('xf-t'),amt=cents(val('xf-a'));const why=xfReasons(f,t,isNaN(amt)?0:amt,rv?rv.id:'');let auth=null;
-  if(why.length){const res=await xfAuthResolve(adms,val('xf-au'),val('xf-ap'));if(res.err){w2._err(res.err);return false;}auth=res.auth;}
+  if(why.length&&xfIsOwner())auth=xfOwnerAuth();
+  else if(why.length){const res=await xfAuthResolve(adms,val('xf-au'),val('xf-ap'));if(res.err){w2._err(res.err);return false;}auth=res.auth;}
   const e=xferCreate({id,from:f,to:t,amount:amt,rubro:(w2.querySelector('#xf-r')?val('xf-r'):''),motivo:val('xf-m'),auth,rev:rv?rv.id:undefined,force:!!rv});
   if(e){w2._err(e);return false;}
   toast('Traspaso registrado');rerender();const tt=xfTr(id);if(tt)setTimeout(()=>A.xferView({dataset:{id:tt.id}}),60);}});
  w.dataset.rev=rv?rv.id:'';
- const set=(id2,v)=>{const el=w.querySelector('#'+id2);if(el&&v)el.value=v;};set('xf-f',fromId);set('xf-t',toId);if(rv&&!xfCfg().noRubro)set('xf-r',rv.rubro);
+ const set=(id2,v)=>{const el=w.querySelector('#'+id2);if(el&&v)el.value=v;};set('xf-f',fromId);set('xf-t',toId);if(rv&&!xfNoRub())set('xf-r',rv.rubro);
  const au=w.querySelector('#xf-au');if(au)au.innerHTML=cand.length?cand.map(a=>`<option value="${esc(a.id)}">${esc(a.name)}${a.id===xfMe()?' (yo)':''}</option>`).join(''):'<option value="">No hay otro administrador que pueda autorizar</option>';
  ['input','change'].forEach(ev=>w.addEventListener(ev,()=>xfModalSync(w)));xfModalSync(w);}
 A.xfer=()=>xfOpenModal({});
@@ -1879,7 +1916,7 @@ EXPORTS.traspasos={t:'Traspasos de fondos entre cajas',perm:'close_cash',h:()=>[
  rows:()=>(S.transfers||[]).map(t=>{const rc=xfRecvEv(t);return[t.num||'',fmtDT(t.ts),t.fromName||regName(t.from),t.fromState||'abierta',t.toName||regName(t.to),t.toState||'abierta',t.amount/100,t.cur||'ARS',t.rubroName||'',t.motivo,t.user,(t.auth||{}).name||'',(t.auth||{}).method||'',XF_ST[xferState(t)],rc?rc.amt/100:'',rc?(t.amount-rc.amt)/100:''];})};
 /* ---------- aviso de permisos (primer ingreso del administrador tras actualizar) ---------- */
 let xfNoticeShown=false;
-function xfPermNotice(){if(xfNoticeShown||!user||!can('config'))return;const pn=S.cfg&&S.cfg.permNotice;if(!pn||pn.ack)return;xfNoticeShown=true;
+function xfPermNotice(){if(xfNoticeShown||!user||user.role!=='admin')return;const pn=S.cfg&&S.cfg.permNotice;if(!pn||pn.ack)return;xfNoticeShown=true;
  const roles=Object.entries(S.roles).filter(([r,a])=>r!=='admin'&&Array.isArray(a)&&a.includes('close_cash')&&!a.includes('transfer_funds')).map(([r])=>r);
  modal('Nuevos permisos de seguridad',`<p>Esta versión agrega permisos que antes no existían: <b>${esc(PERMS.transfer_funds)}</b> y <b>${esc(PERMS.customers_admin)}</b>. <b>Nada se otorgó automáticamente.</b></p>
  <p>Hasta ahora, quien tenía «Arqueo y cierre de caja» podía traspasar fondos. ${roles.length?`Los roles que lo tenían son: <b>${roles.map(esc).join(', ')}</b>.`:'Ningún otro rol lo tenía.'}</p>
@@ -1893,15 +1930,15 @@ function xfPermNotice(){if(xfNoticeShown||!user||!can('config'))return;const pn=
 /* ---------- configuración (tarjeta en Cajas y sucursales, sólo administrador) ---------- */
 function xfCfgCard(){const c=xfCfg();if(!can('config'))return'';
  return`<div class="card" style="margin-top:1rem"><h3>Traspasos de fondos · reglas</h3>
- <label class="chk"><input type="checkbox" id="xc-s" ${c.strict?'checked':''}> Exigir el permiso «${esc(PERMS.transfer_funds)}» (si está apagado, basta con «Arqueo y cierre de caja» y sólo se traspasa entre cajas abiertas)</label>
+ <label class="chk"><input type="checkbox" id="xc-s" ${c.strict?'checked':''}> Exigir el permiso «${esc(PERMS.transfer_funds)}» (si está apagado, basta con «Arqueo y cierre de caja» y los demás usuarios sólo traspasan entre cajas abiertas)</label>
+ <p class="sm okbox">El <b>administrador (dueño)</b> mueve fondos entre cualquier caja —abierta o cerrada, incluida la caja principal— con su propia autorización. Cada traspaso queda con comprobante, estado de las cajas y auditoría.</p>
  <label for="xc-m">Si la caja destino está cerrada</label><select id="xc-m"><option value="transito" ${c.closedMode==='transito'?'selected':''}>Dejar el fondo «en tránsito» hasta que se reciba (recomendado)</option><option value="saldo_inicial" ${c.closedMode==='saldo_inicial'?'selected':''}>Incluirlo en el saldo inicial sugerido del próximo turno</option></select>
  <label for="xc-o">Pedir autorización de un administrador si el importe supera ($, vacío = nunca)</label>${numIn('xc-o',c.approvalOver,'Sin límite')}
  <label for="xc-h">Alerta de fondos en tránsito después de (horas, vacío = sin alerta)</label><input id="xc-h" inputmode="numeric" placeholder="Sin alerta" value="${c.transitAlertH?c.transitAlertH:''}" autocomplete="off">
- <label class="chk"><input type="checkbox" id="xc-a" ${c.selfAuth?'checked':''}> Con más de un administrador, permitir que uno se autorice a sí mismo</label>
- <label class="chk"><input type="checkbox" id="xc-n" ${c.noRubro?'checked':''}> Perfil sin rubros (un solo dueño): los traspasos no piden rubro y quedan como «Traspaso interno»</label>
+ <p class="sm mut">Rubro de los traspasos: ${xfNoRub()?'no se pide (negocio de un solo dueño: quedan como «Traspaso interno»)':'se pide (negocio con rubros por responsable)'}. Se cambia en Configuración → Tipo de negocio.</p>
  <div class="row"><button class="btn gold" data-act="xfCfgSave">Guardar reglas</button></div></div>`;}
 A.xfCfgSave=()=>{if(!can('config'))return toast('Sólo el administrador',1);const o=cents(val('xc-o')),h=parseInt(val('xc-h'),10);
- const n={strict:$('#xc-s').checked,closedMode:val('xc-m')==='saldo_inicial'?'saldo_inicial':'transito',approvalOver:isNaN(o)||o<0?0:o,transitAlertH:isNaN(h)||h<0?0:h,selfAuth:$('#xc-a').checked,noRubro:$('#xc-n').checked};
+ const n={strict:$('#xc-s').checked,closedMode:val('xc-m')==='saldo_inicial'?'saldo_inicial':'transito',approvalOver:isNaN(o)||o<0?0:o,transitAlertH:isNaN(h)||h<0?0:h,selfAuth:true,ownerV:1,noRubro:!!xfCfg().noRubro};
  const old=xfCfg();S.cfg.xfer=n;audit('TRASPASO_REGLAS','estricto '+old.strict+'→'+n.strict+' · cerradas '+old.closedMode+'→'+n.closedMode+' · supera '+money(old.approvalOver)+'→'+money(n.approvalOver)+' · alerta '+old.transitAlertH+'→'+n.transitAlertH+' h · autoautorización '+old.selfAuth+'→'+n.selfAuth);save();rerender();toast('Reglas guardadas');};
 
 /* ===== V26.9 · 4.23.4 / 4.23.5 Detalle de los cobros digitales (transferencia, débito, crédito, QR/MODO) =====
@@ -2403,12 +2440,161 @@ function rcLiqHTML(a){if(!(a.reparte||[]).length)return'<p class="mut">Marcá en
  ${a.pool?`<tr><td><b>5 · Ganancia total a dividir</b> (suma de las dos)</td><td class="r" colspan="${rp.length}"><b>${money(a.netSum)}</b></td></tr>
  ${row('<b>6 · Le corresponde a cada uno (partes iguales)</b>',r=>`<b class="${r.final<0?'neg':''}">${money(r.final)}</b>`,'tot')}`:''}
  </tbody></table></div>`;}
-function arqTablesHTML(a){return `<h3>Por rubro</h3>${rcTableHTML(a)}<h3 style="margin-top:1rem">Liquidación</h3>${rcLiqHTML(a)}`;}
+function arqTablesHTML(a){if(a&&a.owner&&typeof ownerTablesHTML==='function')return ownerTablesHTML(a);return `<h3>Por rubro</h3>${rcTableHTML(a)}<h3 style="margin-top:1rem">Liquidación</h3>${rcLiqHTML(a)}`;}
 /* tarjeta viva en Caja: cuánto tiene físicamente cada rubro ahora */
 function rubCashCard(s){if(!s)return'';let a;try{a=arqueoCalc(s,arqInputs(s));}catch(e){return'';}
  return `<div class="card"><h3>Caja de cada rubro (ahora)</h3>${rcTableHTML(a)}<p class="sm mut">Un <b>ingreso</b> suma a la caja del rubro que elijas; un <b>egreso</b> le resta. Ejemplo: si Juan le debe $1.000 a Nico, Nico cobra un producto suyo y se hace un <b>egreso de $1.000 del rubro de Juan</b>: Nico suma por la venta, Juan resta, y el cajón queda igual.</p></div>`;}
 A.profitMode=el=>{if(!can('config'))return toast('Sólo el administrador',1);const v=el.value==='each'?'each':'pool';if((S.cfg.profitMode||'pool')===v)return;S.cfg.profitMode=v;audit('CONFIG_GANANCIA',v==='pool'?'se divide a partes iguales':'cada uno la suya');save();rerender();};
 document.addEventListener('change',e=>{const t=e.target;if(t&&t.id==='aq-pm')A.profitMode(t);});
+
+/* ===== V26.14 · Combos que descuentan cada artículo (Almacén RAVE y demo) =====
+   Un combo es un producto que se vende con su propio precio, pero NO tiene stock propio: se arma con artículos del inventario.
+   Ejemplo: «Fernet Branca 750 + Coca-Cola 3 lt + Hielo» → al vender 1 combo se resta 1 Fernet 750, 1 Coca-Cola 3 lt y 1 hielo.
+   · p.kit = [{pid, qty}] (cantidad de cada artículo por combo). El stock que se muestra del combo = cuántos se pueden armar.
+   · La venta guarda en cada línea la composición usada (it.kit) para que anular / nota de crédito devuelva exactamente eso,
+     aunque después se cambie la receta del combo.
+   · Con la nube no hay nada nuevo en el servidor: el stock viaja como movimientos de cada artículo (igual que una venta suelta). */
+const isKit=p=>!!(p&&Array.isArray(p.kit)&&p.kit.length);
+function kitComps(p){return(p&&p.kit||[]).map(k=>({pid:k.pid,qty:+k.qty,p:prod(k.pid)})).filter(x=>x.p);}
+function kitStock(p){const c=kitComps(p);if(!c.length)return 0;let m=Infinity;for(const x of c){const v=Math.floor((x.p.stock+1e-9)/x.qty);if(v<m)m=v;}return m===Infinity?0:m;}
+const stockOf=p=>isKit(p)?kitStock(p):p.stock;
+function kitCost(p){return kitComps(p).reduce((a,x)=>a+Math.round((x.p.cost||0)*x.qty),0);}
+const kitTxt=p=>kitComps(p).map(x=>(x.qty!==1?numAR(x.qty,3)+' × ':'')+pfull(x.p)).join(' + ');
+/* lo que hay que descontar del stock por las líneas de una venta (los combos se abren en sus artículos) */
+function kitNeed(lines){const need={};(lines||[]).forEach(l=>{const p=prod(l.pid);
+ if(isKit(p))p.kit.forEach(k=>{need[k.pid]=(need[k.pid]||0)+l.qty*k.qty;});else need[l.pid]=(need[l.pid]||0)+l.qty;});
+ for(const k in need)need[k]=Math.round(need[k]*1000)/1000;return need;}
+/* foto de la composición para guardar en la línea vendida */
+function kitSnap(pid){const p=prod(pid);if(!isKit(p))return null;return kitComps(p).map(x=>({pid:x.pid,name:pfull(x.p),qty:x.qty}));}
+/* ---------- editor (Inventario → producto) ---------- */
+function comboBlock(p){const on=isKit(p);const rows=on?p.kit:[];
+ return`<fieldset class="card" id="kit-box" style="margin:.6rem 0;padding:.7rem"><legend class="sm"><b>Combo</b></legend>
+ <label class="chk"><input type="checkbox" id="kit-on" ${on?'checked':''}> Es un combo: se arma con otros artículos del inventario y al venderlo se descuenta cada uno</label>
+ <div id="kit-rows" ${on?'':'hidden'}>${rows.map(r=>kitRowHTML(r.pid,r.qty)).join('')}</div>
+ <div id="kit-act" ${on?'':'hidden'}><button type="button" class="btn sm" id="kit-add">+ Agregar artículo</button><p class="sm" id="kit-sum" role="status"></p></div></fieldset>`;}
+function kitOpts(sel,self){return S.products.filter(x=>!x.archived&&!isKit(x)&&x.id!==self).sort((a,b)=>pfull(a).localeCompare(pfull(b),'es'))
+ .map(x=>`<option value="${esc(x.id)}" ${x.id===sel?'selected':''}>${esc(pfull(x))} · stock ${esc(stockTxt(x))}</option>`).join('');}
+function kitRowHTML(pid,qty){return`<div class="row kit-row" style="flex-wrap:wrap;gap:.4rem;margin:.3rem 0"><select class="kit-p" aria-label="Artículo del combo" style="flex:1 1 220px"><option value="">— Elegí el artículo —</option>${kitOpts(pid,kitSelf)}</select>
+ <input class="kit-q" inputmode="decimal" aria-label="Cantidad por combo" style="max-width:90px" value="${qty?esc(String(qty).replace('.',',')):'1'}"><button type="button" class="btn sm red kit-rm" aria-label="Quitar artículo">✕</button></div>`;}
+let kitSelf='';
+function comboBind(w,p){kitSelf=p?p.id:'';const box=w.querySelector('#kit-box');if(!box)return;
+ const sum=()=>{const r=comboRead(w,p,true);const el=w.querySelector('#kit-sum');if(!el)return;
+  if(!w.querySelector('#kit-on').checked){el.textContent='';return;}
+  if(r.err){el.innerHTML='<span class="errtxt">'+esc(r.err)+'</span>';return;}
+  const fake={kit:r.kit};el.innerHTML='Se pueden armar <b>'+kitStock(fake)+'</b> combos con el stock actual'+(can('view_cost')?' · costo de los artículos <b>'+money(kitCost(fake))+'</b>':'')+'. El combo no tiene stock propio.';
+  const st=w.querySelector('#pm-st');if(st){st.disabled=true;st.value=String(kitStock(fake));}};
+ box.addEventListener('change',e=>{if(e.target.id==='kit-on'){const on=e.target.checked;w.querySelector('#kit-rows').hidden=!on;w.querySelector('#kit-act').hidden=!on;
+   if(on&&!w.querySelectorAll('.kit-row').length)w.querySelector('#kit-rows').insertAdjacentHTML('beforeend',kitRowHTML('',1));
+   const st=w.querySelector('#pm-st');if(st&&!on){st.disabled=false;}const u=w.querySelector('#pm-u');if(u&&on){u.value='u';u.disabled=true;}else if(u)u.disabled=false;}
+  sum();});
+ box.addEventListener('input',sum);
+ box.addEventListener('click',e=>{if(e.target.id==='kit-add'){w.querySelector('#kit-rows').insertAdjacentHTML('beforeend',kitRowHTML('',1));sum();}
+  const rm=e.target.closest('.kit-rm');if(rm){rm.closest('.kit-row').remove();sum();}});
+ if(isKit(p)){const u=w.querySelector('#pm-u');if(u){u.value='u';u.disabled=true;}}sum();}
+/* lee y valida la composición: {kit:[...]} · {kit:null} si no es combo · {err} */
+function comboRead(w,p,soft){const on=w.querySelector('#kit-on');if(!on||!on.checked)return{kit:null};
+ const rows=[...w.querySelectorAll('.kit-row')];const kit=[],seen=new Set();
+ for(const r of rows){const pid=r.querySelector('.kit-p').value;const q=parseNum(r.querySelector('.kit-q').value);
+  if(!pid){if(soft)continue;return{err:'Elegí el artículo de cada renglón del combo (o quitá el renglón vacío).'};}
+  const c=prod(pid);if(!c)return{err:'Un artículo del combo ya no existe.'};if(isKit(c))return{err:'Un combo no puede llevar otro combo adentro.'};
+  if(p&&pid===p.id)return{err:'El combo no puede contenerse a sí mismo.'};
+  if(!(q>0)||q>1000)return{err:'La cantidad de «'+pfull(c)+'» tiene que ser mayor a cero.'};if(c.unit==='u'&&!Number.isInteger(q))return{err:'«'+pfull(c)+'» se cuenta por unidad entera.'};
+  if(seen.has(pid))return{err:'«'+pfull(c)+'» está repetido: poné la cantidad total en un solo renglón.'};seen.add(pid);kit.push({pid,qty:Math.round(q*1000)/1000});}
+ if(!kit.length)return soft?{kit:[]}:{err:'Un combo tiene que tener al menos un artículo.'};
+ if(kit.length===1&&kit[0].qty===1&&!soft)return{err:'Un combo de un solo artículo es el mismo producto: agregá los demás artículos.'};
+ return{kit};}
+/* ---------- datos de ejemplo: SÓLO en la demo ---------- */
+function comboDemoSeed(st){if(IS_CLIENT||!st||!st.cfg||st.cfg.comboSeeded)return;st.cfg.comboSeeded=1;
+ const P=st.products;const has=id=>P.some(p=>p.id===id);
+ if(!st.rubros.some(r=>r.id==='bebidas-ej'))st.rubros.splice(Math.max(0,st.rubros.findIndex(r=>r.kind!=='rubro')),0,{id:'bebidas-ej',name:'Bebidas y hielo (ejemplo)',owner:'',reparte:false,alcohol:true,kind:'rubro',color:'#2f6f8f',mNom:'Bebidas',mTitle:'Bebidas',mHint:'',layout:'rows',menuOn:false});
+ const mk=(id,name,sub,price,cost,stock)=>{if(!has(id))P.push({id,name,sub,grupo:'',rubro:'bebidas-ej',price,cost,stock,unit:'u',barcode:'',plu:'',menu:false,active:true,desc:'',demo:true});};
+ mk('ej-fernet-750','Fernet Branca','750 ml',1450000,1050000,24);mk('ej-coca-3l','Coca-Cola','3 lt',520000,370000,30);mk('ej-hielo','Hielo','bolsa 2 kg',180000,90000,40);
+ if(!has('ej-combo-fernet'))P.push({id:'ej-combo-fernet',name:'Combo Fernet Branca 750 + Coca-Cola 3 lt + Hielo',sub:'ejemplo de combo',grupo:'',rubro:'promo',price:2050000,cost:1510000,stock:0,unit:'u',barcode:'',plu:'',menu:true,active:true,desc:'Se descuenta 1 de cada artículo',demo:true,
+  kit:[{pid:'ej-fernet-750',qty:1},{pid:'ej-coca-3l',qty:1},{pid:'ej-hielo',qty:1}]});}
+
+/* ===== V26.14 · Negocio de UN SOLO DUEÑO (mayorista) =====
+   Lo que cambia respecto de Almacén RAVE (rubros por persona):
+   · No hay rubros por persona: los productos se agrupan en CATEGORÍAS (sólo ordenan inventario, Vender y menú).
+   · Ningún movimiento de dinero pide rubro: todo es del dueño. Por debajo se usa el concepto interno oculto «Caja del negocio»
+     (el servidor exige un rubro en cada movimiento; así se cumple sin mostrarlo).
+   · Arqueo de un solo dueño: ventas por canal (minorista / mayorista) y por medio, efectivo esperado vs. contado.
+     No hay sueldo, merienda, impuestos por persona, reparto ni «caja de cada rubro».
+   · Las cajas (operativas + principal) y los traspasos siguen igual; el dueño los mueve con cajas abiertas o cerradas. */
+/* ---------- Configuración: tipo de negocio ---------- */
+function bizCard(){const cur=ownerMode()?'owner':'rubros';const adm=!!user&&user.role==='admin';
+ return`<div class="card" style="margin-bottom:1rem" id="biz-card"><h3>Tipo de negocio</h3>
+ <p class="sm mut">Define cómo se ordena el dinero. No borra ni mueve datos: ventas, cierres sellados y movimientos anteriores quedan como estaban.</p>
+ <div class="grid g2">${Object.entries(BIZ_TYPES).map(([k,t])=>`<label class="chk biz-opt ${cur===k?'on':''}" style="align-items:flex-start"><input type="radio" name="biz" value="${k}" ${cur===k?'checked':''} ${adm?'':'disabled'}> <span><b>${esc(t)}</b><br><span class="sm mut">${k==='owner'
+  ?'El dinero es todo del dueño: no hay rubros por persona ni reparto entre socios. Los productos se agrupan en categorías. Cajas operativas + caja principal con traspasos.'
+  :'Como Almacén RAVE: cada rubro es una persona (responsable), con su caja, sueldo del empleado a medias, impuesto que se separa y reparto de ganancia.'}</span></span></label>`).join('')}</div>
+ ${adm?'<div class="row"><button class="btn gold" data-act="bizSave">Aplicar tipo de negocio</button></div>':'<p class="sm mut">Sólo el administrador lo cambia.</p>'}</div>`;}
+A.bizSave=()=>{if(!user||user.role!=='admin')return toast('Sólo el administrador',1);const el=document.querySelector('input[name="biz"]:checked');const nv=el?el.value:'';
+ if(!BIZ_TYPES[nv])return;const ov=ownerMode()?'owner':'rubros';if(nv===ov)return toast('Ya es ese tipo de negocio');
+ if(openSess())return toast('Cerrá la caja abierta antes de cambiar el tipo de negocio (el arqueo cambia de forma).',1);
+ confirmBox('Cambiar tipo de negocio',`De «${BIZ_TYPES[ov]}» a «${BIZ_TYPES[nv]}». No se borra nada: los cierres anteriores conservan su forma.${nv==='owner'?' Los rubros pasan a mostrarse como categorías de productos; los ingresos, egresos y pagos dejan de pedir rubro.':' Vuelven a pedirse los rubros en cada ingreso o egreso.'}`,
+  ()=>{S.cfg.biz=nv;if(nv==='owner')ownerRubro();audit('TIPO_NEGOCIO',BIZ_TYPES[ov]+' → '+BIZ_TYPES[nv],{ent:'cfg',eid:'biz',old:ov,nw:nv});save();rerender();toast('Tipo de negocio aplicado');},'Cambiar');};
+/* ---------- Configuración: categorías (sin responsable, sin reparto, sin impuesto) ---------- */
+function catCardOwner(){const L=S.rubros.filter(r=>r.kind==='rubro');
+ return`<div class="card"><h3>Categorías de productos</h3><p class="sm mut">Sólo ordenan el inventario, Vender y el menú. No tienen dueño ni caja propia: el dinero es todo del negocio.</p>
+ ${L.map(r=>`<div class="rubrow"><div class="rubhead"><b class="sp"><i class="rdot" style="background:${safeColor(r.color)}"></i>${esc(r.name)} <span class="sm mut">${S.products.filter(p=>p.rubro===r.id&&!p.archived).length} productos</span></b><button class="btn sm" data-act="rubEdit" data-id="${r.id}" aria-label="Editar categoría ${esc(r.name)}">Editar</button><button class="btn sm red" data-act="rubDel" data-id="${r.id}" aria-label="Eliminar categoría ${esc(r.name)}">Eliminar</button></div></div>`).join('')||'<p class="mut">Todavía no hay categorías.</p>'}
+ <button class="btn sm" data-act="rubAdd">+ Categoría</button></div>`;}
+/* ---------- Caja: ingreso / egreso sin rubro ---------- */
+function movModalOwner(type,pref){
+ modal(type==='ingreso'?'Ingreso de efectivo':'Egreso de efectivo',`<p class="sm mut">${type==='ingreso'?'Suma efectivo a esta caja.':'Resta efectivo de esta caja (gastos, retiros, pagos).'} Para pasar dinero a otra caja o a la caja principal usá <b>Traspasar fondos</b>.</p>
+ <label for="mv-c">Motivo / concepto</label><input id="mv-c" maxlength="120" placeholder="${type==='ingreso'?'Ej.: aporte de cambio':'Ej.: flete, limpieza, retiro del dueño'}" autocomplete="off" value="${esc(pref||'')}">
+ <label for="mv-a">Importe ($)</label>${numIn('mv-a',0,'0')}`,{okText:'Guardar',onOk:w=>{const e=addMov(type,ownerRubro(),val('mv-c'),cents(val('mv-a')));if(e){w._err(e);return false;}toast('Movimiento guardado');rerender();}});}
+/* ---------- Arqueo de un solo dueño ---------- */
+function ownChan(a){const o={minorista:{n:0,t:0},mayorista:{n:0,t:0}};
+ (S.sales||[]).filter(s=>s.sessId===a.sessId&&s.status==='ok').forEach(s=>{const k=s.wch==='mayorista'?'mayorista':'minorista';o[k].n++;o[k].t+=s.total;});return o;}
+function ownCats(a){return S.rubros.filter(r=>r.kind==='rubro'||r.kind==='archivado').map(r=>({name:r.name,sold:(a.rub[r.id]||{}).sold||0,profit:(a.rub[r.id]||{}).profit||0})).filter(x=>x.sold>0).sort((x,y)=>y.sold-x.sold);}
+function ownerTablesHTML(a){const ch=ownChan(a),cv=can('view_cost');const cats=ownCats(a);
+ return`<h3>Ventas del turno</h3><div class="tw"><table><thead><tr><th>Canal</th><th class="r">Ventas</th><th class="r">Importe</th></tr></thead><tbody>
+ <tr><td>Minorista</td><td class="r">${ch.minorista.n}</td><td class="r">${money(ch.minorista.t)}</td></tr>
+ <tr><td>Mayorista</td><td class="r">${ch.mayorista.n}</td><td class="r">${money(ch.mayorista.t)}</td></tr>
+ <tr><td><b>Total</b></td><td class="r"><b>${a.count}</b></td><td class="r"><b>${money(a.total)}</b></td></tr></tbody></table></div>
+ <h3 style="margin-top:1rem">Por medio de pago</h3><div class="tw"><table><thead><tr><th>Medio</th><th class="r">Cobros</th><th class="r">Importe</th><th class="r">Comisión</th></tr></thead><tbody>
+ ${Object.keys(a.byMethod).map(m=>{const x=a.byMethod[m];return`<tr><td>${esc(MET[m]||m)}${m==='fiado'?' <span class="sm mut">(no entró a caja)</span>':''}</td><td class="r">${x.n}</td><td class="r">${money(x.gross)}</td><td class="r">${x.fee?'- '+money(x.fee):'—'}</td></tr>`;}).join('')||'<tr><td colspan="4" class="mut">Sin ventas.</td></tr>'}
+ <tr><td><b>Cobrado real</b></td><td></td><td class="r"><b>${money(a.cobrado)}</b></td><td></td></tr></tbody></table></div>
+ <h3 style="margin-top:1rem">Efectivo de esta caja</h3><div class="tw"><table><tbody>
+ <tr><td>Apertura</td><td class="r">${money(a.opening)}</td></tr><tr><td>+ Ventas en efectivo</td><td class="r">${money(a.cashSales)}</td></tr>
+ <tr><td>+ Ingresos</td><td class="r">${money(a.ing)}</td></tr><tr><td>− Egresos</td><td class="r">- ${money(a.egr)}</td></tr>
+ ${a.tin||a.tout?`<tr><td>+ Traspasos recibidos</td><td class="r">${money(a.tin)}</td></tr><tr><td>− Traspasos enviados</td><td class="r">- ${money(a.tout)}</td></tr>`:''}
+ <tr><td><b>= Efectivo esperado</b></td><td class="r"><b>${money(a.expectedCash)}</b></td></tr>
+ ${a.declared!==null&&a.declared!==undefined?`<tr><td>Contado</td><td class="r">${money(a.declared)}</td></tr><tr><td><b>Diferencia</b></td><td class="r ${a.diff<0?'neg':''}"><b>${a.diff===0?'sin diferencia':(a.diff>0?'sobrante ':'faltante ')+money(Math.abs(a.diff))}</b></td></tr>`:''}
+ </tbody></table></div>
+ ${cats.length?`<h3 style="margin-top:1rem">Por categoría (informativo)</h3><div class="tw"><table><thead><tr><th>Categoría</th><th class="r">Vendió</th>${cv?'<th class="r">Ganancia bruta</th>':''}</tr></thead><tbody>${cats.map(c=>`<tr><td>${esc(c.name)}</td><td class="r">${money(c.sold)}</td>${cv?`<td class="r">${money(c.profit)}</td>`:''}</tr>`).join('')}</tbody></table></div>`:''}`;}
+function buildReportOwner(a,dayKey,who,inp){const L=[];const P=(t,cls)=>L.push({t,cls:cls||''});const ch=ownChan(a);
+ P(dmy(dayKey)+' '+DIAS[dowOfKey(dayKey)]+' cerró '+who,'h');P('');
+ P('VENTAS TOTAL : '+money(a.total)+' ('+a.count+' venta'+(a.count===1?'':'s')+')','h');
+ P('  Minorista : '+money(ch.minorista.t)+' ('+ch.minorista.n+')');P('  Mayorista : '+money(ch.mayorista.t)+' ('+ch.mayorista.n+')');P('');
+ Object.keys(a.byMethod).filter(m=>m!=='fiado').forEach(m=>{const x=a.byMethod[m];P((MET[m]||m)+' '+money(x.gross)+(x.n>1?' ('+x.n+')':''));if(x.fee>0)P('  comisión - '+money(x.fee)+' · neto '+money(x.gross-x.fee));});
+ P('COBRADO REAL (dinero que entró) : '+money(a.cobrado),'h');
+ if(a.aCtaCte>0)P('A CUENTA CORRIENTE (deuda de clientes, NO entró a caja) : '+money(a.aCtaCte),'w');
+ if(a.vueltoTot>0)P('Vuelto entregado en el turno : '+money(a.vueltoTot)+' (ya descontado del efectivo)');
+ if(a.pend.n)P('⚠ Cobros digitales pendientes de confirmar: '+a.pend.n+' · '+money(a.pend.total),'w');
+ if(a.detMissing)P('⚠ Cobros digitales sin el detalle del comprobante: '+a.detMissing,'w');
+ P('');P('EFECTIVO DE LA CAJA :','h');P('  Apertura : '+money(a.opening));P('  Ventas en efectivo : '+money(a.cashSales));
+ if(a.ing)P('  Ingresos : '+money(a.ing));if(a.egr)P('  Egresos : - '+money(a.egr));
+ if(a.tin)P('  Traspasos recibidos : '+money(a.tin));if(a.tout)P('  Traspasos enviados : - '+money(a.tout));
+ P('  ESPERADO : '+money(a.expectedCash),'h');
+ if(a.declared!==null)P('  CONTADO : '+money(a.declared)+' · '+(a.diff===0?'sin diferencia':(a.diff>0?'sobrante ':'faltante ')+money(Math.abs(a.diff))),a.diff<0?'w':'h');
+ if(a.movs.length){P('');P('MOVIMIENTOS :','h');a.movs.forEach(m=>P('  '+(m.type==='ingreso'?'+ ':'- ')+money(m.amount)+' · '+m.concept));}
+ if(inp.detailAll){ownCats(a).forEach(c=>{P('');P(c.name+' — vendido '+money(c.sold),'h');});}
+ return L;}
+function arqOwnerHTML(s){const d=arqDraft(s);
+ return`<div class="row"><h1 class="sp">Arqueo y cierre</h1><span class="tag warn">Vista previa · todavía no cierra la caja</span></div>
+ <div class="grid g2" style="align-items:start"><div class="card"><h3>Efectivo contado</h3>
+ <p class="sm mut">Negocio de un solo dueño: no hay sueldo, impuestos ni reparto por persona. Los gastos y retiros se cargan como <b>egresos</b> en Caja; el dinero que pasa a la caja principal, con <b>Traspasar fondos</b>.</p>
+ <label for="aq-d">Efectivo contado en caja ($)</label><input id="aq-d" data-aq="declared" inputmode="decimal" placeholder="Escribí el número" value="${esc(d.declared||'')}" autocomplete="off">
+ <label class="chk"><input type="checkbox" data-aq="detailAll" ${d.detailAll?'checked':''}> Incluir ventas por categoría en el texto</label>
+ <label class="chk"><input type="checkbox" data-aq="mono" ${d.mono!==false?'checked':''}> Formato monoespaciado de WhatsApp (\`\`\`)</label>
+ <label for="aq-n">Observaciones del cierre</label><input id="aq-n" data-aq="notes" maxlength="200" value="${esc(d.notes||'')}"></div>
+ <div><div class="card" id="arq-tabs"></div><div class="card"><div class="row"><h3 class="sp">Texto para WhatsApp</h3></div><div class="rep" id="arq-prev" aria-live="polite"></div><div id="arq-warn"></div>
+ <div class="row" style="margin-top:.8rem"><button class="btn" data-act="arqCopy">Copiar</button><button class="btn" data-act="arqWa">WhatsApp</button><button class="btn" data-act="arqWeb">WhatsApp Web</button><button class="btn" data-act="arqMail">Correo</button></div>
+ <button class="btn gold" style="width:100%;margin-top:.8rem;min-height:52px" data-act="arqClose">Confirmar cierre de caja</button></div></div></div>`;}
+/* ---------- aviso en la demo: qué tipo de negocio se está viendo ---------- */
+function bizDemoBanner(){if(IS_CLIENT||!user||user.role!=='admin')return'';
+ return`<div class="card" style="margin-bottom:1rem"><div class="row"><span class="sp">Demo: estás viendo un <b>${ownerMode()?'mayorista de un solo dueño':'almacén con rubros por responsable'}</b>.</span><button class="btn sm" data-act="nav" data-id="config">Cambiar tipo de negocio</button></div></div>`;}
 
 /* =====================================================================
    ASISTENTE CONVERSACIONAL (V26 · 4.13) — texto y voz opcional
@@ -2476,7 +2662,7 @@ function asStockMsg(pr){const neg=pr.stock<0;return{state:'ejecutado',msg:pfull(
 
 assistRegister({id:'inventory.stock.low',desc:'Ver qué stock está bajo',example:'qué stock está bajo',perm:'sell',risk:'read',confirm:'none',offline:true,idempotent:true,
  match:t=>/^(?:que )?(?:stock bajo|poco stock|se esta(?:n)? acabando|por acabarse|que falta|que reponer|que hay que reponer|stock minimo)$/.test(t)||/^que (?:stock )?(?:esta|hay) bajo$/.test(t)?{}:null,
- run:()=>{const l=S.products.filter(p=>!p.archived&&p.active!==false&&p.stock<=5).sort((a,b)=>a.stock-b.stock);if(!l.length)return{state:'ejecutado',msg:'No hay productos con stock bajo (5 o menos).'};
+ run:()=>{const l=S.products.filter(p=>!p.archived&&p.active!==false&&!isKit(p)&&p.stock<=5).sort((a,b)=>a.stock-b.stock);if(!l.length)return{state:'ejecutado',msg:'No hay productos con stock bajo (5 o menos).'};
   return{state:'ejecutado',msg:l.length+' producto(s) con stock bajo:\n'+l.slice(0,10).map(p=>'• '+pfull(p)+': '+stockTxt(p)).join('\n')+(l.length>10?'\n… y '+(l.length-10)+' más (Inventario → «Stock bajo»).':'')};}});
 
 assistRegister({id:'reports.sales.read',desc:'Ver las ventas de hoy o de ayer',example:'cuánto vendimos hoy',perm:'sell',risk:'read',confirm:'none',offline:true,idempotent:true,service:'S.sales (lectura)',
@@ -3756,34 +3942,34 @@ A.gmailTest=()=>{const c=arqCtx();const t=c?reportText(c.L,false):'Prueba de cor
 
 /* ===== Usuarios y permisos / Auditoría / Configuración ===== */
 const UI_HOOK={usersCard:null,usersAfter:null};
-reg('roles','Usuarios y permisos','shield','roles',()=>`<h1>Usuarios y permisos</h1><div class="card"><h3>Permisos por rol</h3><div class="tw"><table><thead><tr><th>Permiso</th>${Object.keys(S.roles).map(r=>`<th>${esc(r)}</th>`).join('')}</tr></thead><tbody>${Object.entries(PERMS).map(([p,t])=>`<tr><td>${esc(t)}</td>${Object.keys(S.roles).map(r=>`<td><input type="checkbox" style="width:22px;min-height:22px" data-rp="${r}|${p}" ${S.roles[r].includes(p)?'checked':''} ${r==='admin'?'disabled':''} aria-label="${esc(t)} para ${esc(r)}"></td>`).join('')}</tr>`).join('')}</tbody></table></div><p class="sm mut">En producción los permisos se validan en el servidor (RLS y funciones), no sólo en pantalla.</p></div>
- ${UI_HOOK.usersCard?UI_HOOK.usersCard():`<div class="card" style="margin-top:1rem"><div class="row"><h3 class="sp">Usuarios</h3><button class="btn gold sm" data-act="userEdit" data-id="">+ Usuario</button></div><table><tbody>${S.users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.role)}</td><td class="r"><button class="btn sm" data-act="userEdit" data-id="${u.id}">Editar</button></td></tr>`).join('')}</tbody></table></div>`}`,()=>{UI_HOOK.usersAfter&&UI_HOOK.usersAfter();},'Sistema');
-document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.rp&&curScreen==='roles'){const [r,p]=t.dataset.rp.split('|');const a=S.roles[r];if(t.checked&&!a.includes(p))a.push(p);if(!t.checked)S.roles[r]=a.filter(x=>x!==p);audit('PERMISO',r+' · '+p+' · '+(t.checked?'otorgado':'quitado'));save();}});
-A.userEdit=el=>{const u=S.users.find(x=>x.id===el.dataset.id)||null;modal(u?'Editar usuario':'Nuevo usuario',`<label for="us-n">Nombre</label><input id="us-n" value="${esc(u?u.name:'')}" maxlength="40"><label for="us-r">Rol</label><select id="us-r">${Object.keys(S.roles).map(r=>`<option ${u&&u.role===r?'selected':''}>${r}</option>`).join('')}</select><label for="us-p">PIN (4 dígitos)</label><input id="us-p" inputmode="numeric" maxlength="4" value="${esc(u?u.pin:'')}">`,
+reg('roles','Usuarios y permisos','shield','roles',()=>`<h1>Usuarios y permisos</h1><div class="card"><h3>Permisos por rol</h3><div class="tw"><table><thead><tr><th>Permiso</th>${Object.keys(S.roles).map(r=>`<th>${esc(r)}</th>`).join('')}</tr></thead><tbody>${Object.entries(PERMS).map(([p,t])=>`<tr><td>${esc(t)}</td>${Object.keys(S.roles).map(r=>`<td><input type="checkbox" style="width:22px;min-height:22px" data-rp="${r}|${p}" ${S.roles[r].includes(p)?'checked':''} ${r==='admin'||!isAdm()?'disabled':''} aria-label="${esc(t)} para ${esc(r)}"></td>`).join('')}</tr>`).join('')}</tbody></table></div>${isAdm()?'':'<p class="warnbox">Sólo el <b>administrador</b> da o quita permisos. Podés ver la tabla pero no cambiarla.</p>'}<p class="sm mut">Sólo el administrador da o quita permisos y crea o cambia usuarios. En la nube el servidor también lo exige (los permisos se guardan sólo con la sesión de un administrador).</p></div>
+ ${UI_HOOK.usersCard?UI_HOOK.usersCard():`<div class="card" style="margin-top:1rem"><div class="row"><h3 class="sp">Usuarios</h3>${isAdm()?'<button class="btn gold sm" data-act="userEdit" data-id="">+ Usuario</button>':''}</div><table><tbody>${S.users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.role)}</td><td class="r">${isAdm()?`<button class="btn sm" data-act="userEdit" data-id="${u.id}">Editar</button>`:''}</td></tr>`).join('')}</tbody></table></div>`}`,()=>{UI_HOOK.usersAfter&&UI_HOOK.usersAfter();},'Sistema');
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.rp&&curScreen==='roles'){if(!isAdm()){t.checked=!t.checked;return toast('Sólo el administrador da o quita permisos',1);}const [r,p]=t.dataset.rp.split('|');if(r==='admin')return;const a=S.roles[r];if(t.checked&&!a.includes(p))a.push(p);if(!t.checked)S.roles[r]=a.filter(x=>x!==p);audit('PERMISO',r+' · '+p+' · '+(t.checked?'otorgado':'quitado'));save();}});
+A.userEdit=el=>{if(!isAdm())return toast('Sólo el administrador crea o cambia usuarios',1);const u=S.users.find(x=>x.id===el.dataset.id)||null;modal(u?'Editar usuario':'Nuevo usuario',`<label for="us-n">Nombre</label><input id="us-n" value="${esc(u?u.name:'')}" maxlength="40"><label for="us-r">Rol</label><select id="us-r">${Object.keys(S.roles).map(r=>`<option ${u&&u.role===r?'selected':''}>${r}</option>`).join('')}</select><label for="us-p">PIN (4 dígitos)</label><input id="us-p" inputmode="numeric" maxlength="4" value="${esc(u?u.pin:'')}">`,
  {onOk:w=>{if(!val('us-n').trim())return w._err('Falta el nombre.'),false;if(!/^\d{4}$/.test(val('us-p')))return w._err('El PIN debe tener 4 dígitos.'),false;if(u&&u.role==='admin'&&val('us-r')!=='admin'&&S.users.filter(x=>x.role==='admin').length<2)return w._err('Tiene que quedar al menos un administrador.'),false;
   const d={name:val('us-n').trim(),role:val('us-r'),pin:val('us-p')};if(u)Object.assign(u,d);else S.users.push(Object.assign({id:uid()},d));audit('USUARIO',d.name+' · '+d.role);save();rerender();}});};
 reg('auditoria','Auditoría','shield','audit',()=>{const bad=verifyAudit();return `<div class="row"><h1 class="sp">Auditoría</h1>${expBar('auditoria')}<button class="btn" data-act="audVer">Verificar integridad</button></div><div class="card"><p class="sm mut">Cada registro enlaza con el hash del anterior (cadena SHA-256). En la versión con servidor, el registro será inmutable por triggers de PostgreSQL.</p>${bad?`<div class="errbox">Cadena rota en el registro ${bad}.</div>`:`<div class="okbox">Cadena íntegra de este equipo · ${S.audit.length} registros${S.auditX&&S.auditX.length?' (+ '+S.auditX.length+' de otros equipos, sólo lectura)':''}</div>`}<div class="tw"><table><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>${allAudit().slice(-200).reverse().map(a=>`<tr><td class="sm">${fmtDT(a.ts)}</td><td>${esc(a.user)}</td><td><span class="tag">${esc(a.action)}</span></td><td class="sm">${esc(a.detail)}</td></tr>`).join('')}</tbody></table></div></div>`;},null,'Sistema');
 A.audVer=()=>{const b=verifyAudit();toast(b?'Cadena rota en el registro '+b:'Cadena íntegra',!!b);};
-reg('config','Configuración','gear','config',()=>`<h1>Configuración</h1><p class="sm mut">Sistema RAVE · ${IS_CLIENT?'versión del cliente':'demo de evaluación'} · compilada ${esc(BUILD_VER)}</p><div class="grid g2"><div class="card"><h3>Comercio</h3><label for="cf-n">Nombre comercial</label><input id="cf-n" value="${esc(S.tenant.name)}" maxlength="60"><label for="cf-c">Número de caja</label><input id="cf-c" inputmode="numeric" value="${S.tenant.caja}"><label class="chk"><input type="checkbox" id="cf-m" ${S.cfg.movAffectProfit?'checked':''}> Los ingresos/egresos con rubro afectan la ganancia de ese rubro</label><label class="chk"><input type="checkbox" id="cf-p" ${S.cfg.payFromCash?'checked':''}> Sueldo, merienda y gastos manuales se pagan de la caja (valor inicial del arqueo)</label><label class="chk"><input type="checkbox" id="cf-ng" ${negOK()?'checked':''}> Permitir vender sin stock (el stock queda en negativo y se marca en rojo; cada producto puede exigir stock)</label><button class="btn gold" style="margin-top:.6rem" data-act="cfgSave">Guardar</button></div>
- <div class="card"><h3>Rubros, responsables y reparto</h3><p class="sm mut">"Reparte" = comparte sueldo del empleado, gastos e impuestos con los otros rubros marcados. Los que no reparten sólo informan ventas y ganancia.</p>${S.rubros.filter(r=>r.kind==='rubro').map(r=>`<div class="rubrow"><div class="rubhead"><b class="sp"><i class="rdot" style="background:${safeColor(r.color)}"></i>${esc(r.name)}</b><button class="btn sm" data-act="rubEdit" data-id="${r.id}" aria-label="Editar rubro ${esc(r.name)}">Editar</button><button class="btn sm red" data-act="rubDel" data-id="${r.id}" aria-label="Eliminar rubro ${esc(r.name)}">Eliminar</button></div><div class="rubbody"><label class="rublbl">Responsable<input data-rown="${r.id}" value="${esc(r.owner)}" maxlength="40" aria-label="Responsable de ${esc(r.name)}"></label><label class="chk rubchk"><input type="checkbox" data-rrep="${r.id}" ${r.reparte?'checked':''}> reparte</label>${r.reparte?`<label class="rublbl">Impuesto diario ($)<input inputmode="decimal" data-rtax="${r.id}" placeholder="0" value="${esc(pesosStr(S.cfg.tax[r.id]||0))}" aria-label="Impuesto diario de ${esc(r.name)}"></label>`:''}</div></div>`).join('')}<button class="btn sm" data-act="rubAdd">+ Rubro</button></div></div>
+reg('config','Configuración','gear','config',()=>`<h1>Configuración</h1><p class="sm mut">Sistema RAVE · ${IS_CLIENT?'versión del cliente':'demo de evaluación'} · compilada ${esc(BUILD_VER)}</p>${bizCard()}<div class="grid g2"><div class="card"><h3>Comercio</h3><label for="cf-n">Nombre comercial</label><input id="cf-n" value="${esc(S.tenant.name)}" maxlength="60"><label for="cf-c">Número de caja</label><input id="cf-c" inputmode="numeric" value="${S.tenant.caja}">${ownerMode()?'':`<label class="chk"><input type="checkbox" id="cf-m" ${S.cfg.movAffectProfit?'checked':''}> Los ingresos/egresos con rubro afectan la ganancia de ese rubro</label><label class="chk"><input type="checkbox" id="cf-p" ${S.cfg.payFromCash?'checked':''}> Sueldo y gastos manuales se pagan de la caja (valor inicial del arqueo)</label>`}<label class="chk"><input type="checkbox" id="cf-ng" ${negOK()?'checked':''}> Permitir vender sin stock (el stock queda en negativo y se marca en rojo; cada producto puede exigir stock)</label><button class="btn gold" style="margin-top:.6rem" data-act="cfgSave">Guardar</button></div>
+ ${ownerMode()?catCardOwner():`<div class="card"><h3>Rubros, responsables y reparto</h3><p class="sm mut">"Reparte" = comparte sueldo del empleado, gastos e impuestos con los otros rubros marcados. Los que no reparten sólo informan ventas y ganancia.</p>${S.rubros.filter(r=>r.kind==='rubro').map(r=>`<div class="rubrow"><div class="rubhead"><b class="sp"><i class="rdot" style="background:${safeColor(r.color)}"></i>${esc(r.name)}</b><button class="btn sm" data-act="rubEdit" data-id="${r.id}" aria-label="Editar rubro ${esc(r.name)}">Editar</button><button class="btn sm red" data-act="rubDel" data-id="${r.id}" aria-label="Eliminar rubro ${esc(r.name)}">Eliminar</button></div><div class="rubbody"><label class="rublbl">Responsable<input data-rown="${r.id}" value="${esc(r.owner)}" maxlength="40" aria-label="Responsable de ${esc(r.name)}"></label><label class="chk rubchk"><input type="checkbox" data-rrep="${r.id}" ${r.reparte?'checked':''}> reparte</label>${r.reparte?`<label class="rublbl">Impuesto diario ($)<input inputmode="decimal" data-rtax="${r.id}" placeholder="0" value="${esc(pesosStr(S.cfg.tax[r.id]||0))}" aria-label="Impuesto diario de ${esc(r.name)}"></label>`:''}</div></div>`).join('')}<button class="btn sm" data-act="rubAdd">+ Rubro</button></div>`}</div>
  ${cashCfgCard()}${typeof payCfgCard==='function'?payCfgCard():''}${typeof wsCfgCard==='function'?wsCfgCard():''}${typeof assistCfgCard==='function'?assistCfgCard():''}
- ${IS_CLIENT?`<div class="card" style="margin-top:1rem"><h3>Respaldo</h3><div class="row"><button class="btn" data-act="backupDl">Descargar respaldo</button></div><p class="sm mut">${CLOUD.on?'Tus datos se guardan en la nube y en este equipo (cifrados). El respaldo es una copia de seguridad que podés guardar aparte.':'Con la nube sin configurar, los datos viven sólo en este equipo: descargá un respaldo seguido.'}</p></div>`:`<div class="card" style="margin-top:1rem"><h3>Datos de la demo</h3><div class="row"><button class="btn gold" data-act="loadEx">Cargar jornada de ejemplo (6/10)</button><button class="btn" data-act="backupDl">Descargar respaldo</button><label class="btn" for="rs-f">Restaurar respaldo</label><input type="file" id="rs-f" accept=".json" hidden><button class="btn red" data-act="resetDemo">Empezar de cero</button></div><p class="sm mut">La jornada de ejemplo abre la caja y carga la venta del 6/10 (almacén $10.800, bebidas $15.000, panadería $6.800, sandwichería $10.000) con el sueldo de Guille (8 hs) y gastos $4.500, para ver el arqueo completo.</p></div>`}`,
+ ${IS_CLIENT?`<div class="card" style="margin-top:1rem"><h3>Respaldo</h3><div class="row"><button class="btn" data-act="backupDl">Descargar respaldo</button></div><p class="sm mut">${CLOUD.on?'Tus datos se guardan en la nube y en este equipo (cifrados). El respaldo es una copia de seguridad que podés guardar aparte.':'Con la nube sin configurar, los datos viven sólo en este equipo: descargá un respaldo seguido.'}</p></div>`:`<div class="card" style="margin-top:1rem"><h3>Datos de la demo</h3><div class="row"><button class="btn gold" data-act="loadEx">Cargar jornada de ejemplo (6/10)</button><button class="btn" data-act="backupDl">Descargar respaldo</button><label class="btn" for="rs-f">Restaurar respaldo</label><input type="file" id="rs-f" accept=".json" hidden><button class="btn red" data-act="resetDemo">Empezar de cero</button></div><p class="sm mut">${ownerMode()?'La jornada de ejemplo abre la caja y carga ventas de ejemplo para ver el arqueo y cierre del dueño.':'La jornada de ejemplo abre la caja y carga ventas de ejemplo con el sueldo del empleado (8 hs) y gastos $4.500, para ver el arqueo completo con el reparto entre rubros.'}</p></div>`}`,
  ()=>{const f=$('#rs-f');f&&f.addEventListener('change',async e=>{try{const j=JSON.parse(await e.target.files[0].text());if(!j.state||!j.state.rubros)throw new Error('formato');S=mergeDefaults(j.state);audit('RESTAURAR_RESPALDO','');save();toast('Respaldo restaurado');rerender();}catch(err){toast('Archivo de respaldo inválido',1);}});},'Sistema');
 document.addEventListener('change',e=>{const t=e.target;if(curScreen!=='config'||!t.dataset)return;if(t.dataset.rown){rub(t.dataset.rown).owner=t.value.trim();audit('RUBRO_RESPONSABLE',t.dataset.rown+' '+t.value);save();}
  else if(t.dataset.rrep){rub(t.dataset.rrep).reparte=t.checked;if(t.checked&&S.cfg.tax[t.dataset.rrep]===undefined)S.cfg.tax[t.dataset.rrep]=3000000;audit('RUBRO_REPARTE',t.dataset.rrep+' '+t.checked);save();rerender();}
  else if(t.dataset.rtax){const c=cents(t.value===''?'0':t.value);if(isNaN(c)||c<0)return toast('Importe inválido',1);S.cfg.tax[t.dataset.rtax]=c;audit('IMPUESTO_DIARIO',t.dataset.rtax+' '+money(c));save();}});
-A.cfgSave=()=>{const c=parseNum(val('cf-c'));if(!(c>=1))return toast('Número de caja inválido',1);S.tenant.name=val('cf-n').trim()||S.tenant.name;S.tenant.caja=c;S.cfg.movAffectProfit=$('#cf-m').checked;S.cfg.payFromCash=$('#cf-p').checked;if(S.cfg.negStock!==$('#cf-ng').checked){S.cfg.negStock=$('#cf-ng').checked;audit('CONFIG_VENTA_SIN_STOCK',S.cfg.negStock?'permitida':'bloqueada');}audit('CONFIG','comercio/caja');save();toast('Guardado');rerender();};
+A.cfgSave=()=>{const c=parseNum(val('cf-c'));if(!(c>=1))return toast('Número de caja inválido',1);S.tenant.name=val('cf-n').trim()||S.tenant.name;S.tenant.caja=c;if($('#cf-m'))S.cfg.movAffectProfit=$('#cf-m').checked;if($('#cf-p'))S.cfg.payFromCash=$('#cf-p').checked;if(S.cfg.negStock!==$('#cf-ng').checked){S.cfg.negStock=$('#cf-ng').checked;audit('CONFIG_VENTA_SIN_STOCK',S.cfg.negStock?'permitida':'bloqueada');}audit('CONFIG','comercio/caja');save();toast('Guardado');rerender();};
 A.rubAdd=()=>A.rubEdit({dataset:{id:''}});
 A.rubDel=el=>{if(!can('edit_products'))return toast('Sin permiso',1);const id=el&&el.dataset.id,r=id?rub(id):null;if(!r||r.kind!=='rubro')return;
  const prods=S.products.filter(p=>p.rubro===id);const others=S.rubros.filter(x=>x.kind==='rubro'&&x.id!==id);
  const hist=S.sales.some(s=>(s.items||[]).some(i=>i.rubro===id))||S.movs.some(m=>m.rubro===id);
  const fin=(dest)=>{if(dest)prods.forEach(p=>{p.rubro=dest;});
-  if(hist){r.kind='archivado';r.menuOn=false;audit('RUBRO_ARCHIVAR',r.name+(dest?' · productos → '+rub(dest).name:''));toast('Rubro archivado: ya no aparece, y sus ventas y movimientos anteriores se conservan');}
-  else{S.rubros=S.rubros.filter(x=>x.id!==id);delete S.cfg.tax[id];audit('RUBRO_BAJA',r.name+(dest?' · productos → '+rub(dest).name:''));toast('Rubro eliminado');}
+  if(hist){r.kind='archivado';r.menuOn=false;audit('RUBRO_ARCHIVAR',r.name+(dest?' · productos → '+rub(dest).name:''));toast(RW(1)+' archivad'+(ownerMode()?'a':'o')+': ya no aparece, y sus ventas y movimientos anteriores se conservan');}
+  else{S.rubros=S.rubros.filter(x=>x.id!==id);delete S.cfg.tax[id];audit('RUBRO_BAJA',r.name+(dest?' · productos → '+rub(dest).name:''));toast(RW(1)+' eliminad'+(ownerMode()?'a':'o'));}
   save();rerender();pubRefresh();};
- if(prods.length){if(!others.length)return toast('Es el único rubro: creá otro antes de eliminarlo',1);
-  modal('Eliminar rubro «'+r.name+'»','<p>Tiene <b>'+prods.length+'</b> producto'+(prods.length===1?'':'s')+'. Elegí a qué rubro pasarlos:</p><label for="rd-d">Pasar los productos a</label><select id="rd-d">'+others.map(o=>'<option value="'+esc(o.id)+'">'+esc(o.name)+'</option>').join('')+'</select>'+(hist?'<p class="sm mut">Como tiene ventas o movimientos anteriores, no se borra: se archiva para conservar los reportes.</p>':''),{okText:hist?'Pasar y archivar':'Pasar y eliminar',onOk:w=>{fin(val('rd-d'));}});return;}
- confirmBox(hist?'Archivar rubro':'Eliminar rubro',hist?'«'+r.name+'» tiene ventas o movimientos anteriores: no se borra, se archiva (deja de aparecer, el historial queda).':'Se elimina el rubro «'+r.name+'». No tiene productos ni movimientos.',()=>fin(null),hist?'Archivar':'Eliminar');};
+ if(prods.length){if(!others.length)return toast('Es '+(ownerMode()?'la única categoría':'el único rubro')+': creá otr'+(ownerMode()?'a':'o')+' antes de eliminarl'+(ownerMode()?'a':'o'),1);
+  modal('Eliminar '+RW()+' «'+r.name+'»','<p>Tiene <b>'+prods.length+'</b> producto'+(prods.length===1?'':'s')+'. Elegí a qué '+RW()+' pasarlos:</p><label for="rd-d">Pasar los productos a</label><select id="rd-d">'+others.map(o=>'<option value="'+esc(o.id)+'">'+esc(o.name)+'</option>').join('')+'</select>'+(hist?'<p class="sm mut">Como tiene ventas o movimientos anteriores, no se borra: se archiva para conservar los reportes.</p>':''),{okText:hist?'Pasar y archivar':'Pasar y eliminar',onOk:w=>{fin(val('rd-d'));}});return;}
+ confirmBox((hist?'Archivar ':'Eliminar ')+RW(),hist?'«'+r.name+'» tiene ventas o movimientos anteriores: no se borra, se archiva (deja de aparecer, el historial queda).':'Se elimina '+(ownerMode()?'la categoría':'el rubro')+' «'+r.name+'». No tiene productos ni movimientos.',()=>fin(null),hist?'Archivar':'Eliminar');};
 A.resetDemo=()=>confirmBox('Empezar de cero','Se borran todos los datos de esta demo en este navegador.',()=>{S=DEF();demoExtras();audit('RESET_DEMO','');save();pos.lines=[];pubReload();rerender();toast('Demo reiniciada');},'Borrar todo');
 function loadExample(){if(openSess())return 'Ya hay una caja abierta: cerrala antes de cargar el ejemplo.';
  const sess={id:uid(),caja:S.tenant.caja,openedBy:'ADMIN',openedAt:now(),opening:0,closedAt:0};S.sessions.push(sess);
@@ -4208,7 +4394,7 @@ function cmpRemitoInner(){const c=crS;
    <div class="row"><label class="chk"><input type="radio" name="cr-cond" data-cr="cond" value="credito" ${contado?'':'checked'}> A cuenta corriente (queda como deuda con el proveedor)</label>
    <label class="chk"><input type="radio" name="cr-cond" data-cr="cond" value="contado" ${contado?'checked':''}> Al contado (sale de caja o banco)</label></div>
    ${contado?`<div class="grid g3"><div><label for="cr-medio">Medio de pago</label><select id="cr-medio" class="cmp-in" data-cr="medio">${Object.entries(CMP_MEDIOS).map(([k,t])=>`<option value="${k}" ${c.medio===k?'selected':''}>${t}</option>`).join('')}</select></div>
-    <div><label for="cr-rubro">Rubro del egreso (obligatorio)</label><select id="cr-rubro" class="cmp-in" data-cr="rubro"><option value="">— Elegí un rubro —</option>${rubs.map(r=>`<option value="${esc(r.id)}" ${c.rubro===r.id?'selected':''}>${esc(r.name)}</option>`).join('')}</select></div>
+    ${ownerMode()?'<div><label>Pago</label><div class="cmp-note">Lo paga el negocio (sin rubro)</div></div>':`<div><label for="cr-rubro">Rubro del egreso (obligatorio)</label><select id="cr-rubro" class="cmp-in" data-cr="rubro"><option value="">— Elegí un rubro —</option>${rubs.map(r=>`<option value="${esc(r.id)}" ${c.rubro===r.id?'selected':''}>${esc(r.name)}</option>`).join('')}</select></div>`}
     <div><label>Caja</label><div class="cmp-note">${c.medio==='efectivo'?(sess?'Sale del efectivo de la caja '+esc(S.tenant.caja)+' (abierta)':'<b class="errtxt">No hay caja abierta: abrila en Caja o elegí otro medio</b>'):'No mueve el efectivo de la caja'}</div></div></div>`:'<p class="sm mut">Se registra la factura o el remito en la cuenta corriente del proveedor. El pago se registra después desde “Cuenta”.</p>'}</fieldset>
   <div class="errbox" id="cr-err" role="alert" ${c.err?'':'hidden'}>${esc(c.err)}</div>
   <div class="row"><button type="button" class="btn gold cmp-big" data-act="cmpRemitoGo" ${c.busy?'disabled':''}>Revisar y confirmar ingreso</button><button type="button" class="btn ghost" data-act="cmpRemitoReset">Limpiar formulario</button></div></div>`;}
@@ -4300,7 +4486,7 @@ A.cmpRemitoGo=()=>{if(!crS||crS.busy)return;if(!can('purchases'))return toast('S
   const items=cmpBuildItems(c.rows,'precio_costo');tot=cmpTotals('rc');
   payload={idempotency_key:c.key,proveedor_id:prov.id,orden_compra_id:c.oc||undefined,tipo_comprobante:c.tipo,nro_comprobante:nro,fecha_recepcion:c.fecha||undefined,condicion_pago:c.cond,observaciones:c.obs||undefined,items};
   const dec=parseNum(c.decl);if(String(c.decl||'').trim()){if(isNaN(dec))throw new CmpErr('El total del comprobante no es un número válido.');if(Math.abs(dec*100-tot)>0.9)throw new CmpErr('El total del comprobante ('+money(Math.round(dec*100))+') no coincide con la suma de los renglones ('+money(tot)+'). Revisá cantidades y costos.');payload.total_declarado=dec;}
-  if(c.cond==='contado'){if(!c.rubro)throw new CmpErr('Elegí el rubro del egreso: es obligatorio en todo movimiento de dinero.');
+  if(c.cond==='contado'){if(ownerMode())c.rubro=ownerRubro();if(!c.rubro)throw new CmpErr('Elegí el rubro del egreso: es obligatorio en todo movimiento de dinero.');
    payload.medio_pago=c.medio;payload.rubro_id=c.rubro;
    if(c.medio==='efectivo'){const s=openSess();if(!s)throw new CmpErr('Para pagar en efectivo tiene que haber una caja abierta (Caja → Abrir caja), o elegí otro medio de pago.');payload.turno_id=s.id;}}
   c.err='';const e0=document.getElementById('cr-err');if(e0)e0.hidden=true;
@@ -4321,7 +4507,7 @@ const CMP12={ok:null};
 async function cmp12Probe(){try{await sel('pagos_proveedor_asignaciones?select=id&limit=1');CMP12.ok=true;}catch(e){CMP12.ok=(e&&(e.net||(e.status&&e.status!==404&&e.status!==400)))?null:false;}}
 A.cmpPay=async el=>{if(!can('purchases'))return toast('Sin permiso',1);const s=cmpProv(el.dataset.id);if(!s)return;if(!(s.saldo>0)){toast('Este proveedor no tiene deuda',1);return;}
  if(typeof cmpCloud==='function'&&cmpCloud()&&CMP12.ok===null)await cmp12Probe();
- const key=cmpKey();const noR=typeof xfCfg==='function'&&xfCfg().noRubro;const rubs=S.rubros.filter(r=>r.kind!=='cobr'&&!r.sys);const sess=openSess();
+ const key=cmpKey();const noR=ownerMode()||(typeof xfCfg==='function'&&xfCfg().noRubro);const rubs=S.rubros.filter(r=>r.kind!=='cobr'&&!r.sys);const sess=openSess();
  const abiertas=(S.sessions||[]).filter(x=>!x.closedAt);const multi=abiertas.length>1&&(!(typeof cmpCloud==='function'&&cmpCloud())||CMP12.ok===true);
  const exp=ss=>{try{return arqueoCalc(ss,arqInputs(ss)).expectedCash;}catch(e){return 0;}};
  const cajaN=ss=>esc(ss.regName||('Caja '+ss.caja));
@@ -4335,7 +4521,7 @@ A.cmpPay=async el=>{if(!can('purchases'))return toast('Sin permiso',1);const s=c
   <p class="sm mut">${sess?'Si pagás en efectivo, sale de la caja '+esc(S.tenant.caja)+' (abierta).':'No hay caja abierta: el pago en efectivo no se puede registrar hasta abrirla.'}</p></div>`,
   {okText:'Registrar pago',onOk:async w=>{const m=parseNum(val('pg-m'));if(!(m>0)){w._err('Cargá un importe mayor a cero.');return false;}
    if(Math.round(m*100)>s.saldo){w._err('El pago no puede superar la deuda ('+money(s.saldo)+').');return false;}
-   const rid=noR?sysRubro('sys-pago-proveedor','Pago a proveedores'):val('pg-r');
+   const rid=ownerMode()?ownerRubro():(noR?sysRubro('sys-pago-proveedor','Pago a proveedores'):val('pg-r'));
    const p={idempotency_key:key,proveedor_id:s.id,monto:m,medio_pago:val('pg-med'),rubro_id:rid,referencia:val('pg-ref')};
    if(!p.rubro_id){w._err('Elegí el rubro del egreso: es obligatorio.');return false;}
    const rep=multi&&$('#pg-rep',w)&&$('#pg-rep',w).checked;
@@ -4425,7 +4611,7 @@ reg('inicio','Resumen','home',null,()=>{const D=dbData();const cv=can('view_cost
  const byRub={};D.rows.forEach(r=>byRub[r.it.rubro]=(byRub[r.it.rubro]||0)+lineTotal(r.it));const totR=Object.values(byRub).reduce((a,b)=>a+b,0);
  const byProd={};D.rows.forEach(r=>{const e=byProd[r.it.name]||(byProd[r.it.name]={q:0,t:0});e.q+=r.it.qty;e.t+=lineTotal(r.it);});
  const top=Object.entries(byProd).sort((a,b)=>b[1].t-a[1].t).slice(0,8);
- const low=S.products.filter(p=>p.active&&p.stock<=5).sort((a,b)=>a.stock-b.stock).slice(0,8);
+ const low=S.products.filter(p=>p.active&&!isKit(p)&&p.stock<=5).sort((a,b)=>a.stock-b.stock).slice(0,8);
  const sess=openSess();const oldOpen=sess&&dkey(sess.openedAt)!==today;const pend=S.sales.filter(s=>s.status==='pendiente');
  const soc=S.customers.filter(c=>c.status!=='baja');const newSoc=soc.filter(c=>dkey(c.ts)>=D.a&&dkey(c.ts)<=D.b).length;
  const stamps=S.loyalty.ledger.filter(e=>e.kind==='stamp'&&dkey(e.ts)>=D.a&&dkey(e.ts)<=D.b).length;const redeem=S.loyalty.ledger.filter(e=>e.kind==='redeem'&&dkey(e.ts)>=D.a&&dkey(e.ts)<=D.b).length;
@@ -4434,13 +4620,14 @@ reg('inicio','Resumen','home',null,()=>{const D=dbData();const cv=can('view_cost
  const reqs=S.orderReqs.filter(o=>dkey(o.ts)>=D.a&&dkey(o.ts)<=D.b).length;
  const sel=(id,opts,cur)=>`<select id="${id}" aria-label="${id}" style="max-width:190px">${opts.map(([v,t])=>`<option value="${v}" ${cur===v?'selected':''}>${esc(t)}</option>`).join('')}</select>`;
  return `<div class="row"><h1 class="sp">Resumen del negocio</h1><span class="sm mut">Actualizado ${fmtDT(now())} · zona America/Argentina/Salta</span></div>
- <div class="card noprint" style="margin-bottom:1rem"><div class="row"><b>Filtros</b>${sel('dbp',Object.entries(dbPerTxt),dbF.per)}${sel('dbm',[['','Todos los medios'],...Object.entries(MET)],dbF.met)}${sel('dbd',[['','Con y sin ARCA'],['arca','Sólo con ARCA'],['int','Sólo internos']],dbF.doc)}${sel('dbr',[['','Todos los rubros'],...S.rubros.filter(r=>r.kind==='rubro').map(r=>[r.id,r.name])],dbF.rub)}<button class="btn sm" data-act="dbReset">Restablecer</button>
+ ${typeof bizDemoBanner==='function'?bizDemoBanner():''}
+ <div class="card noprint" style="margin-bottom:1rem"><div class="row"><b>Filtros</b>${sel('dbp',Object.entries(dbPerTxt),dbF.per)}${sel('dbm',[['','Todos los medios'],...Object.entries(MET)],dbF.met)}${sel('dbd',[['','Con y sin ARCA'],['arca','Sólo con ARCA'],['int','Sólo internos']],dbF.doc)}${sel('dbr',[['','Todos los '+RWs()],...S.rubros.filter(r=>r.kind==='rubro').map(r=>[r.id,r.name])],dbF.rub)}<button class="btn sm" data-act="dbReset">Restablecer</button>
   <span class="sp"></span><button class="btn sm gold" data-act="nav" data-id="vender">Ir a Vender →</button></div><p class="sm mut" style="margin:.4rem 0 0">Período: <b>${dbPerTxt[dbF.per]}</b>${D.a!=='0000-00-00'?' ('+dmy(D.a)+' a '+dmy(D.b)+')':''} · sólo ventas confirmadas (sin anuladas ni cobros pendientes) · ${dbF.doc?(dbF.doc==='arca'?'sólo comprobantes con ARCA':'sólo tickets internos'):'comprobantes con y sin ARCA, sin mezclar en los totales de ARCA'}</p></div>
  ${oldOpen?`<div class="errbox">La caja se abrió el ${dmy(dkey(sess.openedAt))} y sigue abierta: hay días con ventas sin cierre. <a href="#panel/arqueo">Ir al arqueo</a></div>`:''}
  <div class="grid g4"><div class="card kpi"><b>${money(tot)}</b><span>Ventas netas (${n} operaciones)</span></div><div class="card kpi"><b>${money(n?Math.round(tot/n):0)}</b><span>Ticket promedio = ventas ÷ operaciones</span></div>${cv?`<div class="card kpi"><b>${money(prof)}</b><span>Margen bruto estimado (ventas − costo − comisiones; sin impuestos ni sueldos). ${IS_CLIENT?'Con los costos que cargaste':'Costos de la demo: de ejemplo'}</span></div>`:''}<div class="card kpi"><b>${money(disc)}</b><span>Descuentos otorgados (cupones y membresías)</span></div></div>
  <div class="grid g4" style="margin-top:1rem"><div class="card kpi"><b>${newSoc}</b><span>Socios nuevos del Club · total ${soc.length}</span></div><div class="card kpi"><b>${stamps}</b><span>Sellos entregados · ${redeem} premios canjeados</span></div><div class="card kpi"><b>${cpUse}</b><span>Cupones usados</span></div><div class="card kpi"><b>${money(deuda)}</b><span>Deuda en cuenta corriente (total actual)</span></div></div>
  <div class="grid g2" style="margin-top:1rem"><div class="card"><h3>Evolución diaria</h3>${days.length?dbBars(byDay,money):'<p class="mut">Sin datos suficientes.</p>'}<p class="sm mut">Ventas netas por día (hasta 14 días). La tabla es el gráfico: mismos números.</p></div>
- <div class="card"><h3>Participación por rubro</h3>${totR?dbBars(S.rubros.filter(r=>byRub[r.id]).map(r=>[r.name,byRub[r.id],numAR(byRub[r.id]/totR*100,1)+' %']),money,'#7b2d3b'):'<p class="mut">Sin datos suficientes: no hay ventas en este filtro.</p>'}<p class="sm mut">Participación = ventas del rubro ÷ ventas totales del filtro × 100.</p></div></div>
+ <div class="card"><h3>Participación por ${RW()}</h3>${totR?dbBars(S.rubros.filter(r=>byRub[r.id]).map(r=>[r.name,byRub[r.id],numAR(byRub[r.id]/totR*100,1)+' %']),money,'#7b2d3b'):'<p class="mut">Sin datos suficientes: no hay ventas en este filtro.</p>'}<p class="sm mut">Participación = ventas del rubro ÷ ventas totales del filtro × 100.</p></div></div>
  <div class="grid g2" style="margin-top:1rem"><div class="card"><h3>Productos más vendidos</h3>${top.length?`<div class="tw"><table><thead><tr><th>Producto</th><th class="r">Unid.</th><th class="r">Ventas</th></tr></thead><tbody>${top.map(([nm,v])=>`<tr><td>${esc(nm)}</td><td class="r">${numAR(v.q,3)}</td><td class="r">${money(v.t)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="mut">Sin datos suficientes.</p>'}</div>
  <div class="card"><h3>Por medio de pago</h3>${Object.keys(byMet).length?dbBars(Object.entries(byMet).map(([k,v])=>[MET[k]||k,v,numAR(v/tot*100,1)+' %']),money):'<p class="mut">Sin datos suficientes.</p>'}</div></div>
  <div class="grid g3" style="margin-top:1rem"><div class="card"><h3>Alertas</h3>${low.length?low.map(p=>`<div class="sm ${p.stock<0?'negs':''}">${p.stock<0?'Stock NEGATIVO':'Stock bajo'}: ${esc(p.name)}${p.sub?' ('+esc(p.sub)+')':''} · ${esc(stockTxt(p))}</div>`).join(''):'<p class="mut sm">Sin alertas de stock.</p>'}${pend.length?`<div class="sm neg">${pend.length} cobro(s) digital(es) pendiente(s).</div>`:''}${bday?`<div class="sm">🎂 ${bday} socio(s) de cumpleaños esta semana (con consentimiento de promociones).</div>`:''}</div>
@@ -4851,7 +5038,7 @@ function queueStock(){for(const p of S.products){if(!p||!p.id)continue;const b=c
 async function pushAll(){queueStock();const all=collectAll();const seen=new Set(),ch=[];
  for(const it of all){const key=it.c+'|'+it.id;seen.add(key);const h=cyrb(canon(it.w));if(cl.fp[key]!==h)ch.push({it,key,h});}
  for(const key of Object.keys(cl.fp)){if(seen.has(key))continue;const c=key.split('|')[0];if(DELC.has(c))ch.push({key,del:1,c,id:key.slice(c.length+1)});else delete cl.fp[key];}
- const rk=x=>{const c=x.it?x.it.c:x.c;return c==='prod'?0:(c==='ctransf'?2:(c==='ctev'?3:(c==='cdet'?4:1)));};ch.sort((a,b)=>rk(a)-rk(b));
+ const rk=x=>{const c=x.it?x.it.c:x.c;return (c==='prod'||c==='rubros')?0:(c==='ctransf'?2:(c==='ctev'?3:(c==='cdet'?4:1)));};ch.sort((a,b)=>rk(a)-rk(b));
  let sent=0;
  for(let i=0;i<ch.length;i+=150){const part=ch.slice(i,i+150),body=[];
   for(const x of part){if(x.del){body.push({c:x.c,id:x.id,d:{},x:true});continue;}
@@ -5728,7 +5915,7 @@ A.shSave=()=>{if(!can('menu_admin'))return toast('No tenés permiso',1);const r=
 const mCfg=()=>S.menu.published||S.menu;
 function pubCatalog(){const secs=S.rubros.filter(r=>r.kind==='rubro'&&r.layout&&r.menuOn!==false).map(r=>({cat:r.id,nom:r.mNom||r.name,titulo:r.mTitle||r.name,hint:r.mHint||'',layout:r.layout,alc:!!r.alcohol,menu:true}));
  const ids=new Set(secs.map(s=>s.cat));
- const productos=S.products.filter(p=>p.menu&&p.active&&ids.has(p.rubro)).map(p=>({id:p.id,cat:p.rubro,grupo:p.grupo||'',nom:p.name,sub:p.sub||'',precio:p.price/100,img:IMGS[p.id]||p.img||'',destacado:!!p.featured,desc:p.desc||'',unidad:p.unit!=='u'?p.unit:'',agotado:p.stock<=0}));
+ const productos=S.products.filter(p=>p.menu&&p.active&&ids.has(p.rubro)).map(p=>({id:p.id,cat:p.rubro,grupo:p.grupo||'',nom:p.name,sub:p.sub||'',precio:p.price/100,img:IMGS[p.id]||p.img||'',destacado:!!p.featured,desc:p.desc||'',unidad:p.unit!=='u'?p.unit:'',agotado:stockOf(p)<=0}));
  return{secciones:secs,productos};}
 function pubSite(){const c=mCfg();
  return{title:c.title||'RAVE DIGITAL',sub:c.sub,pitch:c.pitch,promo:c.promo,address:S.tenant.address,mapQuery:c.mapQuery,mapUrl:c.mapUrl,reviewUrl:c.reviewUrl,wifi:c.wifi,social:(c.social||[]).filter(x=>x.on!==false&&x.url&&safeUrl(x.url)).map(x=>({k:x.k,label:x.label,handle:x.handle,url:x.url})),icons:Object.assign({},EXTRA_ICONS,SOCIAL_ICONS),footer:c.footer,wa:S.tenant.wa,alcFrom:c.alcFrom,alcTo:c.alcTo,hideTeamBtn:!!c.hideTeamBtn,clubOn:c.clubOn!==false,ship:(typeof shipPublic==='function'?shipPublic(c):null)};}
