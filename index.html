@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-24 21:55 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-24 22:10 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -3402,7 +3402,7 @@ A.cuNfc=el=>{const c=custById(el.dataset.id);if(!c)return;
 let cuF={q:''};
 function custRow(c){const st=stampsOf(c.id),mb=memberActive(c),dt=debtOf(c.id);
  return `<tr><td>${pad4(c.num)}</td><td><b>${esc(custFull(c))}</b>${c.status==='baja'?' <span class="tag bad">baja</span>':''}${c.origin==='ejemplo'?' <span class="tag sim">ej.</span>':''}${ownerMode()?(c.channel==='mayorista'?' <span class="tag ok">mayorista</span>':' <span class="tag">minorista</span>'):''}</td><td>${esc(c.wa)}</td><td>${esc(birthTxt(c.birth))}</td><td class="sm">${esc(c.origin)}<br>${c.consent.comm?'<span class="tag ok">promos sí</span>':'<span class="tag">promos no</span>'}</td><td>${Math.min(st,S.loyalty.goal)}/${S.loyalty.goal}${st>=S.loyalty.goal?' 🎁':''}</td><td class="sm">${mb?'⭐ '+esc(mb.name)+'<br>hasta '+esc(mb.until):'—'}</td><td class="r">${c.limit?`${money(dt)}<br><span class="sm mut">de ${money(c.limit)}</span>`:'<span class="mut sm">sin crédito</span>'}</td><td class="r"><button class="btn sm" data-act="cuEdit" data-id="${c.id}">Ficha</button></td></tr>`;}
-reg('clientes','Clientes','users','customers',()=>{const q=cuF.q.toLowerCase();const L=S.customers.filter(c=>!q||custFull(c).toLowerCase().includes(q)||c.wa.includes(q.replace(/\D/g,'')||'zzz')||pad4(c.num)===q||(c.dni&&normDni(q).length>=6&&normDni(c.dni)===normDni(q)));
+reg('clientes','Clientes','users','customers',()=>{const q=cuF.q.toLowerCase();const L=S.customers.filter(c=>!c.elim).filter(c=>!q||custFull(c).toLowerCase().includes(q)||c.wa.includes(q.replace(/\D/g,'')||'zzz')||pad4(c.num)===q||(c.dni&&normDni(q).length>=6&&normDni(c.dni)===normDni(q)));
  const sub=S.customers.filter(hasComm).length;const deuda=S.customers.reduce((a,c)=>a+Math.max(0,debtOf(c.id)),0);
  return `<div class="row"><h1 class="sp">${ownerMode()?'Clientes':'Clientes del Club RAVE'}</h1>${expBar('clientes')}<button class="btn" data-act="cuCamp">Campaña WhatsApp</button><button class="btn gold" data-act="cuEdit" data-id="">+ Cliente</button></div>
  <div class="grid g4"><div class="card kpi"><b>${S.customers.filter(c=>c.status!=='baja').length}</b><span>${ownerMode()?'Clientes activos ('+S.customers.filter(c=>c.status!=='baja'&&c.channel==='mayorista').length+' mayoristas)':'Socios activos'}</span></div><div class="card kpi"><b>${sub}</b><span>Aceptaron promociones (se les puede escribir)</span></div><div class="card kpi"><b>${S.members.filter(m=>m.status==='activa'&&m.to>now()).length}</b><span>Membresías vigentes</span></div><div class="card kpi"><b>${money(deuda)}</b><span>Deuda total en cuenta corriente</span></div></div>
@@ -3418,7 +3418,7 @@ A.cuEdit=el=>{const c=el.dataset.id?custById(el.dataset.id):null;const isAdm=can
  <label class="chk"><input type="checkbox" id="cu-c1" ${c?(c.consent.club?'checked':''):(ownerMode()?'':'checked')} ${sd}> Participa del Club RAVE (tratamiento de datos)</label><label class="chk"><input type="checkbox" id="cu-c2" ${c&&c.consent.comm?'checked':''} ${sd}> Aceptó recibir promociones por WhatsApp</label>
  ${c&&adm?`<label for="cu-proof">Constancia al OTORGAR un consentimiento (cómo y cuándo lo dio el titular; revocar no la necesita)</label><input id="cu-proof" maxlength="140" autocomplete="off" placeholder="Ej.: lo aceptó por escrito en el mostrador el 20/10" value="">${c.consent.proof?`<p class="sm mut">Última constancia: ${esc(c.consent.by||'')} · ${esc(c.consent.proof)}</p>`:''}`:''}
  ${c&&typeof wsCustCard==='function'?wsCustCard(c):''}${c?`<div class="card" style="margin:.6rem 0"><div class="row"><b class="sp">Cuenta corriente</b><span>Debe ${money(debtOf(c.id))}</span></div>${ccLedgerHTML(c.id)}<label for="cu-lim">Límite de crédito ($) — sólo administración</label>${numIn('cu-lim',c.limit||0,'0',can('config')||can('void')?'':'disabled')}<div class="row" style="margin-top:.5rem"><button class="btn sm" data-act="cuPay" data-id="${c.id}">Registrar cobro de deuda</button><button class="btn sm" data-act="cuMember" data-id="${c.id}">Membresía</button><button class="btn sm" data-act="cuRedeem" data-id="${c.id}">Canjear premio (${Math.min(stampsOf(c.id),S.loyalty.goal)}/${S.loyalty.goal})</button></div></div>
- <label for="cu-nt">Notas internas</label><input id="cu-nt" maxlength="120" value="${esc(c.notes||'')}"><div class="row" style="margin-top:.6rem">${adm&&c.status!=='baja'&&c.secret?`<button class="btn sm" data-act="cuCardLink" data-id="${c.id}">Enviar tarjeta (enlace y Wallet)</button>`:''}${custDelAdm()&&c.status!=='baja'?`<button class="btn sm red" data-act="cuBaja" data-id="${c.id}">Dar de baja (anonimizar)</button><button class="btn sm red" data-act="cuDel" data-id="${c.id}">${custBlockers(c).canDelete||custDelHistOk()?'Eliminar definitivamente':'Eliminar (con la nube: sólo sin historial)'}</button>`:''}${!custDelAdm()&&c.status!=='baja'?'<span class="sm mut">La baja y la eliminación las hace sólo el administrador.</span>':''}</div>`:''}`,
+ <label for="cu-nt">Notas internas</label><input id="cu-nt" maxlength="120" value="${esc(c.notes||'')}"><div class="row" style="margin-top:.6rem">${adm&&c.status!=='baja'&&c.secret?`<button class="btn sm" data-act="cuCardLink" data-id="${c.id}">Enviar tarjeta (enlace y Wallet)</button>`:''}${custDelAdm()&&c.status!=='baja'?`<button class="btn sm red" data-act="cuBaja" data-id="${c.id}">Dar de baja (anonimizar)</button>`:''}${custDelAdm()&&!c.elim?`<button class="btn sm red" data-act="cuDel" data-id="${c.id}">Eliminar socio</button>`:''}${!custDelAdm()&&c.status!=='baja'?'<span class="sm mut">La baja y la eliminación las hace sólo el administrador.</span>':''}</div>`:''}`,
  {wide:true,okText:'Guardar',onOk:w=>{const nm=val('cu-n').trim(),ls=val('cu-l').trim();const OW=ownerMode(),club=$('#cu-c1',w).checked;
   if(OW){if(nm.length<2)return w._err('Escribí el nombre o la razón social.'),false;}else if(nm.length<2||ls.length<2)return w._err('Nombre y apellido son obligatorios.'),false;
   const wa=normWA(val('cu-w'));if(!wa)return w._err('WhatsApp inválido.'),false;
@@ -3618,7 +3618,7 @@ A.cuBaja=el=>{const c=custById(el.dataset.id);if(!c)return;
   if(val('bj-n').trim().replace(/^0+/,'')!==String(c.num))return w._err('El N.º de socio no coincide: la baja necesita esa confirmación.'),false;
   let dec='';if(d>0){const r=w.querySelector('input[name=bj-d]:checked');if(!r)return w._err('Elegí qué hacer con la deuda de '+money(d)+'.'),false;dec=r.value;
    if(dec==='cobrar'){setTimeout(()=>{A.cuPay({dataset:{id:c.id}});},60);return;}
-   if(dec==='condonar'){S.fiadoPays.push({id:uid(),cust:c.id,ts:now(),amount:d,method:'condonado',user:user.name,mov:'',rubro:'cobr',reason:mot});audit('DEUDA_CONDONADA','socio '+n+' · '+money(d)+' · movimiento compensatorio · '+mot);}
+   if(dec==='condonar'){S.fiadoPays.push({id:uid(),cust:c.id,ts:now(),amount:d,method:'condonado',user:user.name,mov:'',rubro:'cobr',reason:mot});audit('DEUDA_CONDONADA','socio '+n+' · '+money(d)+' · movimiento compensatorio · '+mot);c.debtDec={mode:'mantener',reason:'condonada: '+mot,by:user.name,ts:now()};}
    else c.debtDec={mode:'mantener',reason:mot,by:user.name,ts:now()};}
   const w0=normWA(c.wa||''),cards=[c.id].concat(c.cards||[]);
   clubBlockAdd(c);custRevoke(c);c.status='baja';c.name='Socio';c.last='N.º '+n;c.wa='';c.email='';c.birth='';c.dni='';c.taxid='';c.notes='';
@@ -3630,6 +3630,13 @@ A.cuBaja=el=>{const c=custById(el.dataset.id);if(!c)return;
    nombre que figuraba en el ticket; se borran tarjeta, sellos pendientes, membresías y acuerdos. La deuda se cobra o se condona antes.
    Con nube: el servidor (migración 11) todavía sólo admite borrar sin historial; con historial se ofrece la baja. */
 const custDelHistOk=()=>!(typeof CLOUD!=='undefined'&&CLOUD.on);
+/* V26.25b · con nube y con historial: el servidor (migración 11) no deja borrar el registro, pero sí actualizarlo.
+   Se borran todos los datos personales, se revoca la tarjeta y queda marcado «elim»: desaparece de Clientes, Fidelización,
+   búsquedas y campañas en todos los equipos. Ventas y comprobantes se conservan (no se pueden borrar). */
+function custPurge(c,mot){const n=pad4(c.num),w0=normWA(c.wa||''),cards=[c.id].concat(c.cards||[]);clubBlockAdd(c);custRevoke(c);
+ c.status='baja';c.elim=1;c.elimTs=now();c.name='Socio';c.last='N.º '+n+' (eliminado)';c.wa='';c.email='';c.birth='';c.dni='';c.taxid='';c.notes='';c.limit=0;
+ if(!c.debtDec)c.debtDec={mode:'mantener',reason:'eliminado: '+mot,by:user.name,ts:now()};
+ (S.delCust=S.delCust||{})[c.id]=n;audit('CLIENTE_ELIMINADO','socio '+n+' · con historial (datos personales borrados; ventas y comprobantes conservados) · motivo: '+mot);save();pubRefresh();clubRejectPending(w0,cards);}
 function custDelete(c,mot){const n=pad4(c.num),w0=normWA(c.wa||''),cards=[c.id].concat(c.cards||[]);clubBlockAdd(c);
  S.members=(S.members||[]).filter(m=>m.cust!==c.id);S.agreements=(S.agreements||[]).filter(a=>a.cust!==c.id);
  S.customers=S.customers.filter(x=>x.id!==c.id);(S.delCust=S.delCust||{})[c.id]=pad4(c.num);
@@ -3637,7 +3644,6 @@ function custDelete(c,mot){const n=pad4(c.num),w0=normWA(c.wa||''),cards=[c.id].
 A.cuDel=el=>{const c=custById(el.dataset.id);if(!c)return;
  if(!custDelAdm())return toast('La eliminación de un cliente la hace sólo el administrador.',1);
  const B=custBlockers(c),n=pad4(c.num),hist=B.hist.length>0;
- if(hist&&!custDelHistOk()){return modal('No se puede eliminar',`<p>El socio N.º ${n} <b>tiene historial</b> y la nube todavía sólo permite borrar socios sin historial: por ahora se puede dar de baja.</p><ul>${B.hist.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="sm mut">La baja anonimiza los datos y conserva ventas, cuenta corriente y comprobantes.</p>`,{ok:false,cancelText:'Cerrar'});}
  modal('Eliminar definitivamente · socio N.º '+n,`<p>Se borra <b>${esc(custFull(c))}</b> de la lista de clientes y socios. No se puede deshacer (sólo desde un respaldo).</p>
  ${hist?`<div class="warnbox sm"><b>Tiene historial:</b> ${esc(B.hist.join(', '))}. Las ventas y los comprobantes <b>se conservan</b> (figuran con el nombre del ticket); se borran su tarjeta, sus sellos, membresías y acuerdos.</div>`:'<p class="sm mut">No tiene ventas, cuenta corriente, cupones, membresías ni sellos.</p>'}
  ${B.debt>0?`<div class="warnbox"><b>Tiene deuda de ${money(B.debt)}.</b><label class="chk"><input type="radio" name="dl-d" value="cobrar"> Cobrar primero (abre el cobro)</label><label class="chk"><input type="radio" name="dl-d" value="condonar"> Condonar la deuda (movimiento compensatorio con el motivo) y eliminar</label></div>`:''}
@@ -3647,9 +3653,8 @@ A.cuDel=el=>{const c=custById(el.dataset.id);if(!c)return;
   if(val('dl-n').trim().replace(/^0+/,'')!==String(c.num))return w._err('El N.º de socio no coincide.'),false;
   const d=debtOf(c.id);if(d>0){const r=w.querySelector('input[name=dl-d]:checked');if(!r)return w._err('Elegí qué hacer con la deuda de '+money(d)+'.'),false;
    if(r.value==='cobrar'){setTimeout(()=>{A.cuPay({dataset:{id:c.id}});},60);return;}
-   S.fiadoPays.push({id:uid(),cust:c.id,ts:now(),amount:d,method:'condonado',user:user.name,mov:'',rubro:'cobr',reason:mot});audit('DEUDA_CONDONADA','socio '+n+' · '+money(d)+' · movimiento compensatorio · '+mot);}
-  if(custBlockers(c).hist.length&&!custDelHistOk())return w._err('Ahora tiene historial: con la nube sólo se puede dar de baja.'),false;
-  custDelete(c,mot);$$('#modal-root .ov').forEach(o=>o!==w&&o.remove());rerender();toast('Socio eliminado');}});};
+   S.fiadoPays.push({id:uid(),cust:c.id,ts:now(),amount:d,method:'condonado',user:user.name,mov:'',rubro:'cobr',reason:mot});audit('DEUDA_CONDONADA','socio '+n+' · '+money(d)+' · movimiento compensatorio · '+mot);c.debtDec={mode:'mantener',reason:'condonada: '+mot,by:user.name,ts:now()};}
+  if(custBlockers(c).hist.length&&!custDelHistOk())custPurge(c,mot);else custDelete(c,mot);$$('#modal-root .ov').forEach(o=>o!==w&&o.remove());rerender();toast('Socio eliminado');}});};
 
 /* ---------- fusión: el WhatsApp ya es de otro socio ---------- */
 function custMergePreview(src,dst){const st=stampsOf(src.id);return `<div class="grid g2"><div class="card"><b>Se da de baja</b><br>Socio N.º ${pad4(src.num)} · ${esc(custFull(src))}<br><span class="sm">${st} sello(s) · ${(src.cards||[]).length+1} tarjeta(s) · deuda ${money(debtOf(src.id))}</span></div>
