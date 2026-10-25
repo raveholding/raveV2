@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-25 20:39 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-25 20:54 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -1598,10 +1598,15 @@ A.devReg=()=>{if(!can('config'))return;const id=val('dv-reg');if(id&&!regOf(id))
 /* --- traspaso de fondos entre cajas --- */
 function openOf(regId){return S.sessions.find(s=>!s.closedAt&&s.regId===regId);}
 /* --- consolidado de lectura --- */
+/* V26.27 · el consolidado es DEL DÍA: un turno que cruza la medianoche (abierto ayer, cerrado hoy) sólo aporta lo que pasó ese día.
+   Antes se sumaba el turno entero y aparecían como «ventas de hoy» las de ayer. */
+function arqDay(sess,day){const inD=x=>x&&dkey(x.ts)===day;const keep={sales:S.sales,movs:S.movs,transfers:S.transfers,transferEvents:S.transferEvents};
+ try{S.sales=S.sales.filter(inD);S.movs=S.movs.filter(inD);S.transfers=(S.transfers||[]).filter(inD);S.transferEvents=(S.transferEvents||[]).filter(inD);return arqueoCalc(sess,arqInputs(sess));}
+ finally{Object.assign(S,keep);}}
 function cashRows(day,brFilter){
- const inDay=s=>dkey(s.openedAt)===day||!s.closedAt||(s.closedAt&&dkey(s.closedAt)===day);
+ const inDay=s=>dkey(s.openedAt)<=day&&(!s.closedAt||dkey(s.closedAt)>=day);
  const regs=(S.registers||[]).filter(r=>!brFilter||r.branchId===brFilter);const rows=[];
- const calc=s=>{const a=arqueoCalc(s,arqInputs(s));const k=S.closures.find(c=>c.sessId===s.id);return{s,a,diff:k?k.data.diff:null};};
+ const calc=s=>{const full=arqueoCalc(s,arqInputs(s));const a=Object.assign({},arqDay(s,day),{expectedCash:full.expectedCash});const k=S.closures.find(c=>c.sessId===s.id);return{s,a,diff:k?k.data.diff:null};};
  regs.forEach(r=>{const ss=S.sessions.filter(s=>s.regId===r.id&&inDay(s)).map(calc);
   rows.push({r,ss,n:ss.length,sales:ss.reduce((x,c)=>x+c.a.total,0),cash:ss.reduce((x,c)=>x+c.a.cashSales,0),ing:ss.reduce((x,c)=>x+c.a.ing,0),egr:ss.reduce((x,c)=>x+c.a.egr,0),
    tin:ss.reduce((x,c)=>x+c.a.tin,0),tout:ss.reduce((x,c)=>x+c.a.tout,0),exp:ss.filter(c=>!c.s.closedAt).reduce((x,c)=>x+c.a.expectedCash,0),open:ss.some(c=>!c.s.closedAt)});});
@@ -1617,7 +1622,7 @@ function cajasMainHTML(){
  return`<p class="sm mut">Perfil: <b>${esc(CASH_PROFILES[cashProfile()])}</b>. Consolidado de <b>lectura</b>: no mueve efectivo ni toca cierres. Los traspasos entre cajas se muestran aparte y no se suman como ingreso ni egreso.</p>
  <div class="card"><div class="row"><h3 class="sp">Consolidado del día</h3><label class="sm" for="cx-day">Día</label><input type="date" id="cx-day" value="${day}" style="max-width:170px">${brOn()?`<label class="sm" for="cx-br">Sucursal</label><select id="cx-br" style="max-width:220px"><option value="">Todas</option>${brs.map(b=>`<option value="${b.id}" ${cxF.br===b.id?'selected':''}>${esc(b.name)}</option>`).join('')}</select>`:''}</div>${tbl}
  ${legacy.length?`<p class="sm mut">Hay ${legacy.length} sesión(es) de antes del cambio de perfil, sin caja asignada: no están en esta tabla (siguen en «Cajas cerradas»).</p>`:''}
- <p class="sm mut">Fórmula: efectivo esperado = apertura + ventas en efectivo + ingresos − egresos − pagos de caja + traspasos recibidos − traspasos enviados. Zona horaria del comercio. Actualizado ${fmtDT(now())}.</p></div>
+ <p class="sm mut">Ventas, ingresos, egresos y traspasos: <b>sólo lo del día elegido</b> (un turno que cruza la medianoche aporta a cada día lo suyo). Efectivo esperado: todo el turno abierto, desde la apertura. Fórmula: efectivo esperado = apertura + ventas en efectivo + ingresos − egresos − pagos de caja + traspasos recibidos − traspasos enviados. Zona horaria del comercio. Actualizado ${fmtDT(now())}.</p></div>
  <div class="card" style="margin-top:1rem"><div class="row"><h3 class="sp">Cajas</h3>${adm?'<button class="btn sm" data-act="regEdit" data-id="">+ Caja</button>':''}</div>
  <div class="tw"><table><thead><tr><th>Código</th><th>Nombre</th><th>Tipo</th>${brOn()?'<th>Sucursal</th>':''}<th>Depende de</th><th>Estado</th><th></th></tr></thead><tbody>${regsAll.map(r=>`<tr><td>${esc(r.code)}</td><td>${esc(r.name)}</td><td>${r.type==='main'?'principal':'operativa'}</td>${brOn()?`<td>${esc((brOf(r.branchId)||{}).name||'—')}</td>`:''}<td>${esc(r.parentId?regName(r.parentId):'—')}</td><td>${r.active===false?'<span class="tag bad">inactiva</span>':'<span class="tag ok">activa</span>'}</td><td class="r">${adm?`<button class="btn sm" data-act="regEdit" data-id="${r.id}">Editar</button> <button class="btn sm" data-act="regToggle" data-id="${r.id}">${r.active===false?'Activar':'Desactivar'}</button>`:''}</td></tr>`).join('')||`<tr><td colspan="7" class="mut">Sin cajas.</td></tr>`}</tbody></table></div>
  ${adm?`<div class="row" style="margin-top:.7rem"><label for="dv-reg" class="sm">Este equipo opera la caja</label><select id="dv-reg" style="max-width:260px"><option value="">— Elegir al abrir —</option>${regsAll.filter(r=>r.active!==false).map(r=>`<option value="${r.id}" ${S.tenant.regId===r.id?'selected':''}>${esc(r.name)}</option>`).join('')}</select><button class="btn sm" data-act="devReg">Guardar</button></div>`:''}</div>
