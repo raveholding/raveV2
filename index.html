@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-24 22:10 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-25 20:39 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -1013,16 +1013,35 @@ A.mov=el=>movModal(el.dataset.type);
 
 /* ===== Inventario ===== */
 const sugPrice=(costC,type,pct)=>{if(isNaN(pct)||isNaN(costC))return NaN;if(type==='margen'){if(pct<0||pct>=100)return NaN;return Math.round(costC/(1-pct/100));}if(pct<0)return NaN;return Math.round(costC*(1+pct/100));};
-let invF={q:'',rub:'',group:true,low:false,arch:false};
+let invF={q:'',rub:'',group:true,low:false,arch:false,pmin:'',pmax:'',sort:''};
+/* V26.26 · búsqueda del inventario: palabras sueltas en cualquier orden (sin importar tildes ni mayúsculas) y por precio.
+   «fernet 750» encuentra «Fernet Branca 750 ml»; «3500» encuentra el nombre que lo contenga o el precio $ 3.500;
+   «>5000», «<2000» o «1000-5000» buscan por rango de precio. Además hay «Precio desde / hasta» y orden por precio. */
+const foldTxt=v=>String(v==null?'':v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+function invQueryParse(q){const out={words:[],min:null,max:null,eq:[]};
+ String(q||'').trim().split(/\s+/).filter(Boolean).forEach(t=>{let m;
+  if((m=t.match(/^(>=?|<=?)\$?([\d.,]+)$/))){const v=parseNum(m[2]);if(v>=0){if(m[1][0]==='>')out.min=Math.max(out.min==null?0:out.min,v);else out.max=Math.min(out.max==null?Infinity:out.max,v);}return;}
+  if((m=t.match(/^\$?([\d.,]+)(?:-|\.\.)\$?([\d.,]+)$/))){const a=parseNum(m[1]),b=parseNum(m[2]);if(a>=0&&b>=0){out.min=Math.min(a,b);out.max=Math.max(a,b);return;}}
+  if((m=t.match(/^\$([\d.,]+)$/))){const v=parseNum(m[1]);if(v>=0){out.min=v;out.max=v;return;}}
+  if(/^[\d.,]+$/.test(t)){const v=parseNum(t);out.eq.push({w:foldTxt(t),v:v>=0?v:null});return;}
+  out.words.push(foldTxt(t));});return out;}
+function invMatch(p,Q){const pr=(+p.price||0)/100;const r=rub(p.rubro);
+ const hay=foldTxt([p.name,p.sub,p.group,p.barcode,p.plu,r&&r.name].filter(Boolean).join(' '));
+ if(Q.min!=null&&pr<Q.min-0.001)return false;if(Q.max!=null&&pr>Q.max+0.001)return false;
+ if(!Q.words.every(w=>hay.includes(w)))return false;
+ return Q.eq.every(e=>hay.includes(e.w)||(e.v!=null&&Math.abs(pr-e.v)<0.005));}
+function invSortL(L){const k=invF.sort;if(!k)return L;const d=k==='pdesc'?-1:1;
+ return L.slice().sort((a,b)=>k==='name'?a.name.localeCompare(b.name,'es',{sensitivity:'base'}):(((+a.price||0)-(+b.price||0))*d||a.name.localeCompare(b.name,'es')));}
 let invSel=new Set();
 const canDelItems=()=>!!user&&user.role==='admin'; /* V26 4.16: sólo el rol Administrador; no es un permiso delegable */
 const RUB_COLORS=['#c9963e','#7b2d3b','#6b6a5a','#2f6f8f','#3d7a4f','#8a6fb0','#b5543a','#2b7a78','#a0527c','#5d6d3f'];
 const safeColor=c=>/^#[0-9a-fA-F]{6}$/.test(String(c||''))?c:'#8a6fb0';
 const prodStatus=p=>{const v=stockOf(p);return v<0?'neg':(v===0?'zero':(v<=5?'low':'ok'));};
 reg('inventario','Inventario','box','edit_products',()=>{
- const R=S.rubros.filter(r=>r.kind==='rubro');const q=invF.q.toLowerCase();
- const base=S.products.filter(p=>(invF.arch?!!p.archived:!p.archived)&&(!q||p.name.toLowerCase().includes(q)||(p.sub||'').toLowerCase().includes(q)||(p.barcode||'').includes(q))&&(!invF.low||p.stock<=5));
- const L=base.filter(p=>!invF.rub||p.rubro===invF.rub);const cv=can('view_cost');
+ const R=S.rubros.filter(r=>r.kind==='rubro');const Q=invQueryParse(invF.q);
+ {const a=parseNum(invF.pmin),b=parseNum(invF.pmax);if(a>=0)Q.min=Q.min==null?a:Math.max(Q.min,a);if(b>=0)Q.max=Q.max==null?b:Math.min(Q.max,b);}
+ const base=S.products.filter(p=>(invF.arch?!!p.archived:!p.archived)&&invMatch(p,Q)&&(!invF.low||p.stock<=5));
+ const L=invSortL(base.filter(p=>!invF.rub||p.rubro===invF.rub));const cv=can('view_cost');
  const cnt=id=>base.filter(p=>p.rubro===id).length;
  const tabs=`<div class="rtabs" role="tablist" aria-label="${RWs(1)}"><button type="button" role="tab" class="rtab ${invF.rub?'':'on'}" data-act="irub" data-id="" aria-selected="${!invF.rub}">Todos <b>${base.length}</b></button>${R.map(r=>`<button type="button" role="tab" class="rtab ${invF.rub===r.id?'on':''}" data-act="irub" data-id="${r.id}" aria-selected="${invF.rub===r.id}" style="--rc:${safeColor(r.color)}"><i class="rdot" style="background:${safeColor(r.color)}"></i>${esc(r.name)} <b>${cnt(r.id)}</b></button>`).join('')}<button type="button" class="rtab add" data-act="rubEdit" data-id="">+ ${RW(1)}</button></div>`;
  const negN=S.products.filter(p=>p.stock<0&&!p.archived).length;const cd=canDelItems();const nArch=S.products.filter(p=>p.archived).length;
@@ -1039,12 +1058,14 @@ reg('inventario','Inventario','box','edit_products',()=>{
  const cur=invF.rub?rub(invF.rub):null;
  return `<div class="row"><h1 class="sp">Inventario</h1>${expBar('productos')}<button class="btn gold" data-act="pedit" data-id="">+ Producto</button></div>
  ${negN?`<div class="errbox">${negN} producto${negN===1?'':'s'} con stock negativo (se vendió sin stock). Cargá la compra o ajustá el stock para regularizar.</div>`:''}
- <div class="card">${tabs}<div class="row" style="margin-top:.7rem"><input id="iq" placeholder="Buscar por nombre, presentación o código…" value="${esc(invF.q)}" style="max-width:320px" aria-label="Buscar producto"><label class="chk" style="margin:0"><input type="checkbox" id="ig" ${invF.group?'checked':''}> Agrupar por ${RW()}</label><label class="chk" style="margin:0"><input type="checkbox" id="il" ${invF.low?'checked':''}> Sólo stock bajo / negativo</label>${cd||nArch?`<label class="chk" style="margin:0"><input type="checkbox" id="ia" ${invF.arch?'checked':''}> Ver archivados (${nArch})</label>`:''}${cur?`<button class="btn sm" data-act="rubEdit" data-id="${cur.id}">Editar ${RW()} «${esc(cur.name)}»</button>`:''}</div>
+ <div class="card">${tabs}<div class="row" style="margin-top:.7rem"><input id="iq" placeholder="Buscar: palabras del nombre, código o precio (ej.: fernet 750 · 3500 · 1000-5000)" value="${esc(invF.q)}" style="max-width:420px" aria-label="Buscar producto por palabras del nombre, código o precio"><input id="ipmin" inputmode="decimal" placeholder="Precio desde" value="${esc(invF.pmin)}" style="max-width:130px" aria-label="Precio desde"><input id="ipmax" inputmode="decimal" placeholder="Precio hasta" value="${esc(invF.pmax)}" style="max-width:130px" aria-label="Precio hasta"><select id="isort" style="max-width:220px" aria-label="Ordenar"><option value="" ${invF.sort?'':'selected'}>Orden: como está cargado</option><option value="name" ${invF.sort==='name'?'selected':''}>Nombre (A → Z)</option><option value="pasc" ${invF.sort==='pasc'?'selected':''}>Precio: de menor a mayor</option><option value="pdesc" ${invF.sort==='pdesc'?'selected':''}>Precio: de mayor a menor</option></select>${invF.q||invF.pmin||invF.pmax?`<span class="sm mut" aria-live="polite">${L.length} resultado${L.length===1?'':'s'}</span>`:''}<label class="chk" style="margin:0"><input type="checkbox" id="ig" ${invF.group?'checked':''}> Agrupar por ${RW()}</label><label class="chk" style="margin:0"><input type="checkbox" id="il" ${invF.low?'checked':''}> Sólo stock bajo / negativo</label>${cd||nArch?`<label class="chk" style="margin:0"><input type="checkbox" id="ia" ${invF.arch?'checked':''}> Ver archivados (${nArch})</label>`:''}${cur?`<button class="btn sm" data-act="rubEdit" data-id="${cur.id}">Editar ${RW()} «${esc(cur.name)}»</button>`:''}</div>
  ${cd&&invSel.size?`<div class="selbar" role="region" aria-label="Acciones sobre la selección"><b>${invSel.size}</b> seleccionado${invSel.size===1?'':'s'} <button class="btn sm danger" data-act="pdelSel">Eliminar…</button> <button class="btn sm" data-act="parchSel">Archivar…</button> <button class="btn sm ghost" data-act="pselClr">Quitar selección</button></div>`:(cd&&!invF.arch?'<p class="sm mut" style="margin:.4rem 0 0">Administrador: tildá artículos para eliminarlos o archivarlos. Los que tienen historial no se borran: se archivan.</p>':'')}
  <div class="tw"><table class="inv">${head}<tbody>${body||`<tr><td colspan="${colspan}" class="mut">No hay productos con este filtro.</td></tr>`}</tbody></table></div></div>
  <p class="sm mut">Venta sin stock: ${negOK()?'<b>permitida</b> (queda en negativo y se marca en rojo)':'<b>bloqueada</b>'} · se cambia en Configuración o por producto ("exigir stock"). El costo y el margen sólo los ven los roles con permiso. Eliminar y archivar es sólo del Administrador; un artículo con ventas o movimientos no se borra: se archiva y el historial queda intacto.</p>`;},()=>{
  $('#iq').addEventListener('input',e=>{invF.q=e.target.value;const p=e.target.selectionStart;rerender();const n=$('#iq');n.focus();n.setSelectionRange(p,p);});
- $('#ig').addEventListener('change',e=>{invF.group=e.target.checked;rerender();});const ia=$('#ia');if(ia)ia.addEventListener('change',e=>{invF.arch=e.target.checked;invSel.clear();rerender();});
+ $('#ig').addEventListener('change',e=>{invF.group=e.target.checked;rerender();});
+ const keep=(id,k)=>{const i=$('#'+id);if(i)i.addEventListener('input',e=>{invF[k]=e.target.value;const p=e.target.selectionStart;rerender();const n=$('#'+id);if(n){n.focus();try{n.setSelectionRange(p,p);}catch(x){}}});};keep('ipmin','pmin');keep('ipmax','pmax');
+ const so=$('#isort');if(so)so.addEventListener('change',e=>{invF.sort=e.target.value;for(const k of Array.from(SORTST.keys()))if(k.startsWith('v:inventario#'))SORTST.delete(k);if(invF.sort&&invF.sort!=='name')invF.group=false;rerender();});const ia=$('#ia');if(ia)ia.addEventListener('change',e=>{invF.arch=e.target.checked;invSel.clear();rerender();});
  const sa=$('#isel-all');if(sa){const vis=$$('#view .isel');sa.checked=vis.length>0&&vis.every(x=>x.checked);sa.addEventListener('change',e=>{vis.forEach(x=>{if(e.target.checked)invSel.add(x.dataset.id);else invSel.delete(x.dataset.id);});rerender();});$$('#view .isel').forEach(x=>x.addEventListener('change',e=>{if(e.target.checked)invSel.add(x.dataset.id);else invSel.delete(x.dataset.id);rerender();}));}$('#il').addEventListener('change',e=>{invF.low=e.target.checked;rerender();});},'Operación');
 A.irub=el=>{invF.rub=el.dataset.id||'';rerender();};
 A.rubEdit=el=>{if(!can('edit_products'))return toast('Sin permiso',1);const r=el&&el.dataset.id?rub(el.dataset.id):null;if(el&&el.dataset.id&&(!r||r.kind!=='rubro'))return;
@@ -5601,10 +5622,13 @@ async function rsaOpen(jwkPriv,box){const sk=await crypto.subtle.importKey('jwk'
 async function importAltas(){if(!cl.ready||!cl.clubPriv||!cl.clubPriv.jwk||!cl.online||importAltas.busy)return 0;
  importAltas.busy=true;
  try{
- const rows=await sel(`club_altas?select=id,cifrado&comercio_id=eq.${cl.comercio.id}&estado=eq.nueva&order=id&limit=100`);if(!rows.length)return 0;
- const ok=[],bad=[];let undec=0,made=0,alias=0;
+ const rows=await sel(`club_altas?select=id,cifrado,creado&comercio_id=eq.${cl.comercio.id}&estado=eq.nueva&order=id&limit=100`);if(!rows.length)return 0;
+ const ok=[],bad=[],ileg=[];let undec=0,made=0,alias=0;
  for(const r of rows){
-  let p;try{p=await rsaOpen(cl.clubPriv.jwk,r.cifrado);}catch(e){undec++;continue;} // no se descarta: queda "nueva" (no es culpa del cliente)
+  let p;try{p=await rsaOpen(cl.clubPriv.jwk,r.cifrado);}catch(e){
+   /* V26.26: una alta hecha con una llave anterior del comercio nunca se va a poder abrir. Mientras es reciente (< 3 días) queda «nueva»
+      por si el administrador todavía no entró; después se archiva como rechazada (una sola vez, auditado) y deja de avisar en cada ingreso. */
+   const age=Date.now()-Date.parse(r.creado||'');if(age>3*86400000){ileg.push(r.id);bad.push(r.id);}else undec++;continue;}
   const b=parseBirth(p.birth),w=normWA(p.wa);
   if(!b||!w||ageOf(b)<18||String(p.name||'').trim().length<1||String(p.last||'').trim().length<1){bad.push(r.id);continue;}
   const iso=b.y+'-'+String(b.mo).padStart(2,'0')+'-'+String(b.d).padStart(2,'0');
@@ -5624,7 +5648,8 @@ async function importAltas(){if(!cl.ready||!cl.clubPriv||!cl.clubPriv.jwk||!cl.o
   if(ok.length)await rpc('club_altas_marcar',{p_comercio:cl.comercio.id,p_ids:ok,p_estado:'importada'});
   if(bad.length)await rpc('club_altas_marcar',{p_comercio:cl.comercio.id,p_ids:bad,p_estado:'rechazada'});
  }catch(e){} // si falla el aviso, la próxima vuelta las reconoce como ya importadas
- if(undec&&importAltas.undec!==undec){importAltas.undec=undec;audit('CLUB_ALTAS_SIN_ABRIR',undec+' altas del menú no se pueden abrir con la llave de este comercio');}
+ if(ileg.length)audit('CLUB_ALTA_ILEGIBLE',ileg.length+' alta(s) del menú hechas con una llave anterior del comercio: archivadas (el cliente puede volver a anotarse desde el QR)');
+ {const k='rave.undec.'+cl.comercio.id,prev=+(LS.get(k)||0);if(undec!==prev){LS.set(k,String(undec));if(undec)audit('CLUB_ALTAS_SIN_ABRIR',undec+' alta(s) recientes del menú todavía no se pueden abrir: si en 3 días siguen así se archivan');}}
  if(made||alias||bad.length){audit('CLUB_ALTAS_IMPORT',made+' socios nuevos, '+alias+' tarjetas nuevas de socios existentes, '+bad.length+' rechazadas');save();if(typeof pubRefresh==='function')pubRefresh();if(typeof curScreen!=='undefined'&&(curScreen==='clientes'||curScreen==='fidel'))rerender();}
  return made+alias;
  }finally{importAltas.busy=false;}}
