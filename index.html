@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-25 20:54 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-26 01:59 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -1200,10 +1200,28 @@ A.voidsale=el=>{const s=S.sales.find(x=>x.id===el.dataset.id);if(!s)return;modal
 
 /* ===== Arqueo ===== */
 function arqDraft(sess){return S.arqDraft[sess.id]||(S.arqDraft[sess.id]={taxes:{}});}
-reg('arqueo','Arqueo / cierre','list','close_cash',()=>{const s=openSess();if(!s)return `<h1>Arqueo</h1><div class="card"><p>No hay caja abierta. Abrila en <a href="#panel/caja">Caja</a>.</p></div>`;
+/* V26.28 · CIERRE UNIFICADO: con varias cajas abiertas el arqueo junta todas (ventas, rubros, reparto entre socios, sueldo,
+   gastos e impuestos UNA sola vez) y al confirmar cierra todas juntas. Cada caja conserva su propio cierre sellado con su
+   efectivo contado (esperado, contado y diferencia de esa caja) y todos llevan el mismo texto de la liquidación unificada. */
+const openAllSess=()=>S.sessions.filter(s=>!s.closedAt&&s.regId);
+function arqUnionOn(){return !ownerMode()&&typeof cashOn==='function'&&cashOn()&&openAllSess().length>=2&&(S.arqDraft.__mode||'union')==='union';}
+function arqSess(){if(!arqUnionOn())return openSess();const L=openAllSess();
+ return{id:'U',caja:'todas',regId:'',regName:'Todas las cajas ('+L.map(x=>x.regName||('caja '+x.caja)).join(' + ')+')',branchId:'',opening:L.reduce((a,x)=>a+(+x.opening||0),0),openedAt:Math.min(...L.map(x=>x.openedAt)),closedAt:0,union:L.map(x=>x.id)};}
+function unionCalc(vs,inp){const ids=new Set(vs.union);const keep={sales:S.sales,movs:S.movs,transfers:S.transfers,transferEvents:S.transferEvents};
+ const mp=x=>ids.has(x)?'U':x;
+ try{S.sales=S.sales.map(x=>ids.has(x.sessId)?Object.assign({},x,{sessId:'U'}):x);S.movs=S.movs.map(x=>ids.has(x.sessId)?Object.assign({},x,{sessId:'U'}):x);
+  S.transfers=(S.transfers||[]).map(t=>(ids.has(t.fromSess)||ids.has(t.toSess))?Object.assign({},t,{fromSess:mp(t.fromSess),toSess:mp(t.toSess)}):t);
+  S.transferEvents=(S.transferEvents||[]).map(e=>ids.has(e.sess)?Object.assign({},e,{sess:'U'}):e);
+  return arqueoCalc(vs,inp);}finally{Object.assign(S,keep);}}
+function arqDeclSum(vs,d){if(!vs.union)return null;let t=0;for(const id of vs.union){const v=d.decl&&d.decl[id];if(v===undefined||v===''||isNaN(cents(v)))return NaN;t+=cents(v);}return t;}
+reg('arqueo','Arqueo / cierre','list','close_cash',()=>{const s=arqSess();if(!s)return `<h1>Arqueo</h1><div class="card"><p>No hay caja abierta. Abrila en <a href="#panel/caja">Caja</a>.</p></div>`;
  if(ownerMode())return arqOwnerHTML(s);
  const d=arqDraft(s);const emps=S.employees.filter(e=>e.active);const rp=repartRubros();
- return `<div class="row"><h1 class="sp">Arqueo y detalle de reparto</h1><span class="tag warn">Vista previa · todavía no cierra la caja</span></div>
+ const many=!ownerMode()&&typeof cashOn==='function'&&cashOn()&&openAllSess().length>=2,uni=!!s.union;
+ const modeBar=many?`<div class="card" style="margin-bottom:1rem"><div class="row"><b class="sp">Hay ${openAllSess().length} cajas abiertas: ${esc(openAllSess().map(x=>x.regName||('caja '+x.caja)).join(' y '))}</b><button class="btn ${uni?'gold':''}" data-act="arqMode" data-id="union">Cierre unificado (todas las cajas)</button><button class="btn ${uni?'':'gold'}" data-act="arqMode" data-id="one">Sólo la caja de este equipo</button></div><p class="sm mut" style="margin:.4rem 0 0">${uni?'Se juntan las ventas de todas las cajas; el sueldo, los gastos y los impuestos se cuentan <b>una sola vez</b> y la ganancia se reparte sobre el total. Al confirmar se cierran <b>todas</b> las cajas (cada una con su efectivo contado y su sello).':'Se arquea y cierra sólo la caja de este equipo.'}</p></div>`:'';
+ const declHtml=uni?openAllSess().map(x=>`<label for="aq-dc-${x.id}">Efectivo contado en ${esc(x.regName||('caja '+x.caja))} ($)</label><input id="aq-dc-${x.id}" data-aq="decl" data-sid="${x.id}" inputmode="decimal" placeholder="Escribí el número" value="${esc((d.decl&&d.decl[x.id])||'')}" autocomplete="off">`).join('')+`<label for="aq-pay">¿De qué caja se pagaron el sueldo y los gastos?</label><select id="aq-pay" data-aq="payer">${openAllSess().map(x=>`<option value="${x.id}" ${(d.payer||(openSess()||{}).id||openAllSess()[0].id)===x.id?'selected':''}>${esc(x.regName||('caja '+x.caja))}</option>`).join('')}</select>`
+  :`<label for="aq-d">Efectivo contado en caja ($)</label><input id="aq-d" data-aq="declared" inputmode="decimal" placeholder="Escribí el número" value="${esc(d.declared||'')}" autocomplete="off">`;
+ return `${modeBar}<div class="row"><h1 class="sp">${uni?'Arqueo unificado de todas las cajas':'Arqueo y detalle de reparto'}</h1><span class="tag warn">Vista previa · todavía no cierra ${uni?'las cajas':'la caja'}</span></div>
  <div class="grid g2" style="align-items:start"><div class="card"><h3>1 · Sueldo del empleado</h3>
  <label for="aq-emp">Empleado</label><select id="aq-emp" data-aq="empId"><option value="">— Sin empleado —</option>${emps.map(e=>`<option value="${e.id}" ${d.empId===e.id?'selected':''}>${esc(e.name)}</option>`).join('')}</select>
  <div class="grid g2"><div><label for="aq-h">Horas trabajadas</label><input id="aq-h" data-aq="hours" inputmode="decimal" placeholder="0" value="${esc(d.hours||'')}" autocomplete="off"><div class="sm mut" id="aq-fich"></div></div><div><label for="aq-r">Valor hora ($)</label><input id="aq-r" data-aq="rate" inputmode="decimal" placeholder="valor del empleado" value="${esc(d.rate||'')}" autocomplete="off"></div></div>
@@ -1211,34 +1229,53 @@ reg('arqueo','Arqueo / cierre','list','close_cash',()=>{const s=openSess();if(!s
  <p class="sm mut">El sueldo (la merienda ya está incluida en las horas) y los gastos se reparten a medias entre: <b>${rp.map(r=>esc(r.owner)).join(' y ')||'(nadie: marcá rubros que reparten en Configuración)'}</b>. Los egresos de caja con rubro "Gastos generales" se suman solos a los gastos.</p>
  <h3 style="margin-top:1rem">2 · Impuestos del día (editable)</h3><div class="grid g2">${rp.map(r=>`<div><label for="aq-t-${r.id}">${esc(r.owner)} (${esc(r.name)}) $</label><input id="aq-t-${r.id}" data-aq="tax" data-rid="${r.id}" inputmode="decimal" placeholder="${esc(pesosStr(S.cfg.tax[r.id]||0)||'0')}" value="${esc((d.taxes&&d.taxes[r.id])||'')}" autocomplete="off"></div>`).join('')}</div>
  <p class="sm mut">Todo a medias: se suman las ganancias de ventas, se restan el sueldo, los gastos y los impuestos del día (editables, por defecto $30.000 cada uno; el total se divide a medias) y la ganancia que queda se divide en partes iguales. Si no alcanza, se marca en rojo.</p>
- <h3 style="margin-top:1rem">3 · Efectivo</h3><label for="aq-d">Efectivo contado en caja ($)</label><input id="aq-d" data-aq="declared" inputmode="decimal" placeholder="Escribí el número" value="${esc(d.declared||'')}" autocomplete="off">
+ <h3 style="margin-top:1rem">3 · Efectivo</h3>${declHtml}
  <label class="chk"><input type="checkbox" data-aq="payFromCash" id="aq-pc" ${(d.payFromCash!==undefined?d.payFromCash:S.cfg.payFromCash)?'checked':''}> El sueldo y los gastos manuales se pagaron de la caja</label>
  <label class="chk"><input type="checkbox" data-aq="detailAll" ${d.detailAll?'checked':''}> Incluir detalle de productos de todos los rubros</label>
  <label class="chk"><input type="checkbox" data-aq="mono" ${d.mono!==false?'checked':''}> Formato monoespaciado de WhatsApp (\`\`\`)</label>
  <label for="aq-n">Observaciones del cierre</label><input id="aq-n" data-aq="notes" maxlength="200" value="${esc(d.notes||'')}"></div>
  <div><div class="card" id="arq-tabs"></div><div class="card"><div class="row"><h3 class="sp">Texto para WhatsApp</h3></div><div class="rep" id="arq-prev" aria-live="polite"></div><div id="arq-warn"></div>
  <div class="row" style="margin-top:.8rem"><button class="btn" data-act="arqCopy">Copiar</button><button class="btn" data-act="arqWa">WhatsApp</button><button class="btn" data-act="arqWeb">WhatsApp Web</button><button class="btn" data-act="arqMail">Correo</button></div>
- <button class="btn gold" style="width:100%;margin-top:.8rem;min-height:52px" data-act="arqClose">Confirmar cierre de caja</button></div></div></div>`;},
+ <button class="btn gold" style="width:100%;margin-top:.8rem;min-height:52px" data-act="arqClose">${uni?'Confirmar cierre de TODAS las cajas':'Confirmar cierre de caja'}</button></div></div></div>`;},
  ()=>{arqPreview();arqFich();},'Operación');
-function arqFich(){const s=openSess();if(!s)return;const d=arqDraft(s);const el=$('#aq-fich');if(!el)return;if(!d.empId){el.textContent='';return;}const h=hoursOn(d.empId,dkey(s.openedAt)===dkey(now())?dkey(now()):dkey(s.openedAt));
+function arqFich(){const s=arqSess();if(!s)return;const d=arqDraft(s);const el=$('#aq-fich');if(!el)return;if(!d.empId){el.textContent='';return;}const h=hoursOn(d.empId,dkey(s.openedAt)===dkey(now())?dkey(now()):dkey(s.openedAt));
  el.innerHTML=h.h>0||h.flag?`Fichaje: <b>${numAR(h.h,2)} hs</b>${h.flag?' ⚠ falta fichar entrada o salida':''} <button class="btn sm" data-act="arqUseFich">Usar</button>`:'Sin fichadas hoy.';}
-A.arqUseFich=()=>{const s=openSess();const d=arqDraft(s);const h=hoursOn(d.empId,dkey(now()));d.hours=h.h?numAR(h.h,2):'';audit('ARQUEO_HORAS_FICHAJE',empName(d.empId)+' '+d.hours+' hs');save();rerender();};
-function arqCtx(){const s=openSess();if(!s)return null;const inp=arqInputs(s);const a=arqueoCalc(s,inp);const L=buildReport(a,dkey(now()),user.name,inp);return{s,inp,a,L};}
+A.arqUseFich=()=>{const s=arqSess();const d=arqDraft(s);const h=hoursOn(d.empId,dkey(now()));d.hours=h.h?numAR(h.h,2):'';audit('ARQUEO_HORAS_FICHAJE',empName(d.empId)+' '+d.hours+' hs');save();rerender();};
+function arqCtx(){const s=arqSess();if(!s)return null;const inp=arqInputs(s);if(s.union)inp.declared=arqDeclSum(s,arqDraft(s));const a=s.union?unionCalc(s,inp):arqueoCalc(s,inp);const L=buildReport(a,dkey(now()),user.name,inp);return{s,inp,a,L};}
 function arqPreview(){const c=arqCtx();if(!c)return;const p=$('#arq-prev');if(p)p.innerHTML=reportHTML(c.L);const tb=$('#arq-tabs');if(tb)tb.innerHTML=arqTablesHTML(c.a);const w=$('#arq-warn');if(w){let h='';if(c.a.pend.n)h+=`<div class="warnbox">Hay ${c.a.pend.n} cobro(s) digital(es) pendiente(s) que NO están en el total.</div>`;if(c.a.detMissing)h+=`<div class="warnbox">${c.a.detMissing} cobro(s) digital(es) sin el detalle del comprobante: completalos en «Cobros a conciliar» (Caja).</div>`;
  const f=c.a.reparte.filter(r=>r.falta>0);if(f.length)h+=`<div class="errbox">Impuesto no cubierto: ${f.map(r=>esc(r.owner)+' faltan '+money(r.falta)).join(' · ')}</div>`;w.innerHTML=h;}}
-document.addEventListener('input',e=>{const t=e.target;if(!t.dataset||!t.dataset.aq||curScreen!=='arqueo')return;const s=openSess();if(!s)return;const d=arqDraft(s);const k=t.dataset.aq;
- if(k==='tax'){d.taxes[t.dataset.rid]=t.value;}else if(t.type==='checkbox'){d[k]=t.checked;}else if(k==='empId'){return;}else d[k]=t.value;save();arqPreview();});
-document.addEventListener('change',e=>{const t=e.target;if(t.id==='aq-emp'&&curScreen==='arqueo'){const s=openSess();const d=arqDraft(s);d.empId=t.value;d.rate='';const h=hoursOn(d.empId,dkey(now()));d.hours=h.h>0?numAR(h.h,2):'';save();rerender();}});
+document.addEventListener('input',e=>{const t=e.target;if(!t.dataset||!t.dataset.aq||curScreen!=='arqueo')return;const s=arqSess();if(!s)return;const d=arqDraft(s);const k=t.dataset.aq;
+ if(k==='tax'){d.taxes[t.dataset.rid]=t.value;}else if(k==='decl'){(d.decl=d.decl||{})[t.dataset.sid]=t.value;}else if(k==='payer'){d.payer=t.value;}else if(t.type==='checkbox'){d[k]=t.checked;}else if(k==='empId'){return;}else d[k]=t.value;save();arqPreview();});
+document.addEventListener('change',e=>{const t=e.target;if(t.id==='aq-pay'&&curScreen==='arqueo'){const s=arqSess();if(s){arqDraft(s).payer=t.value;save();arqPreview();}return;}if(t.id==='aq-emp'&&curScreen==='arqueo'){const s=arqSess();const d=arqDraft(s);d.empId=t.value;d.rate='';const h=hoursOn(d.empId,dkey(now()));d.hours=h.h>0?numAR(h.h,2):'';save();rerender();}});
 A.arqCopy=()=>{const c=arqCtx();if(c){copyText(reportText(c.L,c.inp.mono));audit('ARQUEO_COPIAR','');}};
 A.arqWa=()=>{const c=arqCtx();if(c){audit('ARQUEO_WHATSAPP','wa.me');openExternal(waLink(reportText(c.L,c.inp.mono),S.tenant.waReport));}};
 A.arqWeb=()=>{const c=arqCtx();if(c){audit('ARQUEO_WHATSAPP_WEB','');openExternal('https://web.whatsapp.com/send?text='+encodeURIComponent(reportText(c.L,c.inp.mono)));}};
 A.arqMail=()=>{const c=arqCtx();if(c){audit('ARQUEO_CORREO','mailto');location.href='mailto:?subject='+encodeURIComponent('Cierre de caja '+dmy(dkey(now())))+'&body='+encodeURIComponent(reportText(c.L,false));}};
-A.arqClose=()=>{const c=arqCtx();if(!c)return;if(c.a.declared===null)return toast('Escribí el efectivo contado en caja antes de cerrar.',1);
+A.arqMode=el=>{S.arqDraft.__mode=el.dataset.id==='one'?'one':'union';audit('ARQUEO_MODO',S.arqDraft.__mode==='union'?'cierre unificado':'sólo esta caja');save();rerender();};
+A.arqClose=()=>{const c=arqCtx();if(!c)return;if(c.s.union)return arqCloseUnion(c);if(c.a.declared===null)return toast('Escribí el efectivo contado en caja antes de cerrar.',1);
  const warn=(c.a.detMissing?`<div class="warnbox">${c.a.detMissing} cobro(s) digital(es) sin el detalle del comprobante (queda anotado en el cierre).</div>`:'')+(c.a.pend.n?`<div class="warnbox">${c.a.pend.n} cobro(s) digital(es) pendiente(s) (${money(c.a.pend.total)}) quedan fuera del cierre; si se confirman después se informan como cobro posterior.</div>`:'')+(c.a.reparte.some(r=>r.falta>0)?'<div class="errbox">Hay impuestos que no se llegan a cubrir con la ganancia del día.</div>':'');
  modal('Cerrar caja',`${warn}<p>Esperado ${money(c.a.expectedCash)} · contado ${money(c.a.declared)} · ${c.a.diff===0?'sin diferencia':(c.a.diff>0?'sobrante ':'faltante ')+money(Math.abs(c.a.diff))}</p><p>El cierre queda <b>congelado</b> con sello SHA-256. Sólo se podrán agregar notas.</p>`,{okText:'Cerrar y sellar',onOk:()=>{
   const day=dkey(now());const data=JSON.parse(JSON.stringify(c.a));const text=reportText(c.L,false);const ts=now();
   const cl={id:uid(),ts,sessId:c.s.id,caja:c.s.caja,regId:c.s.regId||'',regName:c.s.regName||'',branchId:c.s.branchId||'',user:user.name,day,opening:c.s.opening,data,text,notes:[],obs:c.inp.notes};cl.hash=sha256(JSON.stringify({data,text,ts,user:cl.user,sess:c.s.id}));
   S.closures.push(cl);c.s.closedAt=ts;audit('CIERRE_CAJA','caja '+c.s.caja+' · total '+money(data.total)+' · dif '+money(data.diff)+' · sello '+cl.hash.slice(0,12));emit('cash.closed',{caja:c.s.caja,total:data.total});save();toast('Caja cerrada y sellada');location.hash='#panel/cierres';}});};
+
+function arqCloseUnion(c){const d=arqDraft(c.s);const L=openAllSess().filter(x=>c.s.union.includes(x.id));
+ if(L.length!==c.s.union.length)return toast('Cambiaron las cajas abiertas: volvé a revisar el arqueo.',1),rerender();
+ const miss=L.filter(x=>{const v=d.decl&&d.decl[x.id];return v===undefined||v===''||isNaN(cents(v));});
+ if(miss.length)return toast('Escribí el efectivo contado en: '+miss.map(x=>x.regName||('caja '+x.caja)).join(', '),1);
+ const payer=d.payer&&L.some(x=>x.id===d.payer)?d.payer:((openSess()&&L.some(x=>x.id===openSess().id))?openSess().id:L[0].id);
+ const zeroTax={};repartRubros().forEach(r=>zeroTax[r.id]=0);
+ const per=L.map(x=>{const inp=Object.assign({},c.inp,{declared:cents(d.decl[x.id]),taxes:zeroTax});if(x.id!==payer){inp.emp=null;inp.hours=0;inp.rate=0;inp.gastosManual=0;}const a=arqueoCalc(x,inp);return{x,a};});
+ const rows=per.map(p=>`<tr><td>${esc(p.x.regName||('caja '+p.x.caja))}</td><td class="r">${money(p.a.total)}</td><td class="r">${money(p.a.expectedCash)}</td><td class="r">${money(p.a.declared)}</td><td class="r ${p.a.diff<0?'neg':''}">${p.a.diff===0?'—':money(p.a.diff)}</td></tr>`).join('');
+ const warn=(c.a.pend.n?`<div class="warnbox">${c.a.pend.n} cobro(s) digital(es) pendiente(s) quedan fuera del cierre.</div>`:'')+(c.a.reparte.some(r=>r.falta>0)?'<div class="errbox">Hay impuestos que no se llegan a cubrir con la ganancia del día.</div>':'');
+ modal('Cerrar todas las cajas',`${warn}<div class="tw"><table data-nosort><thead><tr><th>Caja</th><th class="r">Ventas</th><th class="r">Esperado</th><th class="r">Contado</th><th class="r">Diferencia</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><th>Total</th><th class="r">${money(c.a.total)}</th><th class="r">${money(per.reduce((t,p)=>t+p.a.expectedCash,0))}</th><th class="r">${money(per.reduce((t,p)=>t+p.a.declared,0))}</th><th class="r">${money(per.reduce((t,p)=>t+p.a.diff,0))}</th></tr></tfoot></table></div>
+ <p>Se cierran <b>${L.length} cajas</b>. Cada una queda <b>congelada</b> con su sello SHA-256 y todas llevan la misma liquidación unificada del día.</p>`,{okText:'Cerrar y sellar todas',onOk:()=>{
+  const day=dkey(now()),ts=now(),gid=uid();const uniText=reportText(c.L,false);
+  per.forEach(p=>{const data=JSON.parse(JSON.stringify(p.a));data.uni={gid,cajas:L.map(x=>x.regName||('caja '+x.caja)),total:c.a.total,declared:c.a.declared,diff:c.a.diff,expectedCash:c.a.expectedCash,reparte:c.a.reparte,otros:c.a.otros};
+   const text='CIERRE UNIFICADO · '+L.map(x=>x.regName||('caja '+x.caja)).join(' + ')+'\nEsta caja ('+(p.x.regName||('caja '+p.x.caja))+'): ventas '+money(p.a.total)+' · esperado '+money(p.a.expectedCash)+' · contado '+money(p.a.declared)+' · diferencia '+money(p.a.diff)+'\n\n'+uniText;
+   const cl={id:uid(),ts,sessId:p.x.id,caja:p.x.caja,regId:p.x.regId||'',regName:p.x.regName||'',branchId:p.x.branchId||'',user:user.name,day,opening:p.x.opening,data,text,notes:[],obs:c.inp.notes,union:gid};cl.hash=sha256(JSON.stringify({data,text,ts,user:cl.user,sess:p.x.id}));
+   S.closures.push(cl);p.x.closedAt=ts;audit('CIERRE_CAJA','caja '+p.x.caja+' · unificado · total '+money(p.a.total)+' · dif '+money(p.a.diff)+' · sello '+cl.hash.slice(0,12));emit('cash.closed',{caja:p.x.caja,total:p.a.total});});
+  audit('CIERRE_UNIFICADO',L.length+' cajas · total '+money(c.a.total)+' · dif '+money(c.a.diff));delete S.arqDraft.U;save();toast('Cajas cerradas y selladas');location.hash='#panel/cierres';}});}
 
 /* ===== Cajas cerradas ===== */
 const verifyClosure=c=>c.hash===sha256(JSON.stringify({data:c.data,text:c.text,ts:c.ts,user:c.user,sess:c.sessId}));
