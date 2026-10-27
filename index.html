@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-26 01:59 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-27 04:58 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -190,6 +190,33 @@ table.inv tr.st-neg td{background:#fdecea}
 .cjtbl .btn.sm{min-height:48px;min-width:48px}.sdtl{margin:.3rem 0 0 1rem;padding:0}.sdtl li{margin:.25rem 0}.expsec{border:1px solid var(--line,#ddd);border-radius:12px;margin:.5rem 0;padding:.2rem .8rem}.expsec>summary{cursor:pointer;min-height:48px;display:flex;align-items:center}.expbody{padding-bottom:.6rem}
 @media(max-width:640px){.cjtbl thead{display:none}.cjtbl,.cjtbl tbody,.cjtbl tfoot{display:block}.cjtbl tr{display:block;border:1px solid var(--line,#ddd);border-radius:12px;margin:.45rem 0;padding:.4rem .6rem}.cjtbl td{display:flex;justify-content:space-between;gap:.6rem;border:0!important;padding:.15rem 0;text-align:right}.cjtbl td::before{content:attr(data-l);font-weight:600;text-align:left;color:var(--mut,#777)}.cjtbl td.acts{justify-content:flex-start;flex-wrap:wrap}.cjtbl td.acts::before{content:none}.cjtbl tfoot td[colspan]{display:flex}.cjtbl tfoot td::before{content:none}}
 @media print{body.pm #side,body.pm #top,body.pm #view,body.pm #as-dock{display:none!important}body.pm .ov{position:static!important;background:none!important;display:block!important}body.pm .dlg{box-shadow:none!important;max-height:none!important;width:100%!important;max-width:none!important;border:0!important}body.pm .mf,body.pm .noprint{display:none!important}}
+
+/* V26.29 · tema oscuro del panel */
+html[data-theme=dark]{--ink:#ece6dc;--bg:#171513;--card:#221f1c;--line:#3a352f;--mut:#aca296;--red:#ff8170;--redbg:#3a1d1a;--ok:#62d394;--okbg:#16301f;--warnbg:#3a2f14;color-scheme:dark}
+html[data-theme=dark] .btn,html[data-theme=dark] input,html[data-theme=dark] select,html[data-theme=dark] textarea,html[data-theme=dark] .pbtn,html[data-theme=dark] .fk,html[data-theme=dark] .rtab,html[data-theme=dark] .node,html[data-theme=dark] .dlg,html[data-theme=dark] .lbox,html[data-theme=dark] #top,html[data-theme=dark] .cartbar,html[data-theme=dark] #as-dock,html[data-theme=dark] #as-dock .as-m.a{background:var(--card);color:var(--ink)}
+html[data-theme=dark] input,html[data-theme=dark] select,html[data-theme=dark] textarea{border-color:#4a443c}
+html[data-theme=dark] .btn.ghost{background:transparent}
+html[data-theme=dark] .btn.gold,html[data-theme=dark] .fk.gold{background:var(--gold);color:#1b1100}
+html[data-theme=dark] .btn.red{background:#c0392b;color:#fff}
+html[data-theme=dark] .btn.dark,html[data-theme=dark] .btn.on,html[data-theme=dark] .rtab.on{background:#ece6dc;color:#171513;border-color:#ece6dc}
+html[data-theme=dark] .rtab.on b{background:#0002;color:#171513}
+html[data-theme=dark] #side{background:#0f0e0c}html[data-theme=dark] #side a:hover{background:#26231f}
+html[data-theme=dark] .tag{background:#2e2a26;color:#ddd5c9}html[data-theme=dark] .tag.sim,html[data-theme=dark] .demo-b{background:#2b2750;color:#cdc6ff}html[data-theme=dark] .tag.warn{color:#f3c76a}
+html[data-theme=dark] .tag.ok{background:var(--okbg);color:var(--ok)}html[data-theme=dark] .tag.bad{background:var(--redbg);color:var(--red)}
+html[data-theme=dark] .warnbox{border-color:#6b5520}html[data-theme=dark] .errbox{border-color:#7a3b33}html[data-theme=dark] .okbox{border-color:#2f6b45}
+html[data-theme=dark] .bar{background:#2e2a26}html[data-theme=dark] .rep{background:#1b1917;border-color:#4a443c}html[data-theme=dark] .rtab b{background:#2e2a26}
+html[data-theme=dark] .rchip{background:color-mix(in srgb,var(--rc) 22%,var(--card));border-color:color-mix(in srgb,var(--rc) 55%,var(--card))}
+html[data-theme=dark] table.inv tr.rgroup td{background:color-mix(in srgb,var(--rc,#999) 18%,var(--card))}
+html[data-theme=dark] table.inv tr.st-neg td{background:#3a1d1a}
+html[data-theme=dark] .vuelto{background:#3a2f14}html[data-theme=dark] .vuelto b{color:var(--ink)}html[data-theme=dark] .vuelto span{color:#f3c76a}html[data-theme=dark] .vuelto small{color:var(--mut)}
+html[data-theme=dark] #as-dock{border-color:#3a352f}html[data-theme=dark] #as-dock .as-log{background:#1b1917;border-color:#3a352f}html[data-theme=dark] #as-dock .as-m.u{background:#2c2618}
+html[data-theme=dark] .cmp-tab{background:var(--card);box-shadow:none;border:1px solid var(--line)}
+html[data-theme=dark] .errtxt,html[data-theme=dark] .negs{color:var(--red)}html[data-theme=dark] .legal{color:#f3c76a}
+html[data-theme=dark] .card{box-shadow:none}
+html[data-theme=dark] .cmp{--nm-l:#2c2824;--nm-d:#0b0a09;--nm-bg:#221f1c}html[data-theme=dark] .cmp .btn.dark{background:#ece6dc;color:#171513}html[data-theme=dark] .cmp-tab.on{box-shadow:inset 2px 2px 6px #0b0a09;color:var(--gold)}
+html[data-theme=dark] #view [style*="background:#fff"],html[data-theme=dark] .dlg [style*="background:#fff;"]{background:var(--card)!important}
+html[data-theme=dark] #view [style*="color:#242220"]{color:var(--ink)!important}
+html[data-theme=dark] .cm-card,html[data-theme=dark] .cm-card *{color-scheme:light}
 </style>
 </head>
 <body>
@@ -807,7 +834,7 @@ function showPanel(id){if(!SCREENS[id]||(SCREENS[id].perm&&!can(SCREENS[id].perm
  const nav=Object.entries(SCREENS).filter(([k,s])=>(!s.perm||can(s.perm))&&(!s.show||s.show())).sort((a,b)=>{const i=order.indexOf(a[0]),j=order.indexOf(b[0]);return (i<0?99:i)-(j<0?99:j);});let sec='';
  $('#side').innerHTML=`<div class="brand"><img src="${LOGO_MENU}" alt="RAVE" style="width:48px;height:27px;object-fit:cover;border-radius:6px"><span>Sistema RAVE</span></div>`+nav.map(([k,s])=>{const sc=secOf[k]||'Otros';const h=(sc!==sec)?(sec=sc,`<div class="sec">${esc(sc)}</div>`):'';return h+`<a data-act="nav" data-id="${k}" class="${k===id?'on':''}" tabindex="0" role="link">${ico(s.icon)}<span>${esc(s.t)}</span></a>`;}).join('')+`<div class="sec">Desarrollado por</div><div class="sm" style="padding:0 .7rem;color:#a99f8f"><b style="color:#eee">${VB.name}</b><br><i>“${VB.lema}”</i><br><a style="color:#c9963e" href="${vbWa()}" target="_blank" rel="noopener noreferrer">Único celular ${VB.phone}</a><br><a style="color:#c9963e" href="mailto:${VB.mail}">${VB.mail}</a></div>`;
  const s=openSess();
- $('#top').innerHTML=`<button class="btn sm" id="burger" data-act="burger" aria-label="Abrir menú">☰</button><b style="font-family:Georgia,serif">${esc(S.tenant.name)}</b>${(window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente')?'':'<span class="demo-b">DEMO DE EVALUACIÓN</span>'}<span id="cloudtag" class="tag"></span><span class="tag ${s?'ok':'warn'}">${s?'Caja '+S.tenant.caja+' abierta':'Caja cerrada'}</span><span class="tag ${S.simOffline?'bad':'ok'}">${S.simOffline?'APIs externas caídas (simulado)':'Operativo'}</span><span id="devtag" class="tag"></span><span class="sp"></span><span class="sm mut">${esc(user.name)} · ${esc(user.role)}</span>${typeof asBtn==='function'?asBtn():''}<a class="btn sm" href="#menu">Ver menú público</a><button class="btn sm" data-act="logout">Salir</button>`;
+ $('#top').innerHTML=`<button class="btn sm" id="burger" data-act="burger" aria-label="Abrir menú">☰</button><b style="font-family:Georgia,serif">${esc(S.tenant.name)}</b>${(window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente')?'':'<span class="demo-b">DEMO DE EVALUACIÓN</span>'}<span id="cloudtag" class="tag"></span><span class="tag ${s?'ok':'warn'}">${s?'Caja '+S.tenant.caja+' abierta':'Caja cerrada'}</span><span class="tag ${S.simOffline?'bad':'ok'}">${S.simOffline?'APIs externas caídas (simulado)':'Operativo'}</span><span id="devtag" class="tag"></span><span class="sp"></span><span class="sm mut">${esc(user.name)} · ${esc(user.role)}</span>${typeof asBtn==='function'?asBtn():''}${themeBtn()}<a class="btn sm" href="#menu">Ver menú público</a><button class="btn sm" data-act="logout">Salir</button>`;
  const sc=SCREENS[id];$('#view').innerHTML=sc.render();sc.after&&sc.after();$('#side').classList.remove('open');window.scrollTo(0,0);try{document.documentElement.style.setProperty('--topH',($('#top').offsetHeight||56)+'px');}catch(e){}if(typeof devTag==='function')devTag();if(typeof cloudBadge==='function')cloudBadge();if(typeof asPaint==='function')asPaint();if(typeof xfPermNotice==='function')xfPermNotice();if(typeof expPending==='function')expPending();}
 A.nav=el=>go(el.dataset.id);A.burger=()=>$('#side').classList.toggle('open');
 A.logout=()=>{audit('LOGOUT','');if(typeof asReset==='function')asReset();user=null;location.hash='#menu';};
@@ -827,6 +854,15 @@ function showLogin(){if(CLOUD_HOOK||(window.RAVE_BUILD&&window.RAVE_BUILD.varian
 A.login=()=>{const err=$('#lerr');if(now()<lockUntil){err.textContent='Demasiados intentos. Esperá '+Math.ceil((lockUntil-now())/1000)+' s.';return;}
  const u=S.users.find(x=>x.id===val('lu'));if(u&&u.pin===val('lp')){loginFails=0;user=u;audit('LOGIN','ingreso desde menú/acceso');location.hash='#panel/inicio';}
  else{loginFails++;audit('LOGIN_FALLIDO','intento '+loginFails);err.textContent='Usuario o PIN incorrecto.';if(loginFails>=5){lockUntil=now()+120000;loginFails=0;err.textContent='5 intentos fallidos: bloqueado 2 minutos.';}}};
+
+/* ===== V26.29 · Panel claro / oscuro (preferencia de este equipo; «Automático» sigue al sistema) ===== */
+const THEMES={auto:'Automático',light:'Claro',dark:'Oscuro'};
+function themePref(){try{const v=localStorage.getItem('rave.theme');return THEMES[v]?v:'auto';}catch(e){return 'auto';}}
+function themeEff(){const p=themePref();if(p!=='auto')return p;try{return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}catch(e){return 'light';}}
+function themeApply(){const t=themeEff();document.documentElement.setAttribute('data-theme',t);const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',t==='dark'?'#0f0e0c':'#242220');}
+function themeBtn(){const p=themePref(),ic={auto:'◐',light:'☀',dark:'☾'}[p];return `<button class="btn sm" data-act="themeCycle" title="Tema del panel: ${THEMES[p]} (tocá para cambiar)" aria-label="Tema del panel: ${THEMES[p]}. Tocá para cambiar">${ic} ${THEMES[p]}</button>`;}
+A.themeCycle=()=>{const o=['auto','light','dark'];const n=o[(o.indexOf(themePref())+1)%3];try{localStorage.setItem('rave.theme',n);}catch(e){}themeApply();rerender();toast('Tema del panel: '+THEMES[n]);};
+themeApply();try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(themePref()==='auto'){themeApply();if(typeof rerender==='function'&&typeof user!=='undefined'&&user)rerender();}});}catch(e){}
 
 /* ===== V26 · 4.15 Ordenamiento reutilizable (SortableTable) =====
    Un solo componente para TODAS las tablas de datos: se aplica solo a cada <table> con <thead>
@@ -4347,7 +4383,7 @@ reg('auditoria','Auditoría','shield','audit',()=>{const bad=verifyAudit();retur
 A.audVer=()=>{const b=verifyAudit();toast(b?'Cadena rota en el registro '+b:'Cadena íntegra',!!b);};
 reg('config','Configuración','gear','config',()=>`<h1>Configuración</h1><p class="sm mut">Sistema RAVE · ${IS_CLIENT?'versión del cliente':'demo de evaluación'} · compilada ${esc(BUILD_VER)}</p>${bizCard()}<div class="grid g2"><div class="card"><h3>Comercio</h3><label for="cf-n">Nombre comercial</label><input id="cf-n" value="${esc(S.tenant.name)}" maxlength="60"><label for="cf-c">Número de caja</label><input id="cf-c" inputmode="numeric" value="${S.tenant.caja}">${ownerMode()?'':`<label class="chk"><input type="checkbox" id="cf-p" ${S.cfg.payFromCash?'checked':''}> Sueldo y gastos manuales se pagan de la caja (valor inicial del arqueo)</label>`}<label class="chk"><input type="checkbox" id="cf-ng" ${negOK()?'checked':''}> Permitir vender sin stock (el stock queda en negativo y se marca en rojo; cada producto puede exigir stock)</label><button class="btn gold" style="margin-top:.6rem" data-act="cfgSave">Guardar</button></div>
  ${ownerMode()?catCardOwner():`<div class="card"><h3>Rubros, responsables y reparto</h3><p class="sm mut">"Reparte" = comparte sueldo del empleado, gastos e impuestos con los otros rubros marcados. Los que no reparten sólo informan ventas y ganancia.</p>${S.rubros.filter(r=>r.kind==='rubro').map(r=>`<div class="rubrow"><div class="rubhead"><b class="sp"><i class="rdot" style="background:${safeColor(r.color)}"></i>${esc(r.name)}</b><button class="btn sm" data-act="rubEdit" data-id="${r.id}" aria-label="Editar rubro ${esc(r.name)}">Editar</button><button class="btn sm red" data-act="rubDel" data-id="${r.id}" aria-label="Eliminar rubro ${esc(r.name)}">Eliminar</button></div><div class="rubbody"><label class="rublbl">Responsable<input data-rown="${r.id}" value="${esc(r.owner)}" maxlength="40" aria-label="Responsable de ${esc(r.name)}"></label><label class="chk rubchk"><input type="checkbox" data-rrep="${r.id}" ${r.reparte?'checked':''}> reparte</label>${r.reparte?`<label class="rublbl">Impuesto diario ($)<input inputmode="decimal" data-rtax="${r.id}" placeholder="0" value="${esc(pesosStr(S.cfg.tax[r.id]||0))}" aria-label="Impuesto diario de ${esc(r.name)}"></label>`:''}</div></div>`).join('')}<button class="btn sm" data-act="rubAdd">+ Rubro</button></div>`}</div>
- ${cashCfgCard()}${typeof accCfgCard==='function'?accCfgCard():''}${typeof payCfgCard==='function'?payCfgCard():''}${typeof wsCfgCard==='function'?wsCfgCard():''}${typeof assistCfgCard==='function'?assistCfgCard():''}
+ ${cashCfgCard()}${typeof accCfgCard==='function'?accCfgCard():''}${typeof facCfgCard==='function'?facCfgCard():''}${typeof payCfgCard==='function'?payCfgCard():''}${typeof wsCfgCard==='function'?wsCfgCard():''}${typeof assistCfgCard==='function'?assistCfgCard():''}
  ${IS_CLIENT?`<div class="card" style="margin-top:1rem"><h3>Respaldo</h3><div class="row"><button class="btn" data-act="backupDl">Descargar respaldo</button></div><p class="sm mut">${CLOUD.on?'Tus datos se guardan en la nube y en este equipo (cifrados). El respaldo es una copia de seguridad que podés guardar aparte.':'Con la nube sin configurar, los datos viven sólo en este equipo: descargá un respaldo seguido.'}</p></div>`:`<div class="card" style="margin-top:1rem"><h3>Datos de la demo</h3><div class="row"><button class="btn gold" data-act="loadEx">Cargar jornada de ejemplo (6/10)</button><button class="btn" data-act="backupDl">Descargar respaldo</button><label class="btn" for="rs-f">Restaurar respaldo</label><input type="file" id="rs-f" accept=".json" hidden><button class="btn" data-act="resetDemo">Volver a los datos de ejemplo</button><button class="btn red" data-act="emptyDemo">Borrar todo y empezar vacío</button></div><p class="sm mut">${ownerMode()?'La jornada de ejemplo abre la caja y carga ventas de ejemplo para ver el arqueo y cierre del dueño.':'La jornada de ejemplo abre la caja y carga ventas de ejemplo con el sueldo del empleado (8 hs) y gastos $4.500, para ver el arqueo completo con el reparto entre rubros.'}</p></div>`}`,
  ()=>{const f=$('#rs-f');f&&f.addEventListener('change',async e=>{try{const j=JSON.parse(await e.target.files[0].text());if(!j.state||!j.state.rubros)throw new Error('formato');S=mergeDefaults(j.state);audit('RESTAURAR_RESPALDO','');save();toast('Respaldo restaurado');rerender();}catch(err){toast('Archivo de respaldo inválido',1);}});},'Sistema');
 document.addEventListener('change',e=>{const t=e.target;if(curScreen!=='config'||!t.dataset)return;if(t.dataset.rown){rub(t.dataset.rown).owner=t.value.trim();audit('RUBRO_RESPONSABLE',t.dataset.rown+' '+t.value);save();}
@@ -4706,7 +4742,7 @@ function cmpRender(){
  const banner=cloud?(cmpS.err?`<div class="errbox" role="alert">No pude actualizar desde la nube: ${esc(cmpS.err)}. Se muestran los últimos datos conocidos${S.cmpAt?' ('+fmtDT(S.cmpAt)+')':''}; para guardar cambios hace falta conexión.</div>`:(cmpS.loading&&!cmpS.loadedAt?'<div class="warnbox" role="status">Cargando proveedores desde la nube…</div>':'')):'';
  let body='';if(cmpS.tab==='prov')body=cmpProvTab();else if(cmpS.tab==='oc')body=cmpOcTab();else if(cmpS.tab==='remito')body=cmpRemitoTab();else body=cmpCuentaTab();
  return `<div class="cmp"><div class="row"><h1 class="sp">Proveedores y compras</h1>${cloud?cmpTag('☁ En la nube','ok'):cmpTag('Este equipo (sin nube)','')}
-  <button class="btn gold" data-act="cmpSupEdit" data-id="">+ Proveedor</button><button class="btn" data-act="cmpOcNew">+ Orden de compra</button><button class="btn dark" data-act="cmpTab" data-tab="remito">Cargar remito</button></div>
+  <button class="btn gold" data-act="cmpSupEdit" data-id="">+ Proveedor</button><button class="btn" data-act="cmpOcNew">+ Orden de compra</button><button class="btn dark" data-act="cmpTab" data-tab="remito">Cargar remito</button><button class="btn gold" data-act="facLoad">📄 Cargar factura (foto o PDF)</button></div>
   ${banner}${cmpKpis()}${cmpTabs()}<div class="cmp-panel" role="tabpanel">${body}</div>
   <p class="sm mut">Al cargar un remito se suma el stock, se actualiza el costo del producto (el margen se recalcula solo) y, según elijas, queda como deuda con el proveedor o sale de la caja o banco. Si algo falla, no se guarda nada. ${cloud?'En la nube el cálculo lo hace el servidor.':'Sin nube, el cálculo se hace en este equipo.'}</p></div>`;}
 
@@ -4947,6 +4983,108 @@ A.cmpNc=el=>{if(!can('purchases'))return toast('Sin permiso',1);const s=cmpProv(
   {okText:'Registrar nota de crédito',onOk:async w=>{const m=parseNum(val('nc-m'));if(!(m>0)){w._err('Cargá un importe mayor a cero.');return false;}
    try{const r=await CMP.nc({idempotency_key:key,proveedor_id:s.id,monto:m,referencia:val('nc-ref'),motivo:val('nc-mot')});toast(r.repetido?'Esa nota ya estaba registrada':'Nota de crédito registrada');cmpAfterOp();}catch(e){w._err(e.message);return false;}}});};
 
+/* ===== V26.29 · 4.8 Cargar factura de proveedor (foto o PDF) con lectura automática y REVISIÓN HUMANA obligatoria =====
+   Cascada: 1) QR fiscal de ARCA (foto, con el lector del navegador) → 2) IA en la nube (opcional, Edge Function «leer-factura»,
+   sólo administrador, cuesta por uso) → 3) texto del PDF leído en el equipo → 4) carga a mano.
+   Nada se guarda sin revisar: el resultado prellena la «Carga de remito» (stock, costo y deuda/caja según 4.21: un solo registro). */
+const FAC_MAX=5*1024*1024;
+let facS=null;
+function facAiCfg(){S.cfg.aiInv=S.cfg.aiInv||{on:false};return S.cfg.aiInv;}
+const facAiReady=()=>!!(facAiCfg().on&&typeof CLOUD!=='undefined'&&CLOUD.on&&typeof cl!=='undefined'&&cl.ready);
+function facB64(buf){const u=new Uint8Array(buf);let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s);}
+/* --- 1) QR fiscal ARCA: https://www.afip.gob.ar/fe/qr/?p=<base64 JSON> [VERIFICAR especificación vigente] --- */
+async function facQrFromImage(file){try{if(!('BarcodeDetector' in window))return null;const bd=new BarcodeDetector({formats:['qr_code']});const bm=await createImageBitmap(file);const r=await bd.detect(bm);for(const x of r){const q=facParseQr(x.rawValue);if(q)return q;}}catch(e){}return null;}
+function facParseQr(raw){try{const u=new URL(String(raw));const p=u.searchParams.get('p');if(!p)return null;const j=JSON.parse(decodeURIComponent(escape(atob(p.replace(/-/g,'+').replace(/_/g,'/')))));
+ if(!j||!j.cuit)return null;const T={1:['Factura','A'],2:['Nota de débito','A'],3:['Nota de crédito','A'],6:['Factura','B'],7:['Nota de débito','B'],8:['Nota de crédito','B'],11:['Factura','C'],12:['Nota de débito','C'],13:['Nota de crédito','C'],51:['Factura','M']}[+j.tipoCmp]||['Factura',''];
+ return{src:'QR fiscal',cuit:String(j.cuit).replace(/\D/g,''),tipo:T[0],letra:T[1],pto:String(j.ptoVta||''),nro:String(j.nroCmp||''),fecha:String(j.fecha||'').slice(0,10),total:Math.round((+j.importe||0)*100),cae:String(j.codAut||'')};}catch(e){return null;}}
+/* --- 3) texto de un PDF (flujos FlateDecode + operadores Tj/TJ; los PDF escaneados no tienen texto) --- */
+async function facPdfText(buf){const b=new Uint8Array(buf);const td=new TextDecoder('latin1');const all=td.decode(b);const out=[];let i=0,n=0;
+ while((i=all.indexOf('stream',i))!==-1&&n<400){n++;let s=i+6;if(all[s]==='\r')s++;if(all[s]==='\n')s++;const e=all.indexOf('endstream',s);if(e<0)break;const dict=all.slice(Math.max(0,i-300),i);let txt='';
+  try{let raw=b.slice(s,e);if(/ASCII85Decode/.test(dict))raw=facA85(all.slice(s,e));
+   if(/FlateDecode/.test(dict)){const ds=new DecompressionStream('deflate');const w=ds.writable.getWriter();w.write(raw).catch(()=>{});w.close().catch(()=>{});txt=td.decode(await new Response(ds.readable).arrayBuffer());}else txt=td.decode(raw);}catch(x){txt='';}
+  if(/T[Jj]/.test(txt))out.push(facOps(txt));i=e+9;}
+ return out.join('\n').replace(/[ \t]+/g,' ').slice(0,60000);}
+function facA85(t){t=t.replace(/\s+/g,'');const i=t.indexOf('~>');if(i>=0)t=t.slice(0,i);if(t.startsWith('<~'))t=t.slice(2);const out=[];let g=[];
+ for(const ch of t){if(ch==='z'&&!g.length){out.push(0,0,0,0);continue;}const c=ch.charCodeAt(0)-33;if(c<0||c>84)continue;g.push(c);if(g.length===5){let v=0;for(const x of g)v=v*85+x;out.push(v>>>24&255,v>>>16&255,v>>>8&255,v&255);g=[];}}
+ if(g.length){const n=g.length;while(g.length<5)g.push(84);let v=0;for(const x of g)v=v*85+x;const bb=[v>>>24&255,v>>>16&255,v>>>8&255,v&255];out.push(...bb.slice(0,n-1));}return new Uint8Array(out);}
+function facOps(t){const o=[];const str=s=>s.replace(/\\([nrtbf()\\]|[0-7]{1,3})/g,(m,c)=>/^[0-7]/.test(c)?String.fromCharCode(parseInt(c,8)):({n:'\n',r:'',t:' ',b:'',f:''}[c]??c));
+ const re=/\[((?:[^\]\\]|\\.)*)\]\s*TJ|\(((?:[^()\\]|\\.)*)\)\s*Tj|(T\*|Td|TD|ET)/g;let m;
+ while((m=re.exec(t))){if(m[1]!==undefined){let s='';m[1].replace(/\(((?:[^()\\]|\\.)*)\)|(-?\d+(?:\.\d+)?)/g,(x,a,num)=>{if(a!==undefined)s+=str(a);else if(+num<-200)s+=' ';return '';});o.push(s);}else if(m[2]!==undefined)o.push(str(m[2]));else o.push('\n');}
+ return o.join('').replace(/\n+/g,'\n');}
+/* --- parser local de texto (formato argentino) --- */
+const facNum=s=>{s=String(s||'').replace(/[^\d.,-]/g,'');if(/,\d{1,2}$/.test(s))s=s.replace(/\./g,'').replace(',','.');else s=s.replace(/,/g,'');const v=parseFloat(s);return isNaN(v)?NaN:Math.round(v*100);};
+function facParseText(t){if(!t||t.length<20)return null;const T=t.replace(/\s+/g,' ');const r={src:'texto del PDF'};
+ const cuits=[...T.matchAll(/(\d{2})[-\s.]?(\d{8})[-\s.]?(\d)\b/g)].map(m=>m[1]+m[2]+m[3]).filter(c=>typeof arcaCuitOk!=='function'||arcaCuitOk(c));if(cuits.length)r.cuit=cuits[0];
+ let m=T.match(/\b(FACTURA|NOTA DE CR[EÉ]DITO|NOTA DE D[EÉ]BITO|REMITO)\b[^A-Z]{0,20}\b([ABCM])\b/i);if(m){r.tipo=/CR/i.test(m[1])?'Nota de crédito':/D[EÉ]B/i.test(m[1])?'Nota de débito':/REM/i.test(m[1])?'Remito':'Factura';r.letra=m[2].toUpperCase();}
+ m=T.match(/Punto de Venta:?\s*(\d{1,5})\s*Comp\.?\s*Nro:?\s*(\d{1,8})/i)||T.match(/\b(\d{4,5})\s*-\s*(\d{8})\b/);if(m){r.pto=String(+m[1]);r.nro=String(+m[2]);}
+ m=T.match(/Fecha de Emisi[oó]n:?\s*(\d{2})\/(\d{2})\/(\d{4})/i)||T.match(/\b(\d{2})\/(\d{2})\/(\d{4})\b/);if(m)r.fecha=m[3]+'-'+m[2]+'-'+m[1];
+ m=T.match(/Importe Total:?\s*\$?\s*([\d.,]+)/i)||T.match(/\bTOTAL:?\s*\$?\s*([\d.,]+)/i);if(m)r.total=facNum(m[1]);
+ m=T.match(/(?:Importe Neto Gravado|Subtotal|Neto Gravado):?\s*\$?\s*([\d.,]+)/i);if(m)r.neto=facNum(m[1]);
+ m=T.match(/IVA\s*(?:21|10[.,]5|27)\s*%:?\s*\$?\s*([\d.,]+)/i);if(m)r.iva=facNum(m[1]);
+ m=T.match(/Raz[oó]n Social:?\s*([^:]{3,60}?)\s+(?:Domicilio|Fecha|CUIT|Condici)/i);if(m)r.razon=m[1].trim();
+ return(r.cuit||r.total||r.nro)?r:null;}
+/* --- 2) IA en la nube --- */
+async function facAi(file,buf){const mime=file.type||(file.name.toLowerCase().endsWith('.pdf')?'application/pdf':'');
+ const j=await hreq('/functions/v1/leer-factura',{method:'POST',fn:true,body:{comercio:cl.comercio.id,mime,data:facB64(buf)}});const d=(j&&j.datos)||{};
+ const c=x=>Math.round((+x||0)*100);return{src:'IA en la nube',cuit:String(d.proveedor_cuit||'').replace(/\D/g,''),razon:d.proveedor_razon_social||'',tipo:d.tipo||'Factura',letra:d.letra||'',pto:String(d.punto_venta||'').replace(/\D/g,''),nro:String(d.numero||'').replace(/\D/g,''),
+  fecha:/^\d{4}-\d{2}-\d{2}$/.test(d.fecha_emision||'')?d.fecha_emision:'',neto:c(d.neto),iva:c(d.iva),otros:c(d.otros_impuestos),total:c(d.total),cat:d.categoria_sugerida||'',notEs:d.es_factura===false,
+  lines:(Array.isArray(d.renglones)?d.renglones:[]).slice(0,60).map(x=>({desc:String(x.descripcion||'').slice(0,120),qty:+x.cantidad||0,price:c(x.precio_unitario),sub:c(x.subtotal)}))};}
+/* ---------- pantalla ---------- */
+A.facLoad=()=>{if(!can('purchases'))return toast('Sin permiso',1);
+ const ai=facAiCfg().on,cloud=typeof CLOUD!=='undefined'&&CLOUD.on;
+ const w=modal('Cargar factura de proveedor',`<p class="sm">Sacale una <b>foto</b> o elegí el <b>PDF</b>. El sistema intenta leer los datos solo y después <b>los revisás vos</b> antes de guardar.</p>
+  <label for="fac-f">Foto o PDF (máx. 5 MB)</label><input id="fac-f" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" capture="environment">
+  <ol class="sm mut"><li>QR fiscal de ARCA de la factura (con la foto; necesita Chrome o Edge).</li><li>${ai&&cloud?'<b>IA en la nube activada</b> (sólo el administrador; cuesta por uso).':'IA en la nube: <b>no activada</b>'+(can('config')?' — se activa en Configuración → «Lectura de facturas con IA».':'.')}</li><li>Texto del PDF (si el PDF no es una imagen escaneada).</li><li>Si nada funciona, cargás los datos a mano.</li></ol>
+  <div id="fac-st" aria-live="polite"></div>`,{okText:'Leer',onOk:w=>{const f=$('#fac-f',w).files[0];if(!f)return w._err('Elegí la foto o el PDF.'),false;if(f.size>FAC_MAX)return w._err('El archivo pesa más de 5 MB.'),false;
+   if(!/^(image\/(jpeg|png|webp)|application\/pdf)$/.test(f.type)&&!/\.pdf$/i.test(f.name))return w._err('Formato no admitido: JPG, PNG, WEBP o PDF.'),false;facRead(f,w);return false;}});};
+async function facRead(f,w){const st=$('#fac-st',w);const say=t=>{if(st)st.innerHTML=`<div class="okbox sm">${esc(t)}</div>`;};
+ const btn=w.querySelector('[data-m=ok]');if(btn)btn.disabled=true;const buf=await f.arrayBuffer();const isPdf=/pdf/.test(f.type)||/\.pdf$/i.test(f.name);let r=null,tries=[];
+ if(!isPdf){say('Buscando el QR fiscal…');r=await facQrFromImage(f);tries.push('QR fiscal: '+(r?'leído':'no encontrado'));}
+ if(facAiReady()&&can('config')&&(!r||!r.lines)){say('Leyendo con IA en la nube…');try{const a=await facAi(f,buf);r=r?Object.assign({},a,{cuit:r.cuit||a.cuit,pto:r.pto||a.pto,nro:r.nro||a.nro,fecha:r.fecha||a.fecha,total:r.total||a.total,cae:r.cae,src:'QR fiscal + IA'}):a;tries.push('IA: leída');audit('FACTURA_IA','lectura con IA · '+(f.type||'pdf'));}catch(e){tries.push('IA: '+(e.message||'no disponible'));}}
+ if(isPdf&&(!r||!r.total)){say('Leyendo el texto del PDF…');try{const t=await facPdfText(buf);const p=facParseText(t);if(p)r=r?Object.assign({},p,r):p;tries.push('Texto del PDF: '+(p?'leído':'sin datos (puede ser un escaneo)'));}catch(e){tries.push('Texto del PDF: no se pudo leer');}}
+ const url=URL.createObjectURL(f);facS=Object.assign({cuit:'',razon:'',tipo:'Factura',letra:'',pto:'',nro:'',fecha:'',neto:0,iva:0,otros:0,total:0,lines:[],src:'a mano'},r||{},{url,isPdf,tries,name:f.name});
+ w.remove();facReview();}
+function facProvByCuit(c){return c?cmpArr('suppliers').find(s=>String(s.cuit).replace(/\D/g,'')===c):null;}
+function facChecks(d){const W=[];const cuit=String(d.cuit||'').replace(/\D/g,'');
+ if(!cuit)W.push('Falta el CUIT del proveedor.');else if(typeof arcaCuitOk==='function'&&!arcaCuitOk(cuit))W.push('El CUIT no pasa el dígito verificador: revisalo.');
+ if(!(d.total>0))W.push('Falta el total.');if(d.neto>0&&Math.abs(d.neto+(d.iva||0)+(d.otros||0)-d.total)>100)W.push('Neto + IVA + otros impuestos ('+money(d.neto+(d.iva||0)+(d.otros||0))+') no da el total ('+money(d.total)+').');
+ if(d.fecha){if(d.fecha>dkey(now()))W.push('La fecha es futura.');else if(d.fecha<addDays(dkey(now()),-400))W.push('La fecha tiene más de un año.');}else W.push('Falta la fecha.');
+ const p=facProvByCuit(cuit);const nroF=(d.pto?String(d.pto).padStart(4,'0')+'-':'')+String(d.nro||'').padStart(8,'0');
+ if(p&&d.nro&&(S.receipts||[]).some(r=>r.provId===p.id&&String(r.nro).replace(/\D/g,'').endsWith(String(+d.nro))&&String(r.tipo).toLowerCase().startsWith(String(d.tipo||'').slice(0,4).toLowerCase())))W.push('Parece DUPLICADO: ya hay un '+d.tipo+' '+nroF+' de este proveedor.');
+ if(d.notEs)W.push('La IA dice que el documento no parece un comprobante.');return W;}
+function facReview(){const d=facS;if(!d)return;const p=facProvByCuit(d.cuit);const pv=x=>x?pesosStr(x):'';
+ const w=modal('Revisar la factura antes de guardar',`<div class="grid g2" style="align-items:start"><div>${d.isPdf?`<div class="card"><p>📄 PDF cargado: <b>${esc(d.name)}</b></p><a class="btn" href="${d.url}" target="_blank" rel="noopener">Abrir el PDF para compararlo</a></div>`:`<img src="${d.url}" alt="Foto de la factura" style="width:100%;max-height:520px;object-fit:contain;border:1px solid var(--line);border-radius:12px">`}
+  <p class="sm mut">Leído con: <b>${esc(d.src)}</b>${d.tries.length?' · '+esc(d.tries.join(' · ')):''}. Lo leído automáticamente puede tener errores: compará con la imagen.</p></div>
+  <div><label for="fv-cuit">CUIT del proveedor</label><input id="fv-cuit" inputmode="numeric" maxlength="13" value="${esc(d.cuit?(typeof arcaCuitFmt==='function'?arcaCuitFmt(d.cuit):d.cuit):'')}">
+  <div id="fv-prov" class="sm">${p?`<span class="tag ok">Proveedor: ${esc(p.razon)}</span>`:`<span class="tag warn">No está cargado</span>`}</div>
+  <label for="fv-rs">Razón social</label><input id="fv-rs" maxlength="120" value="${esc(p?p.razon:(d.razon||''))}">
+  <div class="grid g2"><div><label for="fv-tipo">Tipo</label><select id="fv-tipo">${['Factura','Remito','Nota de crédito','Nota de débito','Ticket'].map(x=>`<option ${d.tipo===x?'selected':''}>${x}</option>`).join('')}</select></div><div><label for="fv-l">Letra</label><select id="fv-l">${['','A','B','C','M'].map(x=>`<option ${d.letra===x?'selected':''}>${x}</option>`).join('')}</select></div></div>
+  <div class="grid g2"><div><label for="fv-pto">Punto de venta</label><input id="fv-pto" inputmode="numeric" maxlength="5" value="${esc(d.pto||'')}"></div><div><label for="fv-nro">Número</label><input id="fv-nro" inputmode="numeric" maxlength="8" value="${esc(d.nro||'')}"></div></div>
+  <label for="fv-f">Fecha de emisión</label><input id="fv-f" type="date" value="${esc(d.fecha||'')}">
+  <div class="grid g2"><div><label for="fv-n">Neto ($)</label><input id="fv-n" inputmode="decimal" value="${esc(pv(d.neto))}"></div><div><label for="fv-i">IVA ($)</label><input id="fv-i" inputmode="decimal" value="${esc(pv(d.iva))}"></div></div>
+  <div class="grid g2"><div><label for="fv-o">Otros impuestos / percepciones ($)</label><input id="fv-o" inputmode="decimal" value="${esc(pv(d.otros))}"></div><div><label for="fv-t">Total ($)</label><input id="fv-t" inputmode="decimal" value="${esc(pv(d.total))}"></div></div>
+  ${d.lines&&d.lines.length?`<p class="sm"><b>${d.lines.length} renglón(es)</b> leídos: se pasan a la carga de remito para que elijas cada producto.</p>`:''}
+  <div id="fv-w" aria-live="polite"></div></div></div>`,{wide:true,okText:'Revisado: pasar a la carga de remito',onOk:w=>{const x=facFromForm(w);const W=facChecks(x);
+   const dup=W.find(t=>/DUPLICADO/.test(t));if(dup&&!w._dupOk){w._dupOk=1;w._err(dup+' Si igual querés seguir, tocá de nuevo.');return false;}
+   const cuit=String(x.cuit).replace(/\D/g,'');if(!cuit||(typeof arcaCuitOk==='function'&&!arcaCuitOk(cuit)))return w._err('Revisá el CUIT del proveedor.'),false;if(!(x.total>0))return w._err('Escribí el total.'),false;
+   facGo(x,w);return false;}});
+ const paint=()=>{const x=facFromForm(w);const W=facChecks(x);$('#fv-w',w).innerHTML=W.length?`<div class="warnbox sm">${W.map(esc).join('<br>')}</div>`:'<div class="okbox sm">Controles: CUIT, total, fecha y duplicados en orden.</div>';const pp=facProvByCuit(String(x.cuit).replace(/\D/g,''));$('#fv-prov',w).innerHTML=pp?`<span class="tag ok">Proveedor: ${esc(pp.razon)}</span>`:'<span class="tag warn">No está cargado: se crea al seguir</span>';};
+ w.addEventListener('input',paint);w.addEventListener('change',paint);paint();}
+function facFromForm(w){const c=id=>{const v=cents($('#'+id,w).value||'0');return isNaN(v)?0:v;};return Object.assign({},facS,{cuit:$('#fv-cuit',w).value.replace(/\D/g,''),razon:$('#fv-rs',w).value.trim(),tipo:$('#fv-tipo',w).value,letra:$('#fv-l',w).value,pto:$('#fv-pto',w).value.replace(/\D/g,''),nro:$('#fv-nro',w).value.replace(/\D/g,''),fecha:$('#fv-f',w).value,neto:c('fv-n'),iva:c('fv-i'),otros:c('fv-o'),total:c('fv-t')});}
+async function facGo(x,w){let p=facProvByCuit(x.cuit);
+ if(!p){if(x.razon.length<2)return w._err('Escribí la razón social para crear el proveedor.');try{await CMP.supSave({razon_social:x.razon,cuit:x.cuit,condicion_iva:x.letra==='A'?'Responsable Inscripto':(x.letra==='C'?'Monotributista':'Responsable Inscripto'),email:'',telefono:'',direccion:'',activo:true});}catch(e){return w._err(e.message||'No se pudo crear el proveedor.');}p=facProvByCuit(x.cuit);if(!p)return w._err('Se creó el proveedor pero todavía no aparece: probá de nuevo en unos segundos.');}
+ cmpNewRemito(p.id);const tipo=/Remito/.test(x.tipo)?'Remito':'Factura';crS.tipo=tipo;crS.nro=(x.pto?String(x.pto).padStart(4,'0')+'-':'')+String(x.nro||'').padStart(8,'0');if(x.fecha)crS.fecha=x.fecha;crS.decl=pesosStr(x.total);
+ crS.obs=('Cargada desde '+x.src+(x.letra?' · '+x.tipo+' '+x.letra:'')+(x.neto?' · neto '+money(x.neto):'')+(x.iva?' · IVA '+money(x.iva):'')+(x.otros?' · otros imp. '+money(x.otros):'')).slice(0,200);
+ if(x.lines&&x.lines.length){const prods=S.products.filter(q=>!q.archived);crS.rows=x.lines.map(l=>{const dw=foldTxt(l.desc).split(/\s+/).filter(t=>t.length>2);let best=null,bs=0;prods.forEach(q=>{const h=foldTxt(q.name+' '+(q.sub||''));const sc=dw.filter(t=>h.includes(t)).length;if(sc>bs){bs=sc;best=q;}});
+  return{pid:best&&bs>=Math.min(2,dw.length)?best.id:'',txt:best&&bs>=Math.min(2,dw.length)?'':l.desc,qty:l.qty?String(l.qty).replace('.',','):'',cost:l.price?pesosStr(l.price):''};});}
+ audit('FACTURA_REVISADA',x.tipo+' '+crS.nro+' · '+money(x.total)+' · '+x.src);if(/Nota de cr/.test(x.tipo))toast('Es una nota de crédito: cargala desde la cuenta corriente del proveedor («Nota de crédito»).',1);
+ try{URL.revokeObjectURL(facS.url);}catch(e){}facS=null;w.remove();cmpS.tab='remito';if(location.hash!=='#panel/proveedores')go('proveedores');else cmpRepaint();toast('Datos pasados a la carga de remito: completá los productos y confirmá.');}
+/* configuración (sólo administrador) */
+function facCfgCard(){if(!can('config'))return '';const c=facAiCfg();const cloud=typeof CLOUD!=='undefined'&&CLOUD.on;
+ return `<div class="card" style="margin-top:1rem"><h3>Lectura de facturas con IA (opcional)</h3><p class="sm mut">En «Proveedores y compras → Cargar factura» el sistema lee la foto o el PDF: primero el QR fiscal y el texto del PDF (gratis, en el equipo); con esta opción, además, la IA en la nube (lee fotos sin QR y los renglones). <b>Cuesta por uso</b> y necesita que el desarrollador despliegue la función «leer-factura» y cargue la clave de la API en los secretos del servidor (nunca acá). Siempre hay revisión humana antes de guardar.</p>
+ <label class="chk"><input type="checkbox" id="fac-ai" ${c.on?'checked':''} ${cloud?'':'disabled'}> Usar IA en la nube para leer facturas${cloud?'':' (necesita la nube)'}</label></div>`;}
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='fac-ai'){if(!can('config'))return;facAiCfg().on=e.target.checked;audit('CONFIG_IA_FACTURAS',e.target.checked?'activada':'desactivada');save();toast(e.target.checked?'IA para facturas activada':'IA para facturas desactivada');}});
+
 /* =====================================================================
    VENTAS ONLINE (V26 · 4.18) y WALLET / AVISOS (V26 · 4.19)
    Paneles de configuración HONESTOS: dejan preparado el modo de venta y los
@@ -4997,7 +5135,7 @@ function walletCard(){const cs=S.customers||[];const club=cs.filter(c=>c.consent
  <h4 style="margin:.6rem 0 .2rem">Consentimientos hoy (datos reales de tus clientes)</h4><p class="sm">Clientes del Club con alta consentida: <b>${club}</b> · con permiso de comunicaciones comerciales: <b>${comm}</b> de ${cs.length}. Los avisos comerciales sólo irían a quienes tengan permiso vigente; los operativos (por ejemplo, confirmar una acción pedida) se tratan aparte [VERIFICAR con asesor legal]. Hoy no hay reglas de avisos activas.</p></div>`;}
 
 /* ===== Resumen · Dashboard Analytics (primera pantalla, antes de Vender) ===== */
-const dbF={per:'7',met:'',doc:'',rub:''};
+const dbF={per:'7',met:'',doc:'',rub:'',bars:(()=>{try{return localStorage.getItem('rave.dbbars')==='v'?'v':'h';}catch(e){return 'h';}})()};
 function dbRange(){const t=dkey(now());if(dbF.per==='hoy')return[t,t];if(dbF.per==='ayer'){const y=addDays(t,-1);return[y,y];}if(dbF.per==='7')return[addDays(t,-6),t];if(dbF.per==='30')return[addDays(t,-29),t];return['0000-00-00','9999-99-99'];}
 const dbPerTxt={hoy:'Hoy',ayer:'Ayer','7':'Últimos 7 días','30':'Últimos 30 días',todo:'Todo el historial'};
 function dbData(){const[a,b]=dbRange();
@@ -5030,16 +5168,78 @@ reg('inicio','Resumen','home',null,()=>{const D=dbData();const cv=can('view_cost
  ${oldOpen?`<div class="errbox">La caja se abrió el ${dmy(dkey(sess.openedAt))} y sigue abierta: hay días con ventas sin cierre. <a href="#panel/arqueo">Ir al arqueo</a></div>`:''}
  <div class="grid g4"><div class="card kpi"><b>${money(tot)}</b><span>Ventas netas (${n} operaciones)</span></div><div class="card kpi"><b>${money(n?Math.round(tot/n):0)}</b><span>Ticket promedio = ventas ÷ operaciones</span></div>${cv?`<div class="card kpi"><b>${money(prof)}</b><span>Margen bruto estimado (ventas − costo − comisiones; sin impuestos ni sueldos). ${IS_CLIENT?'Con los costos que cargaste':'Costos de la demo: de ejemplo'}</span></div>`:''}<div class="card kpi"><b>${money(disc)}</b><span>Descuentos otorgados (cupones y membresías)</span></div></div>
  <div class="grid g4" style="margin-top:1rem"><div class="card kpi"><b>${newSoc}</b><span>Socios nuevos del Club · total ${soc.length}</span></div><div class="card kpi"><b>${stamps}</b><span>Sellos entregados · ${redeem} premios canjeados</span></div><div class="card kpi"><b>${cpUse}</b><span>Cupones usados</span></div><div class="card kpi"><b>${money(deuda)}</b><span>Deuda en cuenta corriente (total actual)</span></div></div>
- <div class="grid g2" style="margin-top:1rem"><div class="card"><h3>Evolución diaria</h3>${days.length?dbBars(byDay,money):'<p class="mut">Sin datos suficientes.</p>'}<p class="sm mut">Ventas netas por día (hasta 14 días). La tabla es el gráfico: mismos números.</p></div>
- <div class="card"><h3>Participación por ${RW()}</h3>${totR?dbBars(S.rubros.filter(r=>byRub[r.id]).map(r=>[r.name,byRub[r.id],numAR(byRub[r.id]/totR*100,1)+' %']),money,'#7b2d3b'):'<p class="mut">Sin datos suficientes: no hay ventas en este filtro.</p>'}<p class="sm mut">Participación = ventas ${ownerMode()?'de la categoría':'del rubro'} ÷ ventas totales del filtro × 100.</p></div></div>
+ ${dbChartsHTML(D,days,byRub,totR,byMet,tot,cv)}
  <div class="grid g2" style="margin-top:1rem"><div class="card"><h3>Productos más vendidos</h3>${top.length?`<div class="tw"><table><thead><tr><th>Producto</th><th class="r">Unid.</th><th class="r">Ventas</th></tr></thead><tbody>${top.map(([nm,v])=>`<tr><td>${esc(nm)}</td><td class="r">${numAR(v.q,3)}</td><td class="r">${money(v.t)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="mut">Sin datos suficientes.</p>'}</div>
- <div class="card"><h3>Por medio de pago</h3>${Object.keys(byMet).length?dbBars(Object.entries(byMet).map(([k,v])=>[MET[k]||k,v,numAR(v/tot*100,1)+' %']),money):'<p class="mut">Sin datos suficientes.</p>'}</div></div>
+ <div class="card"><h3>Por medio de pago</h3>${Object.keys(byMet).length?dbBarsAny(Object.entries(byMet).map(([k,v])=>[MET[k]||k,v,numAR(v/tot*100,1)+' %']),'Ventas por medio de pago'):'<p class="mut">Sin datos suficientes.</p>'}</div></div>
  <div class="grid g3" style="margin-top:1rem"><div class="card"><h3>Alertas</h3>${low.length?low.map(p=>`<div class="sm ${p.stock<0?'negs':''}">${p.stock<0?'Stock NEGATIVO':'Stock bajo'}: ${esc(p.name)}${p.sub?' ('+esc(p.sub)+')':''} · ${esc(stockTxt(p))}</div>`).join(''):'<p class="mut sm">Sin alertas de stock.</p>'}${pend.length?`<div class="sm neg">${pend.length} cobro(s) digital(es) pendiente(s).</div>`:''}${bday?`<div class="sm">🎂 ${bday} socio(s) de cumpleaños esta semana (con consentimiento de promociones).</div>`:''}</div>
  <div class="card"><h3>Menú digital</h3><p class="sm">Pedidos por WhatsApp solicitados desde el menú en el período: <b>${reqs}</b></p><p class="sm mut">Son solicitudes, no ventas: la venta se registra al cobrar en el mostrador.</p><a class="btn sm" href="#menu" target="_blank">Ver menú público</a></div>
  <div class="card"><h3>Acciones</h3><div class="row"><button class="btn" data-act="nav" data-id="vender">Vender</button><button class="btn" data-act="nav" data-id="caja">Caja ${sess?'(abierta)':'(abrir)'}</button><button class="btn" data-act="nav" data-id="fidel">Sellos</button></div></div></div>
  <p class="sm mut" style="margin-top:1rem">${IS_CLIENT?'Los costos y el stock son los que cargaste; las integraciones externas están pendientes de configuración.':'Demo: costos, stock y ventas de ejemplo; las integraciones externas están simuladas y rotuladas.'}</p>`;},
  ()=>{[['dbp','per'],['dbm','met'],['dbd','doc'],['dbr','rub']].forEach(([id,k])=>{const e=$('#'+id);if(e)e.addEventListener('change',()=>{dbF[k]=e.value;rerender();});});},'Resumen');
 A.dbReset=()=>{dbF.per='7';dbF.met='';dbF.doc='';dbF.rub='';rerender();};
+
+/* V26.29 · gráficos del Resumen */
+function dbBarsAny(items,label){return dbF.bars==='v'?chBarsV(items,{label}):chBarsH(items,{label});}
+function dbGoalAuto(){const t=dkey(now());const L=[];for(let i=1;i<=30;i++){const k=addDays(t,-i);const v=sumT(S.sales.filter(s=>s.status==='ok'&&dkey(s.ts)===k));if(v>0)L.push(v);}return L.length?Math.round(L.reduce((a,b)=>a+b,0)/L.length):0;}
+function dbChartsHTML(D,days,byRub,totR,byMet,tot,cv){const today=dkey(now());
+ const one=D.a===D.b;let pts,s2=null,xh='Día';
+ if(one){xh='Hora';const hs=[];for(let h=0;h<24;h++)hs.push(h);const ss=S.sales.filter(s=>s.status==='ok'&&dkey(s.ts)===D.a);const used=hs.filter(h=>ss.some(s=>new Date(s.ts).getHours()<=h));const h0=Math.min(...ss.map(s=>new Date(s.ts).getHours()),23),h1=Math.max(...ss.map(s=>new Date(s.ts).getHours()),0);
+  pts=ss.length?hs.filter(h=>h>=h0&&h<=h1).map(h=>[String(h).padStart(2,'0')+' h',sumT(ss.filter(s=>new Date(s.ts).getHours()===h))]):[];}
+ else{pts=days.map(k=>[dmy(k).slice(0,5),sumT(D.sales.filter(s=>dkey(s.ts)===k))]);
+  if(cv)s2=days.map(k=>D.rows.filter(r=>dkey(r.s.ts)===k).reduce((a,r)=>a+lineTotal(r.it)-lineCost(r.it),0));}
+ const goalSet=+((S.cfg&&S.cfg.dailyGoal)||0);const goal=goalSet||dbGoalAuto();const todayV=sumT(S.sales.filter(s=>s.status==='ok'&&dkey(s.ts)===today));
+ const rubItems=S.rubros.filter(r=>byRub[r.id]).sort((a,b)=>byRub[b.id]-byRub[a.id]).map(r=>[r.name,byRub[r.id],numAR(byRub[r.id]/totR*100,1)+' %',safeColor(r.color)]);
+ const tg=`<div class="row" role="group" aria-label="Orientación de las barras" style="gap:.3rem"><button class="btn sm ${dbF.bars==='h'?'on':''}" data-act="dbBarsDir" data-id="h" aria-pressed="${dbF.bars==='h'}">▤ Horizontales</button><button class="btn sm ${dbF.bars==='v'?'on':''}" data-act="dbBarsDir" data-id="v" aria-pressed="${dbF.bars==='v'}">▥ Verticales</button></div>`;
+ return `<div class="grid g2" style="margin-top:1rem;align-items:start"><div class="card"><div class="row"><h3 class="sp">Meta de ventas de hoy</h3>${can('config')?'<button class="btn sm" data-act="dbGoal">Cambiar meta</button>':''}</div>
+  ${goal?chGauge(todayV,goal,{label:'Ventas de hoy contra la meta',sub:goalSet?'meta fijada':'meta automática: promedio diario de los últimos 30 días con ventas'}):'<p class="mut">Sin datos suficientes para calcular una meta: fijala con «Cambiar meta».</p>'}
+  <p class="sm mut">Tacómetro: rojo hasta la mitad de la meta, amarillo hasta la meta, verde por encima. Siempre es el día de hoy (no depende del filtro).</p></div>
+  <div class="card"><h3>Tendencia de ventas${one?' por hora':' por día'}</h3>${chLine(pts,{label:'Ventas'+(one?' por hora':' por día'),xh,n1:'Ventas netas',s2,n2:'Margen bruto estimado'})}<p class="sm mut">${one?'Ventas netas de cada hora del día elegido.':'Ventas netas de cada día del período (hasta 31 días)'+(cv?'; en verde, el margen bruto estimado (no descuenta impuestos, sueldos ni gastos).':'.')}</p></div></div>
+ <div class="grid g2" style="margin-top:1rem;align-items:start"><div class="card"><div class="row"><h3 class="sp">Participación por ${RW()}</h3>${tg}</div>${totR?dbBarsAny(rubItems,'Participación por '+RW()):'<p class="mut">Sin datos suficientes: no hay ventas en este filtro.</p>'}<p class="sm mut">Participación = ventas ${ownerMode()?'de la categoría':'del rubro'} ÷ ventas totales del filtro × 100.</p></div>
+  <div class="card"><h3>Evolución diaria (tabla)</h3>${days.length?dbBars(days.slice(-14).map(k=>[dmy(k)+' '+DIAS[dowOfKey(k)].slice(0,3),sumT(S.sales.filter(s=>s.status==='ok'&&dkey(s.ts)===k))]),money):'<p class="mut">Sin datos suficientes.</p>'}<p class="sm mut">Ventas netas por día (hasta 14 días).</p></div></div>`;}
+A.dbBarsDir=el=>{dbF.bars=el.dataset.id==='v'?'v':'h';try{localStorage.setItem('rave.dbbars',dbF.bars);}catch(e){}rerender();};
+A.dbGoal=()=>{if(!can('config'))return toast('Sólo el administrador',1);const g=+((S.cfg&&S.cfg.dailyGoal)||0);
+ modal('Meta de ventas diaria',`<p class="sm">El tacómetro del Resumen compara las ventas de hoy con esta meta. Dejala vacía para usar el promedio diario de los últimos 30 días con ventas (${money(dbGoalAuto())}).</p><label for="dg-v">Meta diaria ($)</label><input id="dg-v" inputmode="decimal" placeholder="Automática" value="${g?esc(pesosStr(g)):''}" autocomplete="off">`,
+ {okText:'Guardar',onOk:w=>{const v=val('dg-v').trim();if(v===''){S.cfg.dailyGoal=0;}else{const c=cents(v);if(isNaN(c)||c<=0)return w._err('Escribí un importe mayor a cero o dejalo vacío.'),false;S.cfg.dailyGoal=c;}audit('META_DIARIA',S.cfg.dailyGoal?money(S.cfg.dailyGoal):'automática');save();rerender();}});};
+
+/* ===== V26.29 · Gráficos del Resumen: tarjetas KPI, barras (horizontales o verticales), líneas (tendencia) y tacómetro (gauge) =====
+   SVG propio (sin librerías: la CSP no las permite), colores por variables CSS (sirven en claro y oscuro),
+   cada gráfico con su tabla equivalente («Ver como tabla») para accesibilidad. */
+const chE=v=>esc(String(v));
+function chTable(head,rows){return `<details class="sm" style="margin-top:.4rem"><summary>Ver como tabla</summary><div class="tw"><table><thead><tr>${head.map(h=>`<th>${chE(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i?'r':''}">${chE(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`;}
+function chShort(c){const v=c/100;if(Math.abs(v)>=1e6)return '$'+numAR(v/1e6,1)+' M';if(Math.abs(v)>=1e3)return '$'+numAR(v/1e3,0)+' mil';return '$'+numAR(v,0);}
+/* líneas: pts=[[etiqueta,valor]], series opcional 2 */
+function chLine(pts,opt={}){if(!pts.length)return '<p class="mut">Sin datos suficientes.</p>';
+ const W=640,H=230,L=58,R=12,T=14,B=38,iw=W-L-R,ih=H-T-B;const ser=[{v:pts.map(p=>p[1]),c:'var(--gold)',n:opt.n1||'Ventas'}].concat(opt.s2?[{v:opt.s2,c:'var(--ok)',n:opt.n2||''}]:[]);
+ const mx=Math.max(1,...ser.flatMap(s=>s.v));const nice=(()=>{const p=Math.pow(10,Math.floor(Math.log10(mx)));return Math.ceil(mx/p)*p;})();
+ const X=i=>L+(pts.length===1?iw/2:i*iw/(pts.length-1)),Y=v=>T+ih-(v/nice)*ih;
+ const grid=[0,.25,.5,.75,1].map(f=>`<line x1="${L}" x2="${W-R}" y1="${Y(nice*f)}" y2="${Y(nice*f)}" stroke="var(--line)"/><text x="${L-6}" y="${Y(nice*f)+4}" text-anchor="end" font-size="11" fill="var(--mut)">${chE(chShort(nice*f))}</text>`).join('');
+ const step=Math.max(1,Math.ceil(pts.length/8));const xl=pts.map((p,i)=>i%step&&i!==pts.length-1?'':`<text x="${X(i)}" y="${H-B+16}" text-anchor="middle" font-size="11" fill="var(--mut)">${chE(p[0])}</text>`).join('');
+ const lines=ser.map(s=>`<polyline fill="none" stroke="${s.c}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="${s.v.map((v,i)=>X(i).toFixed(1)+','+Y(v).toFixed(1)).join(' ')}"/>`+s.v.map((v,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="3.5" fill="${s.c}"><title>${chE(pts[i][0])}: ${chE(money(v))}</title></circle>`).join('')).join('');
+ const area=`<polygon fill="var(--gold)" opacity=".12" points="${L},${Y(0)} ${ser[0].v.map((v,i)=>X(i).toFixed(1)+','+Y(v).toFixed(1)).join(' ')} ${X(pts.length-1)},${Y(0)}"/>`;
+ const leg=ser.length>1?`<div class="row sm" style="gap:1rem">${ser.map(s=>`<span><i style="display:inline-block;width:14px;height:3px;background:${s.c};vertical-align:middle"></i> ${chE(s.n)}</span>`).join('')}</div>`:'';
+ return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${chE(opt.label||'Gráfico de líneas')}" style="width:100%;height:auto;display:block">${grid}${area}${lines}${xl}</svg>${leg}${chTable([opt.xh||'Período'].concat(ser.map(s=>s.n)),pts.map((p,i)=>[p[0]].concat(ser.map(s=>money(s.v[i])))))}`;}
+/* barras verticales: items=[[etiqueta,valor,extra]] */
+function chBarsV(items,opt={}){if(!items.length)return '<p class="mut">Sin datos suficientes.</p>';
+ const W=640,H=250,L=58,R=10,T=14,B=58,iw=W-L-R,ih=H-T-B;const mx=Math.max(1,...items.map(i=>i[1]));const p=Math.pow(10,Math.floor(Math.log10(mx)));const nice=Math.ceil(mx/p)*p;
+ const bw=Math.min(56,iw/items.length*0.7),gap=iw/items.length;const Y=v=>T+ih-(v/nice)*ih;
+ const grid=[0,.5,1].map(f=>`<line x1="${L}" x2="${W-R}" y1="${Y(nice*f)}" y2="${Y(nice*f)}" stroke="var(--line)"/><text x="${L-6}" y="${Y(nice*f)+4}" text-anchor="end" font-size="11" fill="var(--mut)">${chE(chShort(nice*f))}</text>`).join('');
+ const bars=items.map(([l,v,x,col],i)=>{const cx=L+gap*i+gap/2;const lab=String(l).length>12?String(l).slice(0,11)+'…':l;return `<rect x="${(cx-bw/2).toFixed(1)}" y="${Y(v).toFixed(1)}" width="${bw.toFixed(1)}" height="${(T+ih-Y(v)).toFixed(1)}" rx="5" fill="${col||opt.color||'var(--gold)'}"><title>${chE(l)}: ${chE(money(v))}${x?' · '+chE(x):''}</title></rect><text x="${cx}" y="${(Y(v)-5).toFixed(1)}" text-anchor="middle" font-size="10.5" fill="var(--ink)">${chE(x||chShort(v))}</text><text x="${cx}" y="${H-B+16}" text-anchor="middle" font-size="11" fill="var(--mut)">${chE(lab)}</text>`;}).join('');
+ return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${chE(opt.label||'Gráfico de barras')}" style="width:100%;height:auto;display:block">${grid}${bars}</svg>${chTable(['Nombre','Ventas','%'],items.map(i=>[i[0],money(i[1]),i[2]||'']))}`;}
+/* barras horizontales (con su tabla: reutiliza dbBars) */
+function chBarsH(items,opt={}){if(!items.length)return '<p class="mut">Sin datos suficientes.</p>';const mx=Math.max(1,...items.map(i=>i[1]));
+ return `<div role="img" aria-label="${chE(opt.label||'Gráfico de barras horizontales')}">${items.map(([l,v,x,col])=>`<div style="display:grid;grid-template-columns:minmax(80px,30%) 1fr auto;gap:.5rem;align-items:center;margin:.35rem 0"><span class="sm" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${chE(l)}">${chE(l)}</span><div class="bar" style="height:16px"><i style="display:block;height:100%;width:${Math.max(1,Math.round(v/mx*100))}%;background:${col||opt.color||'var(--gold)'};border-radius:99px"></i></div><span class="sm" style="white-space:nowrap"><b>${chE(money(v))}</b>${x?' <span class="mut">'+chE(x)+'</span>':''}</span></div>`).join('')}</div>${chTable(['Nombre','Ventas','%'],items.map(i=>[i[0],money(i[1]),i[2]||'']))}`;}
+/* tacómetro: valor contra meta (aguja de 0 a 1,5 × meta) */
+function chGauge(val,goal,opt={}){const W=300,H=190,cx=150,cy=158,r=118;const max=Math.max(1,Math.round(goal*1.5));const f=Math.max(0,Math.min(1,val/max));
+ const pt=(fr,rr)=>{const a=Math.PI*(1-fr);return [cx+rr*Math.cos(a),cy-rr*Math.sin(a)];};
+ const arc=(a,b,c)=>{const [x1,y1]=pt(a,r),[x2,y2]=pt(b,r);return `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 0 1 ${x2.toFixed(1)},${y2.toFixed(1)}" stroke="${c}" stroke-width="22" fill="none"/>`;};
+ const g=goal/max;const [nx,ny]=pt(f,r-30);const [mx1,my1]=pt(g,r-14),[mx2,my2]=pt(g,r+14);const pc=goal?Math.round(val/goal*100):0;
+ return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${chE((opt.label||'Tacómetro')+': '+money(val)+' de '+money(goal)+' ('+pc+' %)')}" style="width:100%;max-width:340px;height:auto;display:block;margin:0 auto">
+  ${arc(0,g*0.5,'#c0392b')}${arc(g*0.5,g,'#e0a43a')}${arc(g,1,'#2e9e5b')}
+  <line x1="${mx1.toFixed(1)}" y1="${my1.toFixed(1)}" x2="${mx2.toFixed(1)}" y2="${my2.toFixed(1)}" stroke="var(--ink)" stroke-width="3"/>
+  <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="9" fill="var(--ink)"/>
+  <text x="${cx}" y="${cy-48}" text-anchor="middle" font-size="26" font-weight="700" fill="var(--ink)">${pc} %</text>
+  <text x="18" y="${H-6}" font-size="11" fill="var(--mut)">$ 0</text><text x="${W-18}" y="${H-6}" text-anchor="end" font-size="11" fill="var(--mut)">${chE(chShort(max))}</text></svg>
+  <p class="sm" style="text-align:center;margin:.2rem 0"><b>${chE(money(val))}</b> de ${chE(money(goal))}${opt.sub?' · '+opt.sub:''}</p>${chTable(['Dato','Valor'],[['Valor',money(val)],['Meta',money(goal)],['Cumplimiento',pc+' %']])}`;}
 
 /* ===== Periféricos (HAL / DeviceManager) y ticket del cliente =====
    Hardware real: NO probado en esta demo. Cada modelo debe probarse físicamente [VERIFICAR por marca y modelo].
