@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-27 04:58 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-28 02:10 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -5717,11 +5717,12 @@ async function cloudBoot(){
  CLOUD_HOOK=cloudHook;
  loadPubSnap().then(()=>{if(location.hash===''||location.hash==='#menu')pubReload();});
  const m=/access_token=([^&]+).*type=recovery/.exec(location.hash);if(m){history.replaceState(null,'',location.pathname+location.search+'#acceso');cl.recoveryToken=decodeURIComponent(m[1]);}
- route();}
+ const gq=googleReturnParams();
+ route();if(gq)googleReturn(gq);}
 function loginHtml(mode,msg,pre){const em=esc((pre&&pre.email)||(cl.meta&&cl.meta.email)||'');
  const tab=(k,t)=>`<button type="button" class="btn sm ${mode===k?'gold':''}" data-act="cloudMode" data-mode="${k}">${t}</button>`;
  let f='';
- if(mode==='ingresar')f=`<label for="cl-em">Correo</label><input id="cl-em" type="email" autocomplete="username" value="${em}"><label for="cl-pw">Contraseña</label><input id="cl-pw" type="password" autocomplete="current-password">`;
+ if(mode==='ingresar')f=`${googleBtnHtml()}<label for="cl-em">Correo</label><input id="cl-em" type="email" autocomplete="username" value="${em}"><label for="cl-pw">Contraseña</label><input id="cl-pw" type="password" autocomplete="current-password">`;
  else if(mode==='crear')f=`<p class="sm mut">Para dueños. Vincular Business te da un <b>código de invitación</b> (se pide una sola vez).</p><label for="cl-nm">Nombre del comercio</label><input id="cl-nm" maxlength="80"><label for="cl-em">Correo</label><input id="cl-em" type="email" autocomplete="username" value="${em}"><label for="cl-pw">Contraseña (mínimo 10 caracteres)</label><input id="cl-pw" type="password" autocomplete="new-password"><label for="cl-co">Código de invitación de Vincular Business</label><input id="cl-co" autocomplete="off">`;
  else if(mode==='unirme')f=`<p class="sm mut">Para el equipo. El administrador te da un <b>código de acceso</b> y tu correo queda invitado.</p><label for="cl-em">Correo (el mismo con el que te invitaron)</label><input id="cl-em" type="email" autocomplete="username" value="${em}"><label for="cl-pw">Elegí tu contraseña (mínimo 10 caracteres)</label><input id="cl-pw" type="password" autocomplete="new-password"><label for="cl-co">Código de acceso</label><input id="cl-co" autocomplete="off">`;
  else f=`<p class="sm mut">Dejanos cómo contactarte y te ayudamos a volver a entrar. También podés escribir por WhatsApp.</p><label for="cl-sc">WhatsApp o correo</label><input id="cl-sc" maxlength="120"><label for="cl-sd">Contanos qué pasó</label><textarea id="cl-sd" rows="3" maxlength="500"></textarea>`;
@@ -5791,8 +5792,9 @@ async function cloudSignInFlow(email,pass,opts){
   else if(kr[0].temporal){const code=opts.inviteCode||await askText('Código de acceso','Escribí el código de acceso que te dio el administrador',{});if(!code)throw new Error('Ingreso cancelado.');
    try{raw=await unwrapDek(kr[0],normCode(code));}catch(e){throw new Error('El código de acceso no es correcto.');}
    const nw=await wrapDek(raw,pass);await patch(nw);cl.dekWrap=nw;}
+  else if(opts.rawDek){raw=opts.rawDek;cl.dekWrap=kr[0];}
   else{try{raw=await unwrapDek(kr[0],pass);cl.dekWrap=kr[0];}
-   catch(e){ // la contraseña fue restablecida: la llave se reabre con el código de recuperación
+   catch(e){if(opts.google)throw new Error('La clave del sistema no es correcta.'); // la contraseña fue restablecida: la llave se reabre con el código de recuperación
     const code=await askText('Abrir tus datos','Tu contraseña fue restablecida. Escribí tu código de recuperación (el administrador lo guardó al crear el comercio).',{secret:true,ok:'Abrir'});
     if(!code)throw new Error('Ingreso cancelado.');
     const rr=await sel('llaves_recuperacion?select=kdf,wrap&comercio_id=eq.'+cid);
@@ -5801,6 +5803,7 @@ async function cloudSignInFlow(email,pass,opts){
     const nw=await wrapDek(raw,pass);await patch(nw);cl.dekWrap=nw;}}
  }
  cl.dekRaw=raw;cl.dek=await dekKey(raw);
+ if(opts.remember&&!offline)await googleRemember(cl.uid,raw);
  const m2=cl.meta&&cl.meta.comercio&&cl.meta.comercio.id===cl.comercio.id&&cl.meta.uid===cl.uid?cl.meta:null;
  cl.fp=m2?(m2.fp||{}):{};cl.base=m2?(m2.base||{}):{};cl.outStock=m2?(m2.outStock||[]):[];cl.cursor=m2?(m2.cursor||null):null;cl.rejects=m2?(m2.rejects||[]):[];cl.pubHash=m2?(m2.pubHash||''):'';
  let st=await cloudLoadState();
@@ -5995,7 +5998,7 @@ reg('nube','Nube','globe','config',()=>{
  <tr><td>Conexión</td><td><span class="tag ${cl.online&&!cl.lastErr?'ok':'warn'}">${cl.lastErr?esc(cl.lastErr):cl.online?'Conectado':'Sin conexión'}</span></td></tr>
  <tr><td>Última sincronización</td><td>${cl.lastOk?fmtDT(cl.lastOk):'—'}</td></tr>
  <tr><td>Por subir</td><td>${n} cambios</td></tr></tbody></table>
- <div class="row" style="margin-top:.6rem">${cl.ses?'':'<button class="btn" data-act="nbReauth">Reconectar</button>'}<button class="btn" data-act="nbPass">Cambiar mi contraseña</button><button class="btn" data-act="logout">Cerrar sesión</button></div>
+ <div class="row" style="margin-top:.6rem">${cl.ses?'':'<button class="btn" data-act="nbReauth">Reconectar</button>'}<button class="btn" data-act="nbPass">Cambiar mi contraseña</button><button class="btn" data-act="googleForget" title="Si entraste con Google y marcaste «Recordar en este equipo»">Olvidar este equipo (Google)</button><button class="btn" data-act="logout">Cerrar sesión</button></div><p class="sm mut">Ingreso con Google: se usa la cuenta de Gmail asociada a tu usuario. La primera vez en cada equipo se pide la clave del sistema para abrir los datos cifrados.</p>
  <p class="sm mut">Si no hay internet seguís vendiendo: todo se guarda cifrado en este equipo y se sube solo cuando vuelve la conexión.</p>
  ${cl.rejects.length?`<details><summary class="sm">Cambios que el servidor no aceptó (${cl.rejects.length})</summary>${cl.rejects.slice(-10).map(r=>`<p class="sm">${fmtDT(r.ts)} · ${esc(r.key)} — ${esc(r.m)}</p>`).join('')}</details>`:''}</div>
  <div class="card"><h3>Menú público</h3><p class="sm">Dirección que ve el público (código QR): <code>${esc(location.href.split('#')[0])}</code></p>
@@ -6025,6 +6028,50 @@ A.nbRecov=()=>confirmBox('Código de recuperación','Se genera uno nuevo y el an
 /* número de caja: en la nube cada equipo reserva el suyo */
 const _cfgSaveLocal=A.cfgSave;
 A.cfgSave=async el=>{if(CLOUD.on&&cl.ready){const c=parseNum(val('cf-c'));if(c>=1&&c!==S.tenant.caja){try{const ok=await rpc('registrar_caja',{p_comercio:cl.comercio.id,p_nro:c,p_disp:cl.dev,p_nombre:cl.nombre});if(!ok)return toast('Ese número de caja ya lo usa otro equipo',1);}catch(e){return toast(errTxt(e),1);}}}return _cfgSaveLocal(el);};
+
+/* ===== V26.30 · Ingresar con Google (Supabase Auth, OAuth 2.0 con PKCE) =====
+   Google sólo prueba QUIÉN sos (la cuenta de Gmail asociada al miembro). Los datos siguen cifrados con la llave del comercio:
+   la primera vez en cada equipo se pide la clave del sistema (la contraseña de siempre) para abrirla; con «Recordar en este equipo»
+   la llave queda guardada envuelta con una clave del navegador NO exportable (sólo sirve en este equipo y para esta cuenta).
+   Requiere: proveedor Google activado en Supabase (Authentication → Providers) y esta dirección en las URL de redirección. */
+const b64u=u=>btoa(String.fromCharCode(...u)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+/* el botón aparece sólo si el proveedor Google está activado en Supabase (GET /auth/v1/settings, público) */
+let googleOn=null;
+async function googleCheck(){if(googleOn!==null||!CLOUD.on)return;googleOn=false;try{const r=await fetch(CLOUD.url+'/auth/v1/settings',{headers:{apikey:CLOUD.key}});const j=await r.json();googleOn=!!(j&&j.external&&j.external.google);}catch(e){googleOn=null;}
+ const lb=$('#login label[for=cl-em]');if(googleOn&&loginMode==='ingresar'&&lb&&!$('#login [data-act=googleGo]'))lb.insertAdjacentHTML('beforebegin',googleBtnHtml());}
+function googleBtnHtml(){if(!googleOn){googleCheck();return '';}return `<button type="button" class="btn" data-act="googleGo" style="width:100%;gap:.6rem;margin:.3rem 0 .2rem"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg> Ingresar con Google</button><p class="sm mut" style="text-align:center;margin:.2rem 0 .4rem">Con la cuenta de Gmail asociada a tu usuario · o con correo y contraseña:</p>`;}
+function googleRedirectUrl(){return location.origin+location.pathname;}
+A.googleGo=async()=>{if(!CLOUD.on)return;lerr('');
+ try{const v=b64u(rnd(48));const ch=b64u(new Uint8Array(await crypto.subtle.digest('SHA-256',te.encode(v))));const st=b64u(rnd(16));
+  const rec=JSON.stringify({v,st,ts:Date.now()});try{sessionStorage.setItem('rave.pkce',rec);}catch(e){}try{localStorage.setItem('rave.pkce',rec);}catch(e){}
+  const q=new URLSearchParams({provider:'google',redirect_to:googleRedirectUrl()+'?gs='+st,code_challenge:ch,code_challenge_method:'s256'});
+  location.assign(CLOUD.url+'/auth/v1/authorize?'+q.toString());}catch(e){lerr('No se pudo iniciar el ingreso con Google.');}};
+function googleReturnParams(){try{const u=new URLSearchParams(location.search);const h=new URLSearchParams(String(location.hash||'').replace(/^#/,''));
+  const code=u.get('code'),err=u.get('error_description')||u.get('error')||h.get('error_description');if(!code&&!err)return null;
+  history.replaceState(null,'',location.pathname+'#acceso');return{code,err,gs:u.get('gs')||''};}catch(e){return null;}}
+async function googleReturn(g){let rec=null;try{rec=JSON.parse(sessionStorage.getItem('rave.pkce')||localStorage.getItem('rave.pkce')||'null');}catch(e){}
+ try{sessionStorage.removeItem('rave.pkce');localStorage.removeItem('rave.pkce');}catch(e){}
+ const fail=m=>{cl.ses=null;loginMode='ingresar';cloudLogin(m);};
+ if(g.err)return fail('Google no completó el ingreso: '+String(g.err).slice(0,140));
+ if(!rec||!rec.v||Date.now()-rec.ts>15*60000||(rec.st&&g.gs!==rec.st))return fail('El ingreso con Google venció o no empezó en este equipo. Probá de nuevo.');
+ cloudLogin('Ingresando con Google…');
+ try{const j=await hreq('/auth/v1/token?grant_type=pkce',{method:'POST',auth:false,body:{auth_code:g.code,code_verifier:rec.v}});setSes(j);
+  const email=String((j.user&&j.user.email)||'').toLowerCase();if(!email)return fail('Google no devolvió el correo de la cuenta.');
+  let raw=null;try{raw=await googleRecall(cl.uid);}catch(e){raw=null;}
+  let pass='',remember=false;
+  if(!raw){const r=await googleAskKey(email);if(!r)return fail('Ingreso cancelado.');pass=r.pass;remember=r.remember;}
+  await cloudSignInFlow(email,pass,{already:true,rawDek:raw,remember,google:true});audit('LOGIN_GOOGLE','ingreso con Google');
+ }catch(e){const m=errTxt(e);fail(/pertenece a ning/.test(m)?'La cuenta de Google que elegiste no está asociada a este comercio. Usá el mismo Gmail con el que te invitaron (o ingresá con correo y contraseña).':(/incorrect|no es correcto|operation-specific|OperationError/i.test(m)?'La clave del sistema no es correcta.':m));}}
+function googleAskKey(email){return new Promise(res=>{const w=modal('Abrir los datos del comercio',`<p class="sm">Entraste con Google como <b>${esc(email)}</b>. Los datos del comercio están <b>cifrados</b>: la primera vez en este equipo escribí tu <b>clave del sistema</b> (la misma contraseña de «Acceso del equipo»).</p>
+  <label for="gk-p">Clave del sistema</label><input id="gk-p" type="password" autocomplete="current-password">
+  <label class="chk"><input type="checkbox" id="gk-r" checked> Recordar en este equipo (la próxima vez alcanza con Google). No lo marques en una computadora compartida.</label>`,
+  {okText:'Abrir',onOk:w2=>{const p=val('gk-p');if(!p){w2._err('Escribí la clave.');return false;}res({pass:p,remember:$('#gk-r',w2).checked});}});
+ w.addEventListener('click',e=>{if(e.target.closest('[data-m="x"]'))res(null);});});}
+async function googleRemember(uid,raw){try{const key=await crypto.subtle.generateKey({name:'AES-GCM',length:256},false,['encrypt','decrypt']);const iv=rnd(12);
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:te.encode('gdev|'+uid)},key,raw));await kvPut('gdev:'+uid,{key,iv:b64(iv),ct:b64(ct),ts:Date.now()});}catch(e){}}
+async function googleRecall(uid){const r=await kvGet('gdev:'+uid);if(!r||!r.key)return null;
+ return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(r.iv),additionalData:te.encode('gdev|'+uid)},r.key,unb64(r.ct)));}
+A.googleForget=async()=>{if(!cl.uid)return;await kvDel('gdev:'+cl.uid);audit('GOOGLE_OLVIDAR_EQUIPO','');toast('Listo: la próxima vez con Google se va a pedir la clave del sistema.');};
 
 /* =====================================================================
    ARCA · facturación electrónica — lado del navegador (Sistema RAVE)
