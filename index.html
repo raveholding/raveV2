@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-28 02:10 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-28 02:37 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -5848,8 +5848,8 @@ A.logout=async()=>{if(!CLOUD.on){audit('LOGOUT','');user=null;location.hash='#me
  const cm=cl.comercio;await cloudMetaSave();cl.meta=await kvGet('cloud');
  S=DEF();S.users=[];user=null;loginMode='ingresar';location.hash='#menu';route();};
 A.cloudForgot=async()=>{const email=(val('cl-em')||'').trim().toLowerCase();if(!mailOk(email))return lerr('Escribí tu correo arriba y volvé a tocar "Olvidé mi contraseña".');
- try{await hreq('/auth/v1/recover',{method:'POST',auth:false,body:{email}});}catch(e){if(e.net)return lerr(errTxt(e));}
- lerr('Si el correo está registrado, te mandamos un enlace para elegir otra contraseña. Después vas a necesitar tu código de recuperación. Si no te llega, usá "Necesito ayuda".');};
+ try{await hreq('/auth/v1/recover?redirect_to='+encodeURIComponent(googleRedirectUrl()),{method:'POST',auth:false,body:{email}});}catch(e){if(e.net)return lerr(errTxt(e));}
+ lerr('Si el correo está registrado, te mandamos un enlace para elegir otra contraseña (abrilo una sola vez, en este mismo equipo). '+(googleOn?'Más fácil: tocá «Ingresar con Google» con tu Gmail.':'Si no te llega, usá "Necesito ayuda".'));};
 A.cloudNewPass=async()=>{const p=val('cl-pw');if(p.length<10)return lerr('La contraseña necesita al menos 10 caracteres.');
  try{cl.ses={access:cl.recoveryToken,refresh:'',exp:Date.now()+3000000};await hreq('/auth/v1/user',{method:'PUT',body:{password:p}});cl.ses=null;cl.recoveryToken=null;loginMode='ingresar';cloudLogin('Contraseña cambiada. Ingresá con la nueva.');}catch(e){lerr(errTxt(e));}};
 /* ---------- llave pública del Club (alta anónima desde el menú, cifrada de punta a punta) ---------- */
@@ -5982,7 +5982,7 @@ async function teamInit(){if(!CLOUD.on||cl.rol!=='admin')return;const box=docume
    box.querySelectorAll('.nb-role').forEach(s=>s.addEventListener('change',async()=>{try{await rpc('cambiar_rol',{p_comercio:cl.comercio.id,p_usuario:s.dataset.u,p_rol:s.value});audit('EQUIPO_ROL',s.value);toast('Rol cambiado');}catch(e){toast(errTxt(e),1);rerender();}}));
   }catch(e){box.textContent='No se pudo cargar el equipo: '+errTxt(e);}}
 if(CLOUD.on){INV_HOOK.online=()=>!!(cl.ready&&cl.online);INV_HOOK.preview=async ids=>{const r=await rpc('inventario_vista_previa_borrado',{p_comercio:cl.comercio.id,p_ids:ids});return Array.isArray(r)?r:[];};}
-if(CLOUD.on){UI_HOOK.usersCard=()=>cl.rol==='admin'?teamCardHtml():'<div class="card" style="margin-top:1rem"><h3>Equipo</h3><p class="sm mut">Sólo el administrador puede invitar o quitar personas.</p></div>';UI_HOOK.usersAfter=teamInit;}
+if(CLOUD.on){UI_HOOK.usersCard=()=>cl.rol==='admin'?teamCardHtml()+custodiaCardHtml():'<div class="card" style="margin-top:1rem"><h3>Equipo</h3><p class="sm mut">Sólo el administrador puede invitar o quitar personas.</p></div>';UI_HOOK.usersAfter=()=>{teamInit();custodiaPaint();};}
 /* ---------- pantalla "Nube" ---------- */
 const ROLES_LBL={admin:'Administrador',supervisor:'Supervisor',mostrador:'Mostrador',operador:'Operador'};
 reg('nube','Nube','globe','config',()=>{
@@ -6006,8 +6006,8 @@ reg('nube','Nube','globe','config',()=>{
  ${adm?'<div class="row"><button class="btn" data-act="nbPublish">Publicar ahora</button></div>':'<p class="sm mut">Sólo el administrador publica el menú.</p>'}
  <div class="row" style="margin-top:.4rem"><button class="btn" data-act="nbAltas">Traer altas del Club</button></div>
  <p class="sm mut">Las altas del Club llegan cifradas: sólo este comercio las puede abrir.</p></div></div>
- ${adm?teamCardHtml():''}`;},
- teamInit,'Sistema');
+ ${adm?teamCardHtml()+custodiaCardHtml():''}`;},
+ ()=>{teamInit();custodiaPaint();},'Sistema');
 A.nbSync=async()=>{await cloudSync(true);await importAltas().catch(()=>{});toast(cl.lastErr?cl.lastErr:'Sincronizado',!!cl.lastErr);rerender();};
 A.nbPublish=async()=>{try{const r=await cloudPublishMenu(true);audit('MENU_NUBE','publicado v'+(r.version||'?'));toast('Menú publicado v'+r.version);rerender();}catch(e){toast(errTxt(e),1);}};
 A.nbAltas=async()=>{try{const n=await importAltas();toast(n?n+' altas nuevas del Club':'No hay altas nuevas');rerender();}catch(e){toast(errTxt(e),1);}};
@@ -6047,18 +6047,20 @@ A.googleGo=async()=>{if(!CLOUD.on)return;lerr('');
   const q=new URLSearchParams({provider:'google',redirect_to:googleRedirectUrl()+'?gs='+st,code_challenge:ch,code_challenge_method:'s256'});
   location.assign(CLOUD.url+'/auth/v1/authorize?'+q.toString());}catch(e){lerr('No se pudo iniciar el ingreso con Google.');}};
 function googleReturnParams(){try{const u=new URLSearchParams(location.search);const h=new URLSearchParams(String(location.hash||'').replace(/^#/,''));
-  const code=u.get('code'),err=u.get('error_description')||u.get('error')||h.get('error_description');if(!code&&!err)return null;
-  history.replaceState(null,'',location.pathname+'#acceso');return{code,err,gs:u.get('gs')||''};}catch(e){return null;}}
+  const code=u.get('code'),err=u.get('error_description')||u.get('error')||h.get('error_description'),ec=h.get('error_code')||u.get('error_code')||'';if(!code&&!err)return null;
+  history.replaceState(null,'',location.pathname+'#acceso');return{code,err,ec,mail:!!(h.get('error_code')||h.get('error')),gs:u.get('gs')||''};}catch(e){return null;}}
 async function googleReturn(g){let rec=null;try{rec=JSON.parse(sessionStorage.getItem('rave.pkce')||localStorage.getItem('rave.pkce')||'null');}catch(e){}
  try{sessionStorage.removeItem('rave.pkce');localStorage.removeItem('rave.pkce');}catch(e){}
  const fail=m=>{cl.ses=null;loginMode='ingresar';cloudLogin(m);};
- if(g.err)return fail('Google no completó el ingreso: '+String(g.err).slice(0,140));
+ if(g.err){if(g.ec==='otp_expired'||/expired|invalid/i.test(g.err))return fail('El enlace del correo venció o ya se usó (sirve una sola vez y por poco tiempo). '+(googleOn?'Lo más fácil: «Ingresar con Google» con tu Gmail.':'Pedí uno nuevo con «Olvidé mi contraseña».'));
+  return fail((g.mail?'No se pudo completar: ':'Google no completó el ingreso: ')+String(g.err).slice(0,140));}
  if(!rec||!rec.v||Date.now()-rec.ts>15*60000||(rec.st&&g.gs!==rec.st))return fail('El ingreso con Google venció o no empezó en este equipo. Probá de nuevo.');
  cloudLogin('Ingresando con Google…');
  try{const j=await hreq('/auth/v1/token?grant_type=pkce',{method:'POST',auth:false,body:{auth_code:g.code,code_verifier:rec.v}});setSes(j);
   const email=String((j.user&&j.user.email)||'').toLowerCase();if(!email)return fail('Google no devolvió el correo de la cuenta.');
   let raw=null;try{raw=await googleRecall(cl.uid);}catch(e){raw=null;}
   let pass='',remember=false;
+  if(!raw){const k=await custodiaAbrir(j.user);if(k){raw=k;remember=true;}}
   if(!raw){const r=await googleAskKey(email);if(!r)return fail('Ingreso cancelado.');pass=r.pass;remember=r.remember;}
   await cloudSignInFlow(email,pass,{already:true,rawDek:raw,remember,google:true});audit('LOGIN_GOOGLE','ingreso con Google');
  }catch(e){const m=errTxt(e);fail(/pertenece a ning/.test(m)?'La cuenta de Google que elegiste no está asociada a este comercio. Usá el mismo Gmail con el que te invitaron (o ingresá con correo y contraseña).':(/incorrect|no es correcto|operation-specific|OperationError/i.test(m)?'La clave del sistema no es correcta.':m));}}
@@ -6072,6 +6074,22 @@ async function googleRemember(uid,raw){try{const key=await crypto.subtle.generat
 async function googleRecall(uid){const r=await kvGet('gdev:'+uid);if(!r||!r.key)return null;
  return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(r.iv),additionalData:te.encode('gdev|'+uid)},r.key,unb64(r.ct)));}
 A.googleForget=async()=>{if(!cl.uid)return;await kvDel('gdev:'+cl.uid);audit('GOOGLE_OLVIDAR_EQUIPO','');toast('Listo: la próxima vez con Google se va a pedir la clave del sistema.');};
+
+/* ===== V26.31 · Ingreso SÓLO con Google: custodia de la llave en el servidor (opcional, lo activa el administrador) =====
+   Con la custodia activa, quien entra con su Gmail recibe la llave del comercio desde la función «llave» (sin clave del sistema).
+   Compromiso declarado: la llave queda guardada en la nube envuelta con un secreto del servidor; una copia de la base sola no la abre,
+   pero quien controle el proyecto de Supabase podría. Sin custodia, el cifrado sigue siendo sólo con la clave de cada persona. */
+const llaveFn=(accion,extra)=>hreq('/functions/v1/llave',{method:'POST',fn:true,body:Object.assign({accion,comercio:cl.comercio?cl.comercio.id:''},extra||{})});
+async function custodiaAbrir(u){try{const mem=await cloudFetchMember();if(!mem)return null;const cid=mem.comercios.id;
+  const j=await hreq('/functions/v1/llave',{method:'POST',fn:true,body:{accion:'abrir',comercio:cid}});if(j&&j.dek){const raw=unb64(j.dek);return raw.length===32?raw:null;}}catch(e){}return null;}
+function custodiaCardHtml(){if(cl.rol!=='admin')return '';return `<div class="card" id="cust-card" style="margin-top:1rem"><h3>Ingreso sólo con Google</h3>
+ <p class="sm">Si lo activás, cada persona del equipo entra con <b>su cuenta de Gmail</b> en cualquier equipo, <b>sin clave del sistema</b>, y recuperar el acceso es tan fácil como recuperar su cuenta de Google.</p>
+ <p class="sm mut">Cómo funciona: la llave que cifra los datos de clientes y empleados se guarda en la nube envuelta con un secreto del servidor. Una copia robada de la base no alcanza para abrirla; quien controle el proyecto de Supabase sí podría. Si no lo activás, el cifrado sigue siendo sólo con la clave de cada persona (más privado, pero si se olvida la clave hace falta el código de recuperación).</p>
+ <div id="cust-st" class="sm">Consultando…</div><div class="row" style="margin-top:.5rem"><button class="btn gold" data-act="custOn">Activar ingreso sólo con Google</button><button class="btn" data-act="custOff">Desactivar</button></div></div>`;}
+async function custodiaPaint(){const el=$('#cust-st');if(!el)return;try{const j=await llaveFn('estado');el.innerHTML=j.activa?`<span class="tag ok">Activado</span> desde ${esc(fmtDT(Date.parse(j.desde)))}`:(j.servidor?'<span class="tag">Desactivado</span>':'<span class="tag warn">Falta configurar la función «llave» en el servidor</span>');}
+ catch(e){el.innerHTML='<span class="tag warn">No disponible: falta desplegar la función «llave» en la nube</span>';}}
+A.custOn=()=>confirmBox('Activar ingreso sólo con Google','Cada persona del equipo va a poder entrar con su Gmail sin la clave del sistema. La llave de los datos queda guardada en la nube envuelta con un secreto del servidor. ¿Activar?',async()=>{try{await llaveFn('guardar',{dek:b64(cl.dekRaw)});audit('CUSTODIA_ACTIVADA','ingreso sólo con Google');toast('Ingreso sólo con Google activado');custodiaPaint();}catch(e){toast(errTxt(e),1);}});
+A.custOff=()=>confirmBox('Desactivar ingreso sólo con Google','Se borra la copia de la llave de la nube. Para entrar con Google en un equipo nuevo se va a pedir la clave del sistema. ¿Desactivar?',async()=>{try{await llaveFn('borrar');audit('CUSTODIA_DESACTIVADA','');toast('Desactivado');custodiaPaint();}catch(e){toast(errTxt(e),1);}});
 
 /* =====================================================================
    ARCA · facturación electrónica — lado del navegador (Sistema RAVE)
