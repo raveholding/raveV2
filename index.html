@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-29 13:49 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-29 13:53 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -3898,7 +3898,7 @@ function priceResolve(p,qty,ctx){
  const R={price:p.price,base:p.price,alt:p.price,rule:'L1',list:'L1',why:'precio de venta',missing:'',below:false,warn:''};
  if(!wsOn())return R;
  const fin=()=>{R.below=!!(p.floor>0&&R.price<p.floor);return R;};
- if(chan==='mayorista'&&!wsOnly()&&!(cust&&arcaCuitOk(cust.taxid||''))){R.warn='cuit';R.why='Consumidor final (sin cliente con CUIT): precio por unidad';return fin();}
+ if(chan==='mayorista'&&!wsOnly()&&!(cust&&arcaCuitOk(cust.taxid||''))){R.warn='cuit';R.why='Mayorista sin cliente con CUIT válido: precio minorista';return fin();}
  const ag=cust?wsAgreement(cust.id,p):null;
  if(ag){R.price=ag.price>0?ag.price:Math.round(p.price*(1-ag.pct/100));R.rule='ACU';R.list='ACU';R.agr=ag.id;R.why='Acuerdo especial'+(ag.pid?'':' ('+RW()+')')+' · '+(ag.price>0?money(ag.price):ag.pct+' % off');return fin();}
  if(chan!=='mayorista')return fin();
@@ -3924,11 +3924,10 @@ function wsRecalc(){if(!wsOn()||typeof pos==='undefined')return;
   l.price=r.price;l.list=r.price;l.rule=r.rule;l.lst=r.list;l.base=r.base;l.why=r.why;l.miss=r.missing;});}
 /* validaciones y precios finales al cobrar (el mismo cálculo que la pantalla) */
 function wsGate(lines,cust,opts){
- const conf=wsConf();let chan=opts.ws.chan==='mayorista'?'mayorista':'minorista';
- /* V26.34 · sin cliente identificado con CUIT NO se bloquea la venta: es consumidor final y se cobra al precio por unidad
-    (salvo «Sólo mayorista», donde los precios por presentación rigen para todos) */
- if(chan==='mayorista'&&!conf.only&&!(cust&&arcaCuitOk(cust.taxid||'')))chan='minorista';
+ const chan=opts.ws.chan==='mayorista'?'mayorista':'minorista';const conf=wsConf();
  if(chan==='mayorista'){
+  if(!conf.only&&!cust)return{err:'El canal mayorista exige un cliente identificado.'};
+  if(!conf.only&&!arcaCuitOk(cust.taxid||''))return{err:'El cliente '+custFull(cust)+' no tiene un CUIT válido cargado: el canal mayorista lo exige.'};
   if(!conf.allowClub){if(opts.coupon)return{err:'Los cupones del Club no se aplican a ventas mayoristas.'};if(opts.stampCode)return{err:'Los sellos del Club no se otorgan en ventas mayoristas.'};}}
   const agg={};lines.forEach(l=>agg[l.pid]=(agg[l.pid]||0)+l.qty);
  for(const l of lines){const p=prod(l.pid);if(!p)continue;
@@ -3985,7 +3984,7 @@ function wsCartBar(){if(!wsOn())return'';
  <p class="sm mut" style="margin:.3rem 0 0">Precio por unidad; al completar una presentación (Display, Fardo, Pallet…) se cobra su precio mayorista.${c?' · crédito: debe '+money(debtOf(c.id))+' de '+money(c.limit||0)+(c.term>0?' · plazo '+c.term+' días':''):' Para cuenta corriente elegí el cliente.'}</p></div>`;
  const miss=ch==='mayorista'&&!(c&&arcaCuitOk(c.taxid||''));
  return`<div class="card" style="margin:.5rem 0" id="wsbar"><div class="row" style="flex-wrap:wrap"><span class="tag ${ch==='mayorista'?'ok':''}">Canal: ${ch==='mayorista'?'Mayorista':'Minorista'}</span><b class="sp">${c?esc(custFull(c)):'Consumidor final'}</b><button class="btn sm" data-act="wsPick">${c?'Cambiar cliente':'Elegir cliente'}</button>${c?'<button class="btn sm" data-act="wsPickClear">Quitar</button>':''}<button class="btn sm" data-act="wsChan">Cambiar canal</button></div>
- ${miss?'<div class="warnbox sm" role="status">Sin cliente con CUIT es una venta a <b>consumidor final</b>: se cobra al precio por unidad. Para los precios mayoristas elegí un cliente con CUIT.</div>':`<p class="sm mut" style="margin:.3rem 0 0">${ch==='mayorista'?'Precio por volumen: cada producto toma el precio de la presentación (Display, Fardo, Pallet…) que alcance su cantidad.':'Precio de venta al público.'}${c&&ch==='mayorista'?' · crédito: debe '+money(debtOf(c.id))+' de '+money(c.limit||0)+(c.term>0?' · plazo '+c.term+' días':''):''}</p>`}</div>`;}
+ ${miss?'<div class="warnbox sm" role="status">El canal mayorista exige un cliente identificado con CUIT válido. Mientras tanto se cobra a precio minorista.</div>':`<p class="sm mut" style="margin:.3rem 0 0">${ch==='mayorista'?'Precio por volumen: cada producto toma el precio de la presentación (Display, Fardo, Pallet…) que alcance su cantidad.':'Precio de venta al público.'}${c&&ch==='mayorista'?' · crédito: debe '+money(debtOf(c.id))+' de '+money(c.limit||0)+(c.term>0?' · plazo '+c.term+' días':''):''}</p>`}</div>`;}
 function wsLineInfo(l,i){if(!wsOn())return'';const p=prod(l.pid);let h='';
  if(l.why)h+=`<div class="sm ${l.rule==='MAN'?'mut':''}" style="margin-top:.3rem"><b>${esc(l.rule==='L1'||!l.rule?(wsOnly()?'Por unidad':'Minorista'):l.rule==='MAN'?'A mano':l.rule==='ACU'?'Acuerdo':'Mayorista')}</b> · ${esc(l.why)}</div>`;
  if(l.miss)h+=`<div class="sm mut">${esc(l.miss)}</div>`;
