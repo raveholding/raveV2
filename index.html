@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-29 13:53 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-10-29 14:26 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -950,7 +950,11 @@ function arqueoCalc(sess,inp){
   {const tots=s.items.map(lineTotal);const T=tots.reduce((a,b)=>a+b,0);
    if(T>0)salePays(s).forEach(pp=>{const k=pp.m==='efectivo'?'cash':(pp.m==='fiado'?'fia':'dig');let acc=0;s.items.forEach((it,i)=>{const sh=i===tots.length-1?pp.a-acc:Math.round(pp.a*tots[i]/T);acc+=sh;if(R[it.rubro])R[it.rubro][k]+=sh;});});}});
  const movs=S.movs.filter(m=>m.sessId===sess.id);let ing=0,egr=0,gAuto=0;
+ /* V26.35: el cobro en efectivo de una cuenta corriente entra a la caja física del rubro de lo que se fió (no queda «sin rubro») */
+ const ccMemo={};const ccAllocOf=m=>{if(m.type!=='ingreso'||typeof ccPayAlloc!=='function')return null;const p=(S.fiadoPays||[]).find(x=>x.mov===m.id);if(!p)return null;
+  if(!ccMemo[p.cust])ccMemo[p.cust]=ccPayAlloc(p.cust);return ccMemo[p.cust][p.id]||null;};
  movs.forEach(m=>{const r0=rub(m.rubro);
+  {const al=r0&&r0.kind==='cobr'?ccAllocOf(m):null;if(al){ing+=m.amount;Object.keys(al).forEach(rid=>{if(R[rid]){R[rid].ing+=al[rid];R[rid].cing+=al[rid];R[rid].ccob=(R[rid].ccob||0)+al[rid];}});return;}}
   /* V26.16 (Almacén RAVE, pedido del dueño): un ingreso/egreso al rubro SÓLO entra o sale de la caja física de ese rubro (y del cajón).
      NO cambia lo vendido, la venta del mostrador ni la ganancia. */
   if(rubAdj(m,r0)){if(R[r0.id]){const sg=m.type==='ingreso'?m.amount:-m.amount;R[r0.id].sold+=sg;R[r0.id].adj+=sg;if(m.type==='ingreso')R[r0.id].ing+=m.amount;else R[r0.id].egr+=m.amount;}return;}
@@ -965,9 +969,9 @@ function arqueoCalc(sess,inp){
  const cubTot=Math.max(0,Math.min(preTot,taxTot)),falS=split(taxTot-cubTot,n);
  const reparte=rp.map((r,i)=>{const q=R[r.id];const base=q.profit-q.fees;const pre=base-sS[i]-sM[i]-sG[i];const tax=tS[i],taxOwn=taxIn[i];
   const cubierto=tax-falS[i];const fis=q.cash+q.cing-q.cegr-gaS[i]-(inp.payFromCash?(sS[i]+gmS[i]):0);
-  return{id:r.id,name:r.name,owner:r.owner,sold:q.sold,profit:q.profit-q.fees,mov:q.mov,sueldo:sS[i],merienda:0,gastos:sG[i],base,pre,tax,taxOwn,cubierto,falta:falS[i],net:pre-tax,cash:q.cash,dig:q.dig,fia:q.fia,ing:q.ing,egr:q.egr,adj:q.adj,fis};});
+  return{id:r.id,name:r.name,owner:r.owner,sold:q.sold,profit:q.profit-q.fees,mov:q.mov,sueldo:sS[i],merienda:0,gastos:sG[i],base,pre,tax,taxOwn,cubierto,falta:falS[i],net:pre-tax,cash:q.cash,dig:q.dig,fia:q.fia,ccob:q.ccob||0,ing:q.ing,egr:q.egr,adj:q.adj,fis};});
  const pool=n>0;const netSum=reparte.reduce((a,r)=>a+r.net,0);const fin=split(netSum,n);reparte.forEach((r,i)=>{r.final=pool?fin[i]:r.net;});
- const otros=S.rubros.filter(r=>r.kind==='rubro'&&!r.reparte).map(r=>{const q=R[r.id];return{id:r.id,name:r.name,owner:r.owner,sold:q.sold,profit:q.profit-q.fees,mov:q.mov,net:q.profit-q.fees+q.mov,cash:q.cash,dig:q.dig,fia:q.fia,ing:q.ing,egr:q.egr,adj:q.adj,fis:q.cash+q.cing-q.cegr};});
+ const otros=S.rubros.filter(r=>r.kind==='rubro'&&!r.reparte).map(r=>{const q=R[r.id];return{id:r.id,name:r.name,owner:r.owner,sold:q.sold,profit:q.profit-q.fees,mov:q.mov,net:q.profit-q.fees+q.mov,cash:q.cash,dig:q.dig,fia:q.fia,ccob:q.ccob||0,ing:q.ing,egr:q.egr,adj:q.adj,fis:q.cash+q.cing-q.cegr};});
  const cashSales=(byMethod.efectivo||{}).gross||0;const tr=(typeof transfersFor==='function')?transfersFor(sess):{tin:0,tout:0,list:[]};
  const paid=inp.payFromCash?(sueldo+inp.gastosManual):0;
  const expectedCash=sess.opening+cashSales+ing-egr-paid+tr.tin-tr.tout;
@@ -2544,10 +2548,10 @@ function expPending(){if(expPendingHash&&user){const h=expPendingHash;expPending
 function rcRows(a){return (a.reparte||[]).concat(a.otros||[]);}
 function rcTableHTML(a){const R=rcRows(a);if(!R.length)return'<p class="mut">No hay rubros cargados.</p>';
  const mv=r=>(r.ing||r.egr)?`${r.ing?'<span class="ok">+ '+money(r.ing)+'</span>':''}${r.ing&&r.egr?'<br>':''}${r.egr?'<span class="neg">- '+money(r.egr)+'</span>':''}`:'—';
- const tr=r=>`<tr><td><b>${esc(r.owner||r.name)}</b><div class="sm mut">${esc(r.name)}</div></td><td class="r"><b class="${(r.fis||0)<0?'neg':''}">${money(r.fis||0)}</b><div class="sm mut">cobró en efectivo ${money(r.cash||0)}${r.dig?'<br>digital '+money(r.dig):''}${r.fia?'<br>cta. cte. '+money(r.fia):''}</div></td><td class="r">${money(r.sold)}</td><td class="r">${money(r.profit)}</td><td class="r">${mv(r)}</td></tr>`;
+ const tr=r=>`<tr><td><b>${esc(r.owner||r.name)}</b><div class="sm mut">${esc(r.name)}</div></td><td class="r"><b class="${(r.fis||0)<0?'neg':''}">${money(r.fis||0)}</b><div class="sm mut">cobró en efectivo ${money(r.cash||0)}${r.dig?'<br>digital '+money(r.dig):''}${r.fia?'<br>cta. cte. '+money(r.fia):''}${r.ccob?'<br>cobró deuda de cta. cte. '+money(r.ccob):''}</div></td><td class="r">${money(r.sold)}</td><td class="r">${money(r.profit)}</td><td class="r">${mv(r)}</td></tr>`;
  const tot=R.reduce((o,r)=>{o.sold+=r.sold;o.profit+=r.profit;o.fis+=r.fis||0;return o;},{sold:0,profit:0,fis:0});
  return `<div class="tw"><table><thead><tr><th>Rubro / persona</th><th class="r">Caja física del rubro</th><th class="r">Vendió</th><th class="r">Ganancia de ventas</th><th class="r">Ingresos / egresos (caja física)</th></tr></thead><tbody>${R.map(tr).join('')}<tr><td><b>Total rubros</b></td><td class="r"><b>${money(tot.fis)}</b></td><td class="r">${money(tot.sold)}</td><td class="r">${money(tot.profit)}</td><td></td></tr></tbody></table></div>
- <p class="sm mut">«Caja física del rubro» = efectivo que cobró + ingresos − egresos al rubro${a.paid?' − su parte del sueldo y gastos pagados de la caja':''}. Sumado al fondo de apertura y traspasos (${money(a.fondo||0)}) da el efectivo esperado en el cajón: <b>${money(a.expectedCash)}</b>${a.resto?` <span class="neg">(diferencia sin rubro: ${money(a.resto)})</span>`:''}.</p>`;}
+ <p class="sm mut">«Caja física del rubro» = efectivo que cobró + cobros de cuenta corriente de lo que fió + ingresos − egresos al rubro${a.paid?' − su parte del sueldo y gastos pagados de la caja':''}. Sumado al fondo de apertura y traspasos (${money(a.fondo||0)}) da el efectivo esperado en el cajón: <b>${money(a.expectedCash)}</b>${a.resto?` <span class="neg">(diferencia sin rubro: ${money(a.resto)})</span>`:''}.</p>`;}
 function rcLiqHTML(a){if(!(a.reparte||[]).length)return'<p class="mut">Marcá en Configuración qué rubros reparten (los socios) para ver la liquidación.</p>';
  const rp=a.reparte;const row=(l,f,cls)=>`<tr class="${cls||''}"><td>${l}</td>${rp.map(r=>`<td class="r">${f(r)}</td>`).join('')}</tr>`;
  return `<div class="tw"><table><thead><tr><th>Paso</th>${rp.map(r=>`<th class="r">${esc(r.owner||r.name)}</th>`).join('')}</tr></thead><tbody>
@@ -3401,6 +3405,16 @@ function ccLedger(cid){
  rows.sort((a,b)=>a.ts-b.ts);let bal=0;rows.forEach(r=>{bal+=r.kind==='debito'?r.amount:-r.amount;r.bal=bal;});return rows;}
 function ccLedgerHTML(cid){const L=ccLedger(cid);if(!L.length)return '<p class="sm mut">Sin movimientos de cuenta corriente.</p>';
  return `<div class="tw"><table><caption class="sr">Movimientos de cuenta corriente</caption><thead><tr><th>Fecha</th><th>Detalle</th><th class="r">Débito</th><th class="r">Crédito</th><th class="r">Saldo</th></tr></thead><tbody>${L.slice(-30).reverse().map(r=>`<tr><td>${fmtDT(r.ts)}</td><td>${esc(r.concept)}${r.kind==='debito'?` <span class="tag ${r.state==='parcial'?'warn':'bad'}">${esc(PSTATE_TXT[r.state])}</span>`:''}</td><td class="r">${r.kind==='debito'?money(r.amount):''}</td><td class="r">${r.kind==='credito'?money(r.amount):''}</td><td class="r"><b>${money(r.bal)}</b></td></tr>`).join('')}</tbody></table></div>`;}
+/* V26.35 (pedido del dueño): el cobro de una deuda vuelve al rubro de lo que se fió.
+   Parte fiada de cada venta → por rubro, en proporción a sus líneas (igual que el arqueo). */
+function fiadoRubroShares(s){const F=saleFiadoAmt(s);const out={};if(!(F>0))return out;const tots=s.items.map(lineTotal);const T=tots.reduce((a,b)=>a+b,0);if(!(T>0))return out;
+ let acc=0;s.items.forEach((it,i)=>{const sh=i===tots.length-1?F-acc:Math.round(F*tots[i]/T);acc+=sh;if(it.rubro)out[it.rubro]=(out[it.rubro]||0)+sh;});return out;}
+/* Cada cobro del cliente se aplica a sus ventas fiadas de la más vieja a la más nueva (FIFO) → {idCobro:{rubro:importe}} */
+function ccPayAlloc(cid){const sales=S.sales.filter(s=>s.cust===cid&&s.status==='ok'&&saleFiadoAmt(s)>0).sort((a,b)=>a.ts-b.ts).map(s=>{const sh=fiadoRubroShares(s);return{left:saleFiadoAmt(s),tot:saleFiadoAmt(s),sh};});
+ const pays=S.fiadoPays.filter(p=>p.cust===cid).sort((a,b)=>a.ts-b.ts);const res={};let k=0;
+ pays.forEach(p=>{let need=p.amount;const o={};while(need>0&&k<sales.length){const q=sales[k];const take=Math.min(need,q.left);
+   const ids=Object.keys(q.sh);let acc=0;ids.forEach((rid,i)=>{const a=i===ids.length-1?take-acc:Math.round(take*q.sh[rid]/q.tot);acc+=a;if(a)o[rid]=(o[rid]||0)+a;});
+   q.left-=take;need-=take;if(q.left<=0)k++;}res[p.id]=o;});return res;}
 function fiadoPay(cid,amount,method,accId){const c=custById(cid);if(!c)return'Cliente inexistente.';if(!(amount>0))return'El importe debe ser mayor a cero.';if(amount>debtOf(cid))return'Supera la deuda ('+money(debtOf(cid))+').';
  let mov='';if(method==='efectivo'){const e=addMov('ingreso','cobr','Cobro cuenta corriente · '+custFull(c),amount);if(e)return e;mov=S.movs[S.movs.length-1].id;}
  const ac=accId&&typeof accById==='function'?accById(accId):null;S.fiadoPays.push(Object.assign({id:uid(),cust:cid,ts:now(),amount,method,user:user.name,mov,rubro:'cobr'},ac?{acc:ac.id,accN:ac.name,accR:ac.rubro||''}:{}));audit('COBRO_FIADO',custFull(c)+' · '+money(amount)+' · '+MET[method]);save();return'';}
@@ -3898,7 +3912,7 @@ function priceResolve(p,qty,ctx){
  const R={price:p.price,base:p.price,alt:p.price,rule:'L1',list:'L1',why:'precio de venta',missing:'',below:false,warn:''};
  if(!wsOn())return R;
  const fin=()=>{R.below=!!(p.floor>0&&R.price<p.floor);return R;};
- if(chan==='mayorista'&&!wsOnly()&&!(cust&&arcaCuitOk(cust.taxid||''))){R.warn='cuit';R.why='Mayorista sin cliente con CUIT válido: precio minorista';return fin();}
+ if(chan==='mayorista'&&!wsOnly()&&!(cust&&arcaCuitOk(cust.taxid||''))){R.warn='cuit';R.why='Consumidor final (sin cliente con CUIT): precio por unidad';return fin();}
  const ag=cust?wsAgreement(cust.id,p):null;
  if(ag){R.price=ag.price>0?ag.price:Math.round(p.price*(1-ag.pct/100));R.rule='ACU';R.list='ACU';R.agr=ag.id;R.why='Acuerdo especial'+(ag.pid?'':' ('+RW()+')')+' · '+(ag.price>0?money(ag.price):ag.pct+' % off');return fin();}
  if(chan!=='mayorista')return fin();
@@ -3924,10 +3938,11 @@ function wsRecalc(){if(!wsOn()||typeof pos==='undefined')return;
   l.price=r.price;l.list=r.price;l.rule=r.rule;l.lst=r.list;l.base=r.base;l.why=r.why;l.miss=r.missing;});}
 /* validaciones y precios finales al cobrar (el mismo cálculo que la pantalla) */
 function wsGate(lines,cust,opts){
- const chan=opts.ws.chan==='mayorista'?'mayorista':'minorista';const conf=wsConf();
+ const conf=wsConf();let chan=opts.ws.chan==='mayorista'?'mayorista':'minorista';
+ /* V26.34 · sin cliente identificado con CUIT NO se bloquea la venta: es consumidor final y se cobra al precio por unidad
+    (salvo «Sólo mayorista», donde los precios por presentación rigen para todos) */
+ if(chan==='mayorista'&&!conf.only&&!(cust&&arcaCuitOk(cust.taxid||'')))chan='minorista';
  if(chan==='mayorista'){
-  if(!conf.only&&!cust)return{err:'El canal mayorista exige un cliente identificado.'};
-  if(!conf.only&&!arcaCuitOk(cust.taxid||''))return{err:'El cliente '+custFull(cust)+' no tiene un CUIT válido cargado: el canal mayorista lo exige.'};
   if(!conf.allowClub){if(opts.coupon)return{err:'Los cupones del Club no se aplican a ventas mayoristas.'};if(opts.stampCode)return{err:'Los sellos del Club no se otorgan en ventas mayoristas.'};}}
   const agg={};lines.forEach(l=>agg[l.pid]=(agg[l.pid]||0)+l.qty);
  for(const l of lines){const p=prod(l.pid);if(!p)continue;
@@ -3984,7 +3999,7 @@ function wsCartBar(){if(!wsOn())return'';
  <p class="sm mut" style="margin:.3rem 0 0">Precio por unidad; al completar una presentación (Display, Fardo, Pallet…) se cobra su precio mayorista.${c?' · crédito: debe '+money(debtOf(c.id))+' de '+money(c.limit||0)+(c.term>0?' · plazo '+c.term+' días':''):' Para cuenta corriente elegí el cliente.'}</p></div>`;
  const miss=ch==='mayorista'&&!(c&&arcaCuitOk(c.taxid||''));
  return`<div class="card" style="margin:.5rem 0" id="wsbar"><div class="row" style="flex-wrap:wrap"><span class="tag ${ch==='mayorista'?'ok':''}">Canal: ${ch==='mayorista'?'Mayorista':'Minorista'}</span><b class="sp">${c?esc(custFull(c)):'Consumidor final'}</b><button class="btn sm" data-act="wsPick">${c?'Cambiar cliente':'Elegir cliente'}</button>${c?'<button class="btn sm" data-act="wsPickClear">Quitar</button>':''}<button class="btn sm" data-act="wsChan">Cambiar canal</button></div>
- ${miss?'<div class="warnbox sm" role="status">El canal mayorista exige un cliente identificado con CUIT válido. Mientras tanto se cobra a precio minorista.</div>':`<p class="sm mut" style="margin:.3rem 0 0">${ch==='mayorista'?'Precio por volumen: cada producto toma el precio de la presentación (Display, Fardo, Pallet…) que alcance su cantidad.':'Precio de venta al público.'}${c&&ch==='mayorista'?' · crédito: debe '+money(debtOf(c.id))+' de '+money(c.limit||0)+(c.term>0?' · plazo '+c.term+' días':''):''}</p>`}</div>`;}
+ ${miss?'<div class="warnbox sm" role="status">Sin cliente con CUIT es una venta a <b>consumidor final</b>: se cobra al precio por unidad. Para los precios mayoristas elegí un cliente con CUIT.</div>':`<p class="sm mut" style="margin:.3rem 0 0">${ch==='mayorista'?'Precio por volumen: cada producto toma el precio de la presentación (Display, Fardo, Pallet…) que alcance su cantidad.':'Precio de venta al público.'}${c&&ch==='mayorista'?' · crédito: debe '+money(debtOf(c.id))+' de '+money(c.limit||0)+(c.term>0?' · plazo '+c.term+' días':''):''}</p>`}</div>`;}
 function wsLineInfo(l,i){if(!wsOn())return'';const p=prod(l.pid);let h='';
  if(l.why)h+=`<div class="sm ${l.rule==='MAN'?'mut':''}" style="margin-top:.3rem"><b>${esc(l.rule==='L1'||!l.rule?(wsOnly()?'Por unidad':'Minorista'):l.rule==='MAN'?'A mano':l.rule==='ACU'?'Acuerdo':'Mayorista')}</b> · ${esc(l.why)}</div>`;
  if(l.miss)h+=`<div class="sm mut">${esc(l.miss)}</div>`;
