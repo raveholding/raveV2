@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-01 06:22 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-01 06:32 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -6913,7 +6913,7 @@ setTimeout(()=>{try{cardMirrorInit();}catch(e){console.warn('cardMirror',e);}},0
      administrador, auditadas.
    · Aislado: objeto CI, clases «ci-», estilos inyectados recién al abrir y siempre bajo .ci-root (variables propias
      --ci-*; no toca las del sistema). Sin librerías (la CSP no las permite): el 3D es un dibujo isométrico propio.
-   · Si falla, se apaga solo (CI.safe) y deja el error en su Registro; el resto del sistema sigue funcionando.
+   · Si algo falla, CI.safe ataja el error: lo deja en su Registro, muestra un aviso propio y el resto del sistema sigue funcionando.
    · La animación corre sólo con la pantalla abierta y visible, a ~15 cuadros por segundo, y se detiene con
      «reducir movimiento» del sistema operativo.
    =================================================================================================== */
@@ -6926,10 +6926,12 @@ try{const o=JSON.parse(localStorage.getItem(LOGK)||'[]');if(Array.isArray(o))CI.
 function logEv(kind,msg){try{CI.log.push({ts:Date.now(),kind:String(kind),msg:String(msg).slice(0,240),u:(typeof user!=='undefined'&&user)?user.name:''});if(CI.log.length>200)CI.log.splice(0,CI.log.length-200);try{localStorage.setItem(LOGK,JSON.stringify(CI.log));}catch(e){}}catch(e){}}
 function safe(fn,fb,where){try{return fn();}catch(e){logEv('error',(where?where+': ':'')+(e&&e.message||e));try{console.warn('[Centro Inteligente]',e);}catch(_){}return fb;}}
 CI.safe=safe;
+/* redibuja la pantalla sin saltar al principio (el panel general vuelve arriba en cada cambio) */
+const re=()=>{const y=window.scrollY||0;rerender();if(y)window.scrollTo(0,y);};
 const cfg=()=>(typeof S!=='undefined'&&S&&S.cfg&&S.cfg.ci)||{};
 const isAdm=()=>typeof user!=='undefined'&&!!user&&user.role==='admin';
 const isOn=()=>!!cfg().on;
-const allowed=()=>{if(typeof user==='undefined'||!user)return false;if(isAdm())return true;return isOn()&&(cfg().roles||[]).includes(user.role);};
+const allowed=()=>{if(typeof user==='undefined'||!user)return false;if(isAdm())return true;const rl=cfg().roles;return isOn()&&Array.isArray(rl)&&rl.includes(user.role);};
 const seeTeam=()=>isAdm()||(typeof can==='function'&&can('staff'));
 CI.isOn=isOn;CI.allowed=allowed;
 const E=v=>typeof esc==='function'?esc(v):String(v);
@@ -6971,7 +6973,7 @@ function css(){if(document.getElementById('ci-style'))return;const s=document.cr
 .ci-root .ci-sbar{position:absolute;left:10px;right:10px;top:10px;display:flex;gap:.4rem;align-items:center;z-index:1;pointer-events:none;flex-wrap:wrap}
 .ci-root .ci-sbar>*{pointer-events:auto}
 .ci-root .ci-stitle{background:rgba(23,21,18,.82);border:1px solid var(--ci-ln);border-radius:12px;padding:.45rem .7rem;font-weight:700;font-size:.9rem;margin-right:auto}
-.ci-root canvas.ci-cv{display:block;width:100%;flex:1 1 auto;min-height:480px;height:480px;touch-action:manipulation;cursor:pointer}
+.ci-root .ci-editing .ci-sbar{position:static;padding:10px 10px 0}.ci-root canvas.ci-cv.ci-cved{touch-action:none;cursor:grab}.ci-root canvas.ci-cv{display:block;width:100%;flex:1 1 auto;min-height:480px;height:480px;touch-action:manipulation;cursor:pointer}
 .ci-root .ci-stage:fullscreen canvas.ci-cv{height:calc(100vh - 44px)}
 @media (max-width:600px){.ci-root canvas.ci-cv{min-height:360px;height:360px}.ci-root .ci-sbar{position:static;padding:10px 10px 0}.ci-root .ci-stitle{flex:1 1 100%}}
 @media (max-width:520px){.ci-root .ci-kic{flex-basis:34px;height:34px}.ci-root .ci-kic svg{width:20px;height:20px}.ci-root .ci-kpi{gap:.5rem;padding:.6rem}.ci-root .ci-kpi b{font-size:1.05rem}}
@@ -7090,9 +7092,9 @@ function team(){const now0=typeof now==='function'?now():Date.now();const tk=dke
  (S.punches||[]).forEach(x=>{if(dkey(x.ts)!==tk)return;const e=(S.employees||[]).find(e=>e.id===x.empId);const p=e&&get(e.name);if(p)p.punches.push(x);});
   return Object.values(P).map(p=>{p.punches.sort((a,b)=>a.ts-b.ts);const lp=p.punches[p.punches.length-1];p.onShift=!!(lp&&lp.kind==='in');p.since=p.punches.find(x=>x.kind==='in')||null;
   const pz=fold(p.puesto);const sc0=stf(p.k);p.cf=sc0;let f=sc0.fn;
-  if(!FN[f]){if(p.roles.includes('admin'))f='gerente';else if(/caja|cajer/.test(pz))f='cajero';else if(/deposit/.test(pz)&&/repos/.test(pz))f=(p.cat.deposito||0)>(p.cat.stock||0)?'deposito':'repositor';else if(/deposit/.test(pz))f='deposito';else if(/repos/.test(pz))f='repositor';else if(/most|vend/.test(pz))f=p.tickets?'cajero':'vendedor';
+  if(!Object.prototype.hasOwnProperty.call(FN,f)){if(p.roles.includes('admin'))f='gerente';else if(/caja|cajer/.test(pz))f='cajero';else if(/deposit/.test(pz)&&/repos/.test(pz))f=(p.cat.deposito||0)>(p.cat.stock||0)?'deposito':'repositor';else if(/deposit/.test(pz))f='deposito';else if(/repos/.test(pz))f='repositor';else if(/most|vend/.test(pz))f=p.tickets?'cajero':'vendedor';
    else if(p.cat.deposito)f='deposito';else if(p.cat.stock)f='repositor';else if(p.tickets||p.cat.caja)f='cajero';else f='vendedor';}
-  p.fn=f;p.active=!!(p.onShift||(p.last&&now0-p.last<45*60000));p.show=(sc0.alias||p.name);p.av=sc0.av==='robot'?'robot':'humano';p.col=okCol(sc0.col)||FN[f].c;p.ph=okPh(sc0.ph)?sc0.ph:'';p.hide=!!sc0.hide;p.pos=okPos(sc0.pos);return p;})
+  p.fn=f;p.active=!!(p.onShift||(p.last&&now0-p.last<45*60000));p.show=String((typeof sc0.alias==='string'&&sc0.alias)||p.name);p.av=sc0.av==='robot'?'robot':'humano';p.col=okCol(sc0.col)||FN[f].c;p.ph=okPh(sc0.ph)?sc0.ph:'';p.hide=!!sc0.hide;p.pos=okPos(sc0.pos);return p;})
   .sort((a,b)=>(b.active-a.active)||(b.last-a.last)||a.name.localeCompare(b.name,'es'));}
 CI.team=()=>safe(team,[],'equipo');
 /* configuración propia de cada persona dentro del módulo (no toca la ficha de Personal ni el usuario) */
@@ -7118,7 +7120,7 @@ function autoMap(R,nOpen){const L=layout(R);const it=[];L.G.forEach((g,i)=>it.pu
  const n=Math.max(1,Math.min(4,nOpen||1));for(let i=0;i<n;i++)it.push({id:'c'+(i+1),t:'caja',x:+(0.7+i*2.1).toFixed(1),y:+(L.D-1.55).toFixed(2),w:1.5,d:0.75,label:'Caja '+(i+1)});
  it.push({id:'pu',t:'puerta',x:+(L.W/2-1.1).toFixed(1),y:+(L.D-0.15).toFixed(2),w:2.2,d:0.15,label:'Entrada'});
  return{W:+L.W.toFixed(1),D:+L.D.toFixed(1),items:it,auto:true,rows:L.rows};}
-function cleanMap(m){if(!m||!Array.isArray(m.items))return null;const W=Math.min(60,Math.max(3,+m.W||0)),Dd=Math.min(60,Math.max(3,+m.D||0));if(!W||!Dd)return null;
+function cleanMap(m){if(!m||!Array.isArray(m.items)||!(+m.W>0)||!(+m.D>0))return null;const W=Math.min(60,Math.max(3,+m.W)),Dd=Math.min(60,Math.max(3,+m.D));
  const items=m.items.slice(0,80).map((x,i)=>{const t=MT[x&&x.t]?x.t:null;if(!t)return null;const w=Math.min(W,Math.max(0.1,+x.w||MT[t].w)),dd=Math.min(Dd,Math.max(0.1,+x.d||MT[t].d));
   return{id:String(x.id||('e'+i)).replace(/[^a-zA-Z0-9_-]/g,'').slice(0,20)||('e'+i),t,x:Math.min(W-w,Math.max(0,Math.round((+x.x||0)*10)/10)),y:Math.min(Dd-dd,Math.max(0,Math.round((+x.y||0)*10)/10)),w:Math.round(w*10)/10,d:Math.round(dd*10)/10,
    label:String(x.label||'').slice(0,30),rubro:t==='gond'&&x.rubro&&(S.rubros||[]).some(r=>r.id===x.rubro)?x.rubro:'',color:okCol(x.color)};}).filter(Boolean);return{W,D:Dd,items};}
@@ -7296,7 +7298,7 @@ const SRc=()=>window.SpeechRecognition||window.webkitSpeechRecognition||null;
 const voiceOK=()=>!!cfg().voice&&!!SRc();
 const ttsOK=()=>!!cfg().tts&&!!window.speechSynthesis&&!CI.st.mute;
 let rec=null;
-function plain(h){const d=document.createElement('div');d.innerHTML=String(h||'').replace(/<li>/g,'. ').replace(/<br\s*\/?>/g,'. ').replace(/<hr[^>]*>/g,'. ');return (d.textContent||'').replace(/\$\s?([\d.]+),(\d\d)/g,'$1 pesos con $2').replace(/\$\s?([\d.]+)/g,'$1 pesos').replace(/\s+/g,' ').replace(/(\. )+/g,'. ').trim();}
+function plain(h){const d=new DOMParser().parseFromString('<div>'+String(h||'').replace(/<li>/g,'. ').replace(/<br\s*\/?>/g,'. ').replace(/<hr[^>]*>/g,'. ')+'</div>','text/html').body;return (d.textContent||'').replace(/\$\s?([\d.]+),(\d\d)/g,'$1 pesos con $2').replace(/\$\s?([\d.]+)/g,'$1 pesos').replace(/\s+/g,' ').replace(/(\. )+/g,'. ').trim();}
 function speak(h){if(!ttsOK())return;safe(()=>{const t=plain(h).slice(0,600);if(!t)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-AR';u.rate=1.02;
  const vs=window.speechSynthesis.getVoices?window.speechSynthesis.getVoices():[];const v=vs.find(x=>/^es[-_]AR/i.test(x.lang))||vs.find(x=>/^es/i.test(x.lang));if(v)u.voice=v;
  const bot=()=>document.querySelector('.ci-root .ci-bot');u.onstart=()=>{const b=bot();if(b)b.classList.add('ci-talk');};u.onend=u.onerror=()=>{const b=bot();if(b)b.classList.remove('ci-talk');};
@@ -7305,18 +7307,18 @@ CI.speak=speak;
 function listenStart(){if(!voiceOK())return toast('La voz del Centro Inteligente está apagada o este navegador no la ofrece. Escribí tu pregunta.',1);
  if(CI.st.listen){safe(()=>rec&&rec.stop(),null,'micrófono');return;}
  safe(()=>{const R=SRc();rec=new R();rec.lang='es-AR';rec.interimResults=false;rec.continuous=false;rec.maxAlternatives=1;
-  rec.onresult=ev=>{const t=ev.results&&ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:'';CI.st.listen=false;logEv('voz','pregunta por voz');if(t)ask(t,true);else rerender();};
-  rec.onerror=ev=>{CI.st.listen=false;logEv('voz','no se pudo escuchar ('+(ev&&ev.error||'error')+')');toast(ev&&ev.error==='not-allowed'?'El navegador no dio permiso al micrófono. Habilitalo desde el candado de la barra de direcciones.':'No pude escuchar. Probá de nuevo o escribí.',1);rerender();};
-  rec.onend=()=>{if(CI.st.listen){CI.st.listen=false;rerender();}};
-  if(window.speechSynthesis)window.speechSynthesis.cancel();CI.st.listen=true;rerender();rec.start();},null,'micrófono');}
+  rec.onresult=ev=>{const t=ev.results&&ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:'';CI.st.listen=false;logEv('voz','pregunta por voz');if(t)ask(t,true);else re();};
+  rec.onerror=ev=>{CI.st.listen=false;logEv('voz','no se pudo escuchar ('+(ev&&ev.error||'error')+')');toast(ev&&ev.error==='not-allowed'?'El navegador no dio permiso al micrófono. Habilitalo desde el candado de la barra de direcciones.':'No pude escuchar. Probá de nuevo o escribí.',1);re();};
+  rec.onend=()=>{if(CI.st.listen){CI.st.listen=false;re();}};
+  if(window.speechSynthesis)window.speechSynthesis.cancel();CI.st.listen=true;re();rec.start();},null,'micrófono');}
 function voiceCard(){if(!isAdm())return'';const c=cfg();const sr=!!SRc(),ss=!!window.speechSynthesis;
  return`<details class="ci-vc"><summary><b style="color:var(--ci-tx)">Voz del Gerente IA</b>&nbsp;<span class="tag ${c.voice||c.tts?'ok':''}">${c.voice&&c.tts?'micrófono y voz':c.voice?'micrófono':c.tts?'voz':'apagada'}</span></summary>
   <label class="chk"><input type="checkbox" class="ci-vset" data-k="voice" ${c.voice?'checked':''} ${sr?'':'disabled'}> Hablarle por micrófono${sr?'':' — este navegador no lo ofrece (usá Chrome o Edge)'}</label>
   <p>El navegador manda el audio a su servicio (Google o Microsoft) para pasarlo a texto. El sistema no graba ni guarda audio y sólo escucha mientras tocás el micrófono.</p>
   <label class="chk"><input type="checkbox" class="ci-vset" data-k="tts" ${c.tts?'checked':''} ${ss?'':'disabled'}> Que lea las respuestas en voz alta${ss?'':' — este navegador no lo ofrece'}</label>
   <p>La lectura en voz alta la hace el propio equipo; no sale información.</p></details>`;}
-document.addEventListener('change',e=>safe(()=>{const t=e.target;if(!t||!t.classList||!t.classList.contains('ci-vset'))return;if(!isAdm()){toast('Sólo el administrador cambia la voz',1);rerender();return;}
- const k=t.dataset.k==='tts'?'tts':'voice';S.cfg.ci=Object.assign({},cfg(),{[k]:!!t.checked});audit('CENTRO_INTELIGENTE','voz: '+(k==='voice'?'micrófono':'lectura en voz alta')+' '+(t.checked?'encendida':'apagada'));logEv('voz',(k==='voice'?'micrófono':'lectura')+' '+(t.checked?'encendido':'apagado'));save();rerender();},null,'voz config'));
+document.addEventListener('change',e=>safe(()=>{const t=e.target;if(!t||!t.classList||!t.classList.contains('ci-vset'))return;if(!isAdm()){toast('Sólo el administrador cambia la voz',1);re();return;}
+ const k=t.dataset.k==='tts'?'tts':'voice';S.cfg.ci=Object.assign({},cfg(),{[k]:!!t.checked});audit('CENTRO_INTELIGENTE','voz: '+(k==='voice'?'micrófono':'lectura en voz alta')+' '+(t.checked?'encendida':'apagada'));logEv('voz',(k==='voice'?'micrófono':'lectura')+' '+(t.checked?'encendido':'apagado'));save();re();},null,'voz config'));
 
 /* ---------- gráficos (SVG propio) ---------- */
 function barsSVG(d){const K=Object.keys(d.days);const V=K.map(k=>d.days[k]);const mx=Math.max(1,...V);const W=300,H=150,bw=W/K.length;const dn=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
@@ -7330,7 +7332,7 @@ function donutSVG(d){const E2=Object.entries(d.pm).filter(([,v])=>v>0).sort((a,b
  return`<div style="display:flex;gap:.7rem;align-items:center"><svg viewBox="0 0 120 120" width="112" height="112" role="img" aria-label="Medios de pago de los últimos 7 días" style="flex:0 0 auto">${arcs}</svg><div style="flex:1;min-width:0">${E2.slice(0,5).map(([m,v])=>`<div class="ci-hb" style="grid-template-columns:minmax(0,1fr) 3rem"><span><i class="ci-dot" style="background:${PMC[m]||'#bcb2a3'}"></i>${E((typeof MET!=='undefined'&&MET[m])||m)}</span><b style="text-align:right">${Math.round(v/T*100)} %</b></div>`).join('')}</div></div>`;}
 function stockBars(d){const T=Math.max(1,d.units);return d.R.slice().sort((a,b)=>b.units-a.units).slice(0,6).map(r=>`<div class="ci-hb"><span title="${E(r.name)}">${E(r.name)}</span><i style="background:linear-gradient(90deg,${r.color},${shade(r.color,0.35)});width:${Math.max(4,Math.round(r.units/T*100))}%"></i><b style="text-align:right">${Math.round(r.units/T*100)} %</b></div>`).join('')||'<p class="ci-mut">Sin artículos.</p>';}
 function feed(){const tk=dkey(typeof now==='function'?now():Date.now());const F=[];
- (S.audit||[]).slice(-80).forEach(a=>{if(dkey(a.ts)!==tk||a.action==='VENTA')return;const c=CAT(a.action);if(c==='acceso'||(c==='admin'&&!/CENTRO|META/.test(a.action)))return;F.push({ts:a.ts,c,t:(CATN[c]||'')+': '+(a.detail||a.action),u:a.user});});
+ (S.audit||[]).slice(-80).forEach(a=>{if(dkey(a.ts)!==tk||a.action==='VENTA')return;const c=CAT(a.action);if(c==='acceso'||(c==='admin'&&!/CENTRO|META/.test(a.action)))return;const priv=((c==='fichaje'||c==='tareas'||c==='admin')&&!seeTeam())||(c==='caja'&&!(isAdm()||can('close_cash')||can('cash_mov')));F.push({ts:a.ts,c,t:(CATN[c]||'')+(priv?'':': '+(a.detail||a.action)),u:a.user});});
  (S.sales||[]).slice(-40).forEach(s=>{if(!ok(s)||dkey(s.ts)!==tk)return;F.push({ts:s.ts,c:'venta',t:'Venta '+(s.n||'')+' · '+$m(s.total),u:s.user});});
  const M={venta:['#3ccf7e','✓'],ventas:['#3ccf7e','$'],caja:['#5aa0ff','$'],stock:['#f2b632','!'],deposito:['#b88cff','↓'],tareas:['#22c3d6','✓'],fichaje:['#bcb2a3','⏱'],admin:['#c9963e','i']};
  const L=F.sort((a,b)=>b.ts-a.ts).slice(0,7);if(!L.length)return'<p class="ci-mut">Sin actividad hoy todavía.</p>';
@@ -7352,14 +7354,16 @@ function offHTML(){const roles=Object.keys((typeof S!=='undefined'&&S.roles)||{}
   ${roles.length?`<fieldset style="border:1px solid var(--ci-ln);border-radius:12px;padding:.5rem .7rem;margin:.6rem 0"><legend style="color:var(--ci-tx);font-size:.85rem"><b>Además del administrador, lo pueden ver:</b></legend>${roles.map(r=>`<label class="chk" style="color:var(--ci-tx)"><input type="checkbox" class="ci-role" value="${E(r)}" ${(c.roles||[]).includes(r)?'checked':''}> ${E(r)}</label>`).join('')}</fieldset>`:''}
   <button class="ci-btn on" style="min-height:48px" data-act="ciToggle">Activar el Centro Inteligente</button></div></div></div>`;}
 function view(){if(CI._failRender){CI._failRender=false;throw new Error('falla simulada de la pantalla (prueba de aislamiento)');}
+ /* lo que quedó en pantalla es de cada usuario: al cambiar de usuario se vacían la conversación, la selección y la edición */
+ const who=(typeof user!=='undefined'&&user)?user.name+'|'+user.role:'';if(CI.st.owner!==who){CI.st.owner=who;CI.st.chat=[];CI.st.sel=null;CI.st.edit=false;CI.st.draft=null;CI.st.esel=CI.st.psel=null;}
  css();const adm=isAdm();
  const head=on=>`<div class="ci-top"><div class="ci-brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICN.cart}"/></svg><div><b>${E((S.tenant&&S.tenant.name)||'SISTEMA VB')}</b><span class="ci-mut" style="font-size:.85rem">Centro Inteligente · tu negocio, más inteligente</span></div></div>
   ${on?`<span class="ci-live"><i class="ci-dotl"></i>Sólo lectura · ${E(typeof fmtDT==='function'?fmtDT(Date.now()):'')}</span><button class="ci-btn" data-act="ciLog">Registro</button>${adm?'<button class="ci-btn" data-act="ciToggle">Desactivar</button>':''}`:''}</div>`;
  if(!isOn())return`<div class="ci-root">${head(false)}${adm?offHTML():'<p class="ci-mut">El administrador no activó el Centro Inteligente.</p>'}</div>`;
  const d=D();CI._d=d;const T=team();CI._t=T;const st=CI.st;
- const stage=`<div class="ci-pan ci-stage" id="ci-stage"><div class="ci-sbar"><span class="ci-stitle">${ic('box').replace('<svg','<svg style="width:18px;height:18px;vertical-align:-3px;color:var(--ci-acc)"')} ${st.edit?'Editando el local (vista de plano)':'Local '+(st.mode==='3d'?'3D':'2D')+' · en vivo'}</span>
-   <button class="ci-btn ${st.mode==='2d'?'on':''}" data-act="ciMode" data-id="2d">2D</button><button class="ci-btn ${st.mode==='3d'?'on':''}" data-act="ciMode" data-id="3d">3D</button><button class="ci-btn" data-act="ciRot" aria-label="Girar el local">⟳</button><button class="ci-btn" data-act="ciFull" aria-label="Pantalla completa">⛶</button>${adm?`<button class="ci-btn ${st.edit?'on':''}" data-act="ciEdit">✎ Editar local</button>`:''}</div>
-   <canvas class="ci-cv" aria-hidden="true"></canvas><p class="ci-sr ci-cvsum" aria-live="polite"></p><p class="ci-nocv" hidden style="padding:1rem">Este equipo no puede dibujar el local; usá las listas de abajo.</p>
+ const stage=`<div class="ci-pan ci-stage${st.edit?' ci-editing':''}" id="ci-stage"><div class="ci-sbar"><span class="ci-stitle">${ic('box').replace('<svg','<svg style="width:18px;height:18px;vertical-align:-3px;color:var(--ci-acc)"')} ${st.edit?'Editando el local (vista de plano)':'Local '+(st.mode==='3d'?'3D':'2D')+' · en vivo'}</span>
+   ${st.edit?'':`<button class="ci-btn ${st.mode==='2d'?'on':''}" data-act="ciMode" data-id="2d">2D</button><button class="ci-btn ${st.mode==='3d'?'on':''}" data-act="ciMode" data-id="3d">3D</button><button class="ci-btn" data-act="ciRot" aria-label="Girar el local">⟳</button>`}<button class="ci-btn" data-act="ciFull" aria-label="Pantalla completa">⛶</button>${adm?(st.edit?`<button class="ci-btn on" data-act="ciEdSave">Guardar</button><button class="ci-btn" data-act="ciEdCancel">Descartar</button>`:`<button class="ci-btn" data-act="ciEdit">✎ Editar local</button>`):''}</div>
+   <canvas class="ci-cv${st.edit?' ci-cved':''}" aria-hidden="true"></canvas>${st.edit?'<p class="ci-mut" style="margin:0;padding:.35rem .8rem;font-size:.82rem;border-top:1px solid var(--ci-ln)">Arrastrá con el mouse o el dedo para mover. Tocá un elemento o una persona y cambiá sus datos en «Editar el local», justo debajo.</p>':''}<p class="ci-sr ci-cvsum" aria-live="polite"></p><p class="ci-nocv" hidden style="padding:1rem">Este equipo no puede dibujar el local; usá las listas de abajo.</p>
    <div class="ci-legend"><span><i class="ci-dot" style="background:#ff6b5b"></i>stock negativo</span><span><i class="ci-dot" style="background:#f2b632"></i>stock bajo</span><span><i class="ci-dot" style="background:#3ccf7e"></i>en turno / caja abierta</span>${Object.values(FN).map(f=>`<span><i class="ci-dot" style="background:${f.c}"></i>${f.n}</span>`).join('')}<span>Tocá una góndola o una persona</span></div></div>`;
  const vb=voiceOK()?`<button class="ci-btn ${st.listen?'ci-rec':''}" data-act="ciMic" aria-pressed="${st.listen}" aria-label="${st.listen?'Detener el micrófono':'Hablar con el Gerente'}">${st.listen?'■ Detener':'🎙 Hablar'}</button>`:'';
  const mb=cfg().tts&&window.speechSynthesis?`<button class="ci-btn" data-act="ciMute" aria-pressed="${!st.mute}" aria-label="${st.mute?'Activar la voz de las respuestas':'Silenciar las respuestas'}">${st.mute?'🔇':'🔊'}</button>`:'';
@@ -7373,7 +7377,7 @@ function view(){if(CI._failRender){CI._failRender=false;throw new Error('falla s
  const sel=d.R.find(r=>r.id===st.sel);
  const rubTable=`<details class="ci-pan" style="margin-top:12px;padding:0 .8rem" ${sel?'open':''}><summary>Rubros y artículos (misma información que el local)</summary><div class="tw"><table class="ci-tb"><thead><tr><th>Rubro</th><th>Artículos</th><th>Negativo</th><th>Bajo</th><th>Vendido hoy</th><th></th></tr></thead><tbody>
    ${d.R.map(r=>`<tr><td><span class="ci-dot" style="background:${r.color}"></span>${E(r.name)}</td><td>${r.items}</td><td class="${r.neg?'ci-neg':''}">${r.neg}</td><td class="${r.low?'ci-low':''}">${r.low}</td><td>${$m(r.today)}</td><td><button class="ci-btn" data-act="ciSel" data-id="${E(r.id)}">Ver</button></td></tr>`).join('')}</tbody></table></div>
-   ${sel?`<div class="ci-card" style="margin:.6rem 0" id="ci-rub"><h3><span class="ci-dot" style="background:${sel.color}"></span>${E(sel.name)}</h3><p class="ci-mut" style="font-size:.85rem;margin:0 0 .4rem">${sel.owner?E(sel.owner)+' · ':''}${sel.items} artículos · vendido hoy ${$m(sel.today)}</p><div class="tw" style="max-height:260px;overflow:auto"><table class="ci-tb"><thead><tr><th>Artículo</th><th>Stock</th><th>Hoy</th></tr></thead><tbody>${sel.prods.slice().sort((a,b)=>(a.stock-b.stock)||a.name.localeCompare(b.name,'es')).map(p=>`<tr><td>${E(p.name)}${p.sub?' <span class="ci-mut">'+E(p.sub)+'</span>':''}</td><td class="${p.stock<0?'ci-neg':p.stock<=5?'ci-low':''}">${E(nf(p.stock))}</td><td>${d.sold[p.id]?E(nf(d.sold[p.id])):'—'}</td></tr>`).join('')}</tbody></table></div><button class="ci-btn" style="margin-top:.5rem" data-act="ciInv" data-id="${E(sel.id)}">Abrir en Inventario</button></div>`:''}</details>`;
+   ${sel?`<div class="ci-card" style="margin:.6rem 0" id="ci-rub"><h3><span class="ci-dot" style="background:${sel.color}"></span>${E(sel.name)}</h3><p class="ci-mut" style="font-size:.85rem;margin:0 0 .4rem">${sel.owner&&seeTeam()?E(sel.owner)+' · ':''}${sel.items} artículos · vendido hoy ${$m(sel.today)}</p><div class="tw" style="max-height:260px;overflow:auto"><table class="ci-tb"><thead><tr><th>Artículo</th><th>Stock</th><th>Hoy</th></tr></thead><tbody>${sel.prods.slice().sort((a,b)=>(a.stock-b.stock)||a.name.localeCompare(b.name,'es')).map(p=>`<tr><td>${E(p.name)}${p.sub?' <span class="ci-mut">'+E(p.sub)+'</span>':''}</td><td class="${p.stock<0?'ci-neg':p.stock<=5?'ci-low':''}">${E(nf(p.stock))}</td><td>${d.sold[p.id]?E(nf(d.sold[p.id])):'—'}</td></tr>`).join('')}</tbody></table></div><button class="ci-btn" style="margin-top:.5rem" data-act="ciInv" data-id="${E(sel.id)}">Abrir en Inventario</button></div>`:''}</details>`;
  const row2=`<div class="ci-row2"><div class="ci-pan ci-card"><h3>Ventas por día <span style="font-size:.8rem;margin-left:auto">${(()=>{const v=pct(d.tot,d.totY);return v==null?'':(v>=0?'<span class="ci-up">▲ +':'<span class="ci-dn">▼ ')+v+' %</span>';})()}</span></h3>${barsSVG(d)}</div>
    <div class="ci-pan ci-card"><h3>Medios de pago <span class="ci-mut" style="font-size:.8rem">· 7 días</span></h3>${donutSVG(d)}</div>
    <div class="ci-pan ci-card"><h3>Stock por rubro</h3>${stockBars(d)}</div>
@@ -7383,13 +7387,13 @@ function after(){if(!isOn())return;draw();loop();const cv=document.querySelector
  if(cv)edBind(cv);if(cv)cv.addEventListener('click',e=>safe(()=>{if(CI.st.edit)return;const b=cv.getBoundingClientRect();const x=e.clientX-b.left,y=e.clientY-b.top;
    const order=CI._hits.slice().sort((a,b)=>(b.it.kind==='person'||b.it.kind==='bot')-(a.it.kind==='person'||a.it.kind==='bot'));
    for(const h of order){if(inPoly(x,y,h.pts)){const it=h.it;
-     if(it.kind==='gond'){CI.st.sel=it.r.id;logEv('mapa','góndola '+it.r.name);rerender();setTimeout(()=>{const r=document.getElementById('ci-rub');if(r&&r.scrollIntoView)r.scrollIntoView({block:'nearest'});},50);}
+     if(it.kind==='gond'){CI.st.sel=it.r.id;logEv('mapa','góndola '+it.r.name);re();setTimeout(()=>{const r=document.getElementById('ci-rub');if(r&&r.scrollIntoView)r.scrollIntoView({block:'nearest'});},50);}
      else if(it.kind==='person'){if(seeTeam())personModal(it.p.k);}
      else if(it.kind==='bot'){const i=document.getElementById('ci-q');if(i)i.focus();}
      else if(it.kind==='caja'){go('caja');}else if(it.kind==='dep'){if(typeof can==='function'&&can('purchases'))go('proveedores');}
      return;}}},null,'clic mapa'));
  const i=document.getElementById('ci-q');if(i)i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();A.ciAsk();}});const c=document.querySelector('.ci-root .ci-chat');if(c)c.scrollTop=c.scrollHeight;}
-window.addEventListener('hashchange',()=>safe(()=>{if(!/#panel\/centro/.test(location.hash)){if(CI.st.edit){CI.st.edit=false;CI.st.draft=null;}if(CI.st.listen&&rec){CI.st.listen=false;rec.abort&&rec.abort();}if(window.speechSynthesis&&CI._spoken)window.speechSynthesis.cancel();}},null,'salir'));
+let ciPrevHash=location.hash;window.addEventListener('hashchange',()=>safe(()=>{const was=/#panel\/centro/.test(ciPrevHash);ciPrevHash=location.hash;if(was&&!/#panel\/centro/.test(location.hash)){if(CI.st.edit){CI.st.edit=false;CI.st.draft=null;}if(CI.st.listen&&rec){CI.st.listen=false;rec.abort&&rec.abort();}if(window.speechSynthesis&&CI._spoken)window.speechSynthesis.cancel();}},null,'salir'));
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(document.querySelector('.ci-root canvas.ci-cv'))CI.draw();},150);});
 document.addEventListener('fullscreenchange',()=>{setTimeout(()=>{if(document.querySelector('.ci-root canvas.ci-cv'))CI.draw();},60);});
 
@@ -7420,11 +7424,11 @@ document.addEventListener('input',e=>safe(()=>{const t=e.target;if(!t||!t.datase
  const it=edItem();if(!it)return;
  if(k==='label'){it.label=String(t.value).slice(0,30);const lb=document.querySelector('.ci-elist [data-id="'+it.id+'"] span');if(lb)lb.textContent=it.label||MT[it.t].n;CI.draw();return;}
  if(k==='color'){it.color=okCol(t.value)||'';CI.draw();return;}
- if(k==='t'||k==='rubro'){it[k]=t.value;if(k==='t'&&MT[t.value]){it.w=MT[t.value].w;it.d=MT[t.value].d;edClamp(it,M);if(t.value!=='gond')it.rubro='';}rerender();return;}
+ if(k==='t'||k==='rubro'){if(k==='t'&&!Object.prototype.hasOwnProperty.call(MT,t.value))return;it[k]=t.value;if(k==='t'&&MT[t.value]){it.w=MT[t.value].w;it.d=MT[t.value].d;edClamp(it,M);if(t.value!=='gond')it.rubro='';}re();return;}
  const v=parseFloat(String(t.value).replace(',','.'));if(!isFinite(v))return;it[k]=v;edClamp(it,M);CI.draw();},null,'editar local'));
 /* los campos de texto y números no redibujan la pantalla (así no se pierde el foco al pasar de un campo a otro) */
 function edStart(){if(!isAdm())return toast('Sólo el administrador edita el local',1);const d=D();const M=JSON.parse(JSON.stringify(mapOf(d)));M.auto=!!M.auto;const pos={};
- CI.st.edit=true;CI.st.draft={map:M,pos};CI.st.esel=null;CI.st.psel=null;logEv('local','edición iniciada');rerender();}
+ CI.st.edit=true;CI.st.draft={map:M,pos};CI.st.esel=null;CI.st.psel=null;logEv('local','edición iniciada');re();}
 function edMovePerson(k,x,y){const M=CI.st.draft.map;CI.st.draft.pos[k]=[Math.round(Math.min(M.W-0.3,Math.max(0.3,x))*10)/10,Math.round(Math.min(M.D-0.3,Math.max(0.3,y))*10)/10];}
 function personXY(k){const h=CI._hits.find(h=>h.it.kind==='person'&&h.it.p.k===k);return h?[h.it.x+0.2,h.it.y+0.2]:null;}
 function edBind(cv){let drag=null;const W=(ev)=>{const b=cv.getBoundingClientRect(),v=CI._view;return[(ev.clientX-b.left-v.ox)/v.sc+v.cx,(ev.clientY-b.top-v.oy)/v.sc+v.cy];};
@@ -7436,7 +7440,7 @@ function edBind(cv){let drag=null;const W=(ev)=>{const b=cv.getBoundingClientRec
   if(drag){cv.setPointerCapture&&cv.setPointerCapture(ev.pointerId);ev.preventDefault();}CI.draw();},null,'arrastre'));
  cv.addEventListener('pointermove',ev=>safe(()=>{if(!drag||!CI.st.edit)return;const [wx,wy]=W(ev);const M=CI.st.draft.map;drag.moved=true;M.auto=false;
   if(drag.e){drag.e.x=wx-drag.ox;drag.e.y=wy-drag.oy;edClamp(drag.e,M);}else edMovePerson(drag.k,wx-drag.ox,wy-drag.oy);CI.draw();},null,'arrastre'));
- const up=()=>{if(!drag)return;drag=null;rerender();};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);}
+ const up=()=>{if(!drag)return;drag=null;re();};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);}
 CI.ed={start:()=>safe(edStart,null,'editar local'),move:(id,x,y)=>safe(()=>{const e=CI.st.draft.map.items.find(z=>z.id===id);if(e){e.x=x;e.y=y;edClamp(e,CI.st.draft.map);CI.st.draft.map.auto=false;CI.draw();}},null,'editar local'),movePerson:(k,x,y)=>safe(()=>{edMovePerson(k,x,y);CI.draw();},null,'editar local')};
 
 /* ---------- detalle de una persona ---------- */
@@ -7459,12 +7463,12 @@ function personModal(k){const p=team().find(x=>x.k===k);if(!p)return;const f=FN[
  let clrPos=false;
  const w=modal('Actividad de '+p.show,`<p><b>${E(f.n)}</b>${p.show!==p.name?' · '+E(p.name):''}${p.puesto?' · puesto '+E(p.puesto):''}${p.roles.length?' · usuario '+E(p.roles.join(', ')):''}<br><span class="mut">${E(personState(p))}</span></p><p>${E(personSum(p))}</p>${ed}
   <div class="tw" style="max-height:300px;overflow:auto;margin-top:.6rem"><table data-nosort><thead><tr><th>Hora</th><th>Actividad de hoy</th></tr></thead><tbody>${rows.slice(0,120).map(r=>`<tr><td>${E(hm(r.ts))}</td><td>${E(r.t)}</td></tr>`).join('')||'<tr><td colspan="2" class="mut">Sin actividad registrada hoy.</td></tr>'}</tbody></table></div>`,
-  {wide:adm,okText:adm?'Guardar':'Cerrar',onOk:()=>safe(()=>{if(!adm)return;const n={};const v=val('ci-fn');if(FN[v])n.fn=v;const al=String(val('ci-al')||'').trim().slice(0,30);if(al&&al!==p.name)n.alias=al;
+  {wide:adm,okText:adm?'Guardar':'Cerrar',onOk:()=>safe(()=>{if(!adm)return;const n={};const v=val('ci-fn');if(Object.prototype.hasOwnProperty.call(FN,v))n.fn=v;const al=String(val('ci-al')||'').trim().slice(0,30);if(al&&al!==p.name)n.alias=al;
    const av=(w.querySelector('input[name=ci-av]:checked')||{}).value;if(av==='robot')n.av='robot';const cl=okCol(val('ci-col'));if(cl&&cl.toLowerCase()!==f.c.toLowerCase())n.col=cl;if(okPh(ph))n.ph=ph;
    if(!$('#ci-sh',w).checked)n.hide=true;if(p.pos&&!clrPos)n.pos=p.pos;
    const st=Object.assign({},cfg().staff||{});if(Object.keys(n).length)st[p.k]=n;else delete st[p.k];
-   if(JSON.stringify(st)!==JSON.stringify(cfg().staff||{})){S.cfg.ci=Object.assign({},cfg(),{staff:st});const ch=[];if((c0.fn||'')!==(n.fn||''))ch.push('función '+(n.fn?FN[n.fn].n:'automática'));if((c0.alias||'')!==(n.alias||''))ch.push('nombre visible');if((c0.av||'humano')!==(n.av||'humano'))ch.push('avatar '+(n.av||'persona'));if((c0.col||'')!==(n.col||''))ch.push('color');if((c0.ph||'')!==(n.ph||''))ch.push(n.ph?'foto nueva':'foto quitada');if(!!c0.hide!==!!n.hide)ch.push(n.hide?'oculto en el local':'visible en el local');if(clrPos)ch.push('ubicación automática');
-    audit('CENTRO_INTELIGENTE','equipo · '+p.name+': '+(ch.join(', ')||'cambios'));save();logEv('equipo','editado '+p.name);rerender();toast('Guardado: '+p.show);}},null,'editar persona')});
+   if(JSON.stringify(st)!==JSON.stringify(cfg().staff||{})){const nc0=Object.assign({},cfg(),{staff:st});if(!ciFits(nc0))return false;S.cfg.ci=nc0;const ch=[];if((c0.fn||'')!==(n.fn||''))ch.push('función '+(n.fn?FN[n.fn].n:'automática'));if((c0.alias||'')!==(n.alias||''))ch.push('nombre visible');if((c0.av||'humano')!==(n.av||'humano'))ch.push('avatar '+(n.av||'persona'));if((c0.col||'')!==(n.col||''))ch.push('color');if((c0.ph||'')!==(n.ph||''))ch.push(n.ph?'foto nueva':'foto quitada');if(!!c0.hide!==!!n.hide)ch.push(n.hide?'oculto en el local':'visible en el local');if(clrPos)ch.push('ubicación automática');
+    audit('CENTRO_INTELIGENTE','equipo · '+p.name+': '+(ch.join(', ')||'cambios'));save();logEv('equipo','editado '+p.name);re();toast('Guardado: '+p.show);}},null,'editar persona')});
  if(adm){const inp=$('#ci-ph',w),pv=$('#ci-phv',w),bx=$('#ci-phx',w);
   inp.addEventListener('change',()=>safe(()=>{const fl=inp.files&&inp.files[0];if(!fl)return;if(!/^image\/(jpeg|png|webp)$/.test(fl.type))return w._err('Elegí una imagen JPG, PNG o WebP.');if(fl.size>8e6)return w._err('La imagen es muy grande (máximo 8 MB).');
    const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>safe(()=>{const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');const m=Math.min(im.width,im.height);g.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,128,128);
@@ -7476,43 +7480,49 @@ function personModal(k){const p=team().find(x=>x.k===k);if(!p)return;const f=FN[
  logEv('equipo','detalle de '+p.name);return w;}
 CI.personModal=k=>safe(()=>personModal(k),null,'equipo');
 
+/* ---------- tope de tamaño: la configuración viaja a la nube como un solo registro (máx. 400.000 caracteres en el servidor).
+   El módulo nunca deja que su parte pase de 150.000 ni que la configuración completa pase de 350.000; además poda personas que ya no están. */
+function ciFits(nc){safe(()=>{if(!nc||!nc.staff)return;const ks=new Set(team().map(p=>p.k));Object.keys(nc.staff).forEach(k=>{if(!ks.has(k))delete nc.staff[k];});},null,'podar');
+ const a=JSON.stringify(nc).length,b=JSON.stringify(Object.assign({},S.cfg,{ci:nc})).length;
+ if(a>150000||b>350000){toast('No se guardó: el Centro Inteligente ocupa demasiado espacio en la configuración (fotos). Quitá alguna foto y probá de nuevo.',1);logEv('error','configuración demasiado grande ('+a+' / '+b+')');return false;}return true;}
+CI.fits=ciFits;
 /* ---------- acciones (todas protegidas) ---------- */
 const act=(name,fn)=>{A[name]=(el,e)=>safe(()=>fn(el,e),null,name);};
 act('ciToggle',()=>{if(!isAdm())return toast('Sólo el administrador activa o desactiva el Centro Inteligente',1);const was=isOn();if(was){CI.st.listen=false;safe(()=>{rec&&rec.abort&&rec.abort();window.speechSynthesis&&window.speechSynthesis.cancel();},null,'apagar voz');}
  const roles=was?(cfg().roles||[]):[...document.querySelectorAll('.ci-root .ci-role:checked')].map(x=>x.value);
  S.cfg.ci=Object.assign({},cfg(),{on:!was,roles,by:user.name,at:now()});audit('CENTRO_INTELIGENTE',(was?'desactivado':'activado')+(was?'':' · lo ven: administrador'+(roles.length?', '+roles.join(', '):'')));
- logEv(was?'desactivado':'activado','por '+user.name);CI.st.sel=null;cancelAnimationFrame(anim);anim=0;save();rerender();toast(was?'Centro Inteligente desactivado. El sistema sigue igual.':'Centro Inteligente activado (sólo lectura).');});
+ logEv(was?'desactivado':'activado','por '+user.name);CI.st.sel=null;cancelAnimationFrame(anim);anim=0;save();re();toast(was?'Centro Inteligente desactivado. El sistema sigue igual.':'Centro Inteligente activado (sólo lectura).');});
 act('ciTab',el=>{/* compatibilidad: el tablero ya muestra todo junto; lleva a la sección pedida */const m={gerente:'ci-gm',mapa:'ci-stage'};const t=document.getElementById(m[el.dataset.id]||'');if(el.dataset.id==='registro')return A.ciLog();if(t&&t.scrollIntoView)t.scrollIntoView({block:'nearest'});});
 act('ciEdit',()=>{if(CI.st.edit){A.ciEdCancel();return;}edStart();});
-act('ciEdSel',el=>{CI.st.esel=el.dataset.id;CI.st.psel=null;rerender();});
-act('ciEdPSel',el=>{CI.st.psel=el.dataset.id;CI.st.esel=null;rerender();});
+act('ciEdSel',el=>{CI.st.esel=el.dataset.id;CI.st.psel=null;re();});
+act('ciEdPSel',el=>{CI.st.psel=el.dataset.id;CI.st.esel=null;re();});
 act('ciEdAdd',el=>{const t=MT[el.dataset.t]?el.dataset.t:'gond';const M=CI.st.draft.map;if(M.items.length>=80)return toast('Máximo 80 elementos en el local',1);M.auto=false;
- const n=M.items.filter(x=>x.t===t).length+1;const e={id:'e'+Date.now().toString(36),t,x:M.W/2-MT[t].w/2,y:M.D/2-MT[t].d/2,w:MT[t].w,d:MT[t].d,label:t==='gond'?'':MT[t].n.split(' /')[0]+(n>1?' '+n:''),rubro:'',color:''};edClamp(e,M);M.items.push(e);CI.st.esel=e.id;CI.st.psel=null;rerender();});
-act('ciEdDel',()=>{const M=CI.st.draft.map;const i=M.items.findIndex(x=>x.id===CI.st.esel);if(i<0)return;M.items.splice(i,1);M.auto=false;CI.st.esel=null;rerender();});
-act('ciEdDup',()=>{const e=edItem();if(!e)return;const M=CI.st.draft.map;if(M.items.length>=80)return;const c=Object.assign({},e,{id:'e'+Date.now().toString(36),x:e.x+0.5,y:e.y+0.5});edClamp(c,M);M.items.push(c);M.auto=false;CI.st.esel=c.id;rerender();});
-act('ciEdRot',()=>{const e=edItem();if(!e)return;const w=e.w;e.w=e.d;e.d=w;edClamp(e,CI.st.draft.map);CI.st.draft.map.auto=false;rerender();});
-act('ciEdMove',el=>{const dx=+el.dataset.dx||0,dy=+el.dataset.dy||0;const e=edItem();if(e){e.x+=dx;e.y+=dy;edClamp(e,CI.st.draft.map);CI.st.draft.map.auto=false;rerender();return;}
- if(CI.st.psel){const xy=CI.st.draft.pos[CI.st.psel]||personXY(CI.st.psel);if(xy){edMovePerson(CI.st.psel,xy[0]+dx,xy[1]+dy);rerender();}}});
-act('ciEdPAuto',()=>{if(CI.st.psel){CI.st.draft.pos[CI.st.psel]=null;rerender();}});
-act('ciEdCancel',()=>{CI.st.edit=false;CI.st.draft=null;CI.st.esel=CI.st.psel=null;logEv('local','edición descartada');rerender();});
-act('ciEdAuto',()=>{modal('Volver al plano automático','<p>El local vuelve a armarse solo: una góndola por rubro, cajas, depósito y entrada. Se descartan los elementos agregados a mano (al guardar).</p>',{okText:'Volver al automático',onOk:()=>{const d=D();CI.st.draft.map=autoMap(d.R,d.open.length);CI.st.esel=null;rerender();}});});
+ const n=M.items.filter(x=>x.t===t).length+1;const e={id:'e'+Date.now().toString(36),t,x:M.W/2-MT[t].w/2,y:M.D/2-MT[t].d/2,w:MT[t].w,d:MT[t].d,label:t==='gond'?'':MT[t].n.split(' /')[0]+(n>1?' '+n:''),rubro:'',color:''};edClamp(e,M);M.items.push(e);CI.st.esel=e.id;CI.st.psel=null;re();});
+act('ciEdDel',()=>{const M=CI.st.draft.map;const i=M.items.findIndex(x=>x.id===CI.st.esel);if(i<0)return;M.items.splice(i,1);M.auto=false;CI.st.esel=null;re();});
+act('ciEdDup',()=>{const e=edItem();if(!e)return;const M=CI.st.draft.map;if(M.items.length>=80)return;const c=Object.assign({},e,{id:'e'+Date.now().toString(36),x:e.x+0.5,y:e.y+0.5});edClamp(c,M);M.items.push(c);M.auto=false;CI.st.esel=c.id;re();});
+act('ciEdRot',()=>{const e=edItem();if(!e)return;const w=e.w;e.w=e.d;e.d=w;edClamp(e,CI.st.draft.map);CI.st.draft.map.auto=false;re();});
+act('ciEdMove',el=>{const dx=+el.dataset.dx||0,dy=+el.dataset.dy||0;const e=edItem();if(e){e.x+=dx;e.y+=dy;edClamp(e,CI.st.draft.map);CI.st.draft.map.auto=false;re();return;}
+ if(CI.st.psel){const xy=CI.st.draft.pos[CI.st.psel]||personXY(CI.st.psel);if(xy){edMovePerson(CI.st.psel,xy[0]+dx,xy[1]+dy);re();}}});
+act('ciEdPAuto',()=>{if(CI.st.psel){CI.st.draft.pos[CI.st.psel]=null;re();}});
+act('ciEdCancel',()=>{CI.st.edit=false;CI.st.draft=null;CI.st.esel=CI.st.psel=null;logEv('local','edición descartada');re();});
+act('ciEdAuto',()=>{modal('Volver al plano automático','<p>El local vuelve a armarse solo: una góndola por rubro, cajas, depósito y entrada. Se descartan los elementos agregados a mano (al guardar).</p>',{okText:'Volver al automático',onOk:()=>{const d=D();CI.st.draft.map=autoMap(d.R,d.open.length);CI.st.esel=null;re();}});});
 act('ciEdSave',()=>{if(!isAdm())return;const dr=CI.st.draft;const st=Object.assign({},cfg().staff||{});let np=0;
  Object.entries(dr.pos).forEach(([k,v])=>{const cur=Object.assign({},stf(k));if(v)cur.pos=v;else delete cur.pos;np++;if(Object.keys(cur).length)st[k]=cur;else delete st[k];});
- const map=dr.map.auto?undefined:cleanMap(dr.map);const nc=Object.assign({},cfg(),{staff:st});if(map)nc.map=map;else delete nc.map;S.cfg.ci=nc;
+ const map=dr.map.auto?undefined:cleanMap(dr.map);const nc=Object.assign({},cfg(),{staff:st});if(map)nc.map=map;else delete nc.map;if(!ciFits(nc))return;S.cfg.ci=nc;
  audit('CENTRO_INTELIGENTE','local '+(map?'personalizado: '+map.items.length+' elementos, '+map.W+' × '+map.D+' m':'automático')+(np?' · '+np+' ubicación(es) de personas':''));logEv('local','guardado');
- CI.st.edit=false;CI.st.draft=null;CI.st.esel=CI.st.psel=null;save();rerender();toast('Local guardado');});
-act('ciMode',el=>{CI.st.mode=el.dataset.id==='2d'?'2d':'3d';logEv('mapa','vista '+CI.st.mode);rerender();});
+ CI.st.edit=false;CI.st.draft=null;CI.st.esel=CI.st.psel=null;save();re();toast('Local guardado');});
+act('ciMode',el=>{CI.st.mode=el.dataset.id==='2d'?'2d':'3d';logEv('mapa','vista '+CI.st.mode);re();});
 act('ciRot',()=>{CI.st.rot=(CI.st.rot+1)%4;CI.draw();});
 act('ciFull',()=>{const s=document.getElementById('ci-stage');if(!s)return;if(document.fullscreenElement)document.exitFullscreen();else if(s.requestFullscreen)s.requestFullscreen().catch(()=>toast('Este navegador no permite pantalla completa',1));});
-act('ciSel',el=>{CI.st.sel=CI.st.sel===el.dataset.id?null:el.dataset.id;rerender();});
+act('ciSel',el=>{CI.st.sel=CI.st.sel===el.dataset.id?null:el.dataset.id;re();});
 act('ciInv',el=>{if(typeof invF!=='undefined')invF.rub=el.dataset.id;go('inventario');});
 act('ciPerson',el=>{if(seeTeam())personModal(el.dataset.id);});
-act('ciLog',()=>{modal('Registro del Centro Inteligente',`<p class="sm mut">Actividad y errores del módulo en este equipo (los errores no afectan al resto del sistema).</p>${CI.log.length?`<div class="tw" style="max-height:360px;overflow:auto"><table data-nosort><thead><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th></tr></thead><tbody>${CI.log.slice().reverse().slice(0,80).map(x=>`<tr><td>${E(fmtDT(x.ts))}</td><td>${x.kind==='error'?'<span class="tag bad">error</span>':E(x.kind)}</td><td>${E(x.msg)}${x.u?' <span class="mut">· '+E(x.u)+'</span>':''}</td></tr>`).join('')}</tbody></table></div>`:'<p class="mut">Sin actividad todavía.</p>'}`,{okText:'Cerrar',noCancel:true});});
+act('ciLog',()=>{modal('Registro del Centro Inteligente',`<p class="sm mut">Actividad y errores del módulo en este equipo (los errores no afectan al resto del sistema).</p>${CI.log.length?`<div class="tw" style="max-height:360px;overflow:auto"><table data-nosort><thead><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th></tr></thead><tbody>${CI.log.slice().reverse().slice(0,80).map(x=>`<tr><td>${E(fmtDT(x.ts))}</td><td>${x.kind==='error'?'<span class="tag bad">error</span>':E(x.kind)}</td><td>${E(x.msg)}${x.u&&seeTeam()?' <span class="mut">· '+E(x.u)+'</span>':''}</td></tr>`).join('')}</tbody></table></div>`:'<p class="mut">Sin actividad todavía.</p>'}`,{okText:'Cerrar',noCancel:true});});
 const ask=(q,byVoice)=>{q=String(q||'').trim().slice(0,200);if(!q)return;const a=CI.answer(q);CI.st.chat.push({q:(byVoice?'🎙 ':'')+q},{a});if(CI.st.chat.length>40)CI.st.chat.splice(0,CI.st.chat.length-40);logEv('gerente','consulta: '+intent(q));
- rerender();if(ttsOK())speak(a);else{const b=document.querySelector('.ci-root .ci-bot');if(b){b.classList.add('ci-talk');setTimeout(()=>b.classList.remove('ci-talk'),1400);}}};
+ re();if(ttsOK())speak(a);else{const b=document.querySelector('.ci-root .ci-bot');if(b){b.classList.add('ci-talk');setTimeout(()=>b.classList.remove('ci-talk'),1400);}}};
 act('ciAsk',()=>{const i=document.getElementById('ci-q');ask(i?i.value:'');});
 act('ciMic',()=>listenStart());
-act('ciMute',()=>{CI.st.mute=!CI.st.mute;if(CI.st.mute&&window.speechSynthesis)window.speechSynthesis.cancel();rerender();});
+act('ciMute',()=>{CI.st.mute=!CI.st.mute;if(CI.st.mute&&window.speechSynthesis)window.speechSynthesis.cancel();re();});
 act('ciChip',el=>{const c=CHIPS.concat(MORE).find(x=>x[0]===el.dataset.id);ask(c?c[1]:el.dataset.id);});
 
 /* ---------- registro en el menú (debajo de Resumen; sólo admin o roles habilitados) ---------- */
