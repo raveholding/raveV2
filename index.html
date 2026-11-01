@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-10-29 14:26 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-01 00:41 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -89,7 +89,7 @@ td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
 .pgrid{align-items:start;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem;margin-top:.7rem}
 .pbtn{min-height:84px;text-align:left;padding:.6rem;border-radius:14px;border:1px solid var(--line);background:#fff;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;gap:.2rem}
 .pw{display:flex;flex-direction:column;gap:.25rem}.pchips{display:flex;flex-direction:column;gap:.25rem}.pchips .btn{display:block;width:100%;height:auto;min-height:48px;padding:.3rem .55rem;font-size:.8rem;line-height:1.2;text-align:left;white-space:normal;overflow-wrap:anywhere}.pchips .btn span{display:block;color:var(--mut);font-size:.72rem}.wplv{border:1px solid var(--line);border-radius:12px;padding:.6rem .7rem;margin:.45rem 0}.wpg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem}.wpg label{font-size:.74rem}
-.pbtn:hover{border-color:var(--gold)}.pbtn b{font-size:.9rem}.pbtn span{font-size:.78rem;color:var(--mut)}
+.ptw{position:relative;display:flex;flex-direction:column}.ptw>.pbtn{flex:1}.ptw.ed>.pbtn{padding-right:3.1rem}.pedq{position:absolute;top:4px;right:4px;z-index:1;min-width:44px;min-height:44px;padding:0 .35rem;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:.8rem;font-weight:600;cursor:pointer}.pedq:hover,.pedq:focus-visible{border-color:var(--gold)}.pbtn:hover{border-color:var(--gold)}.pbtn b{font-size:.9rem}.pbtn span{font-size:.78rem;color:var(--mut)}
 .rdot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:.3rem}
 .cline{border-bottom:1px solid var(--line);padding:.5rem 0}
 .cline .f{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem}
@@ -1065,11 +1065,20 @@ function invQueryParse(q){const out={words:[],min:null,max:null,eq:[]};
   if((m=t.match(/^\$([\d.,]+)$/))){const v=parseNum(m[1]);if(v>=0){out.min=v;out.max=v;return;}}
   if(/^[\d.,]+$/.test(t)){const v=parseNum(t);out.eq.push({w:foldTxt(t),v:v>=0?v:null});return;}
   out.words.push(foldTxt(t));});return out;}
-function invMatch(p,Q){const pr=(+p.price||0)/100;const r=rub(p.rubro);
- const hay=foldTxt([p.name,p.sub,p.group,p.barcode,p.plu,r&&r.name].filter(Boolean).join(' '));
+/* V26.36 · la misma búsqueda sirve en Inventario y en Vender: palabras en cualquier orden (nombre, presentación, grupo, rubro,
+   código de barras, PLU, presentaciones mayoristas) y números del precio: exacto («3500») o mientras se escribe («35» → $ 3.500, $ 35.000…).
+   Con presentaciones mayoristas también encuentra por su precio por unidad o por bulto. */
+function prodPrices(p){const L=[(+p.price||0)];(Array.isArray(p.pres)?p.pres:[]).forEach(k=>{if(k&&k.unit>0){L.push(+k.unit);if(k.qty>0)L.push(Math.round(k.unit*k.qty));}});return L.map(c=>c/100);}
+function prodMatch(p,Q){const pr=(+p.price||0)/100;const r=rub(p.rubro);const pres=Array.isArray(p.pres)?p.pres:[];
+ const hay=foldTxt([p.name,p.sub,p.group,p.grupo,p.barcode,p.plu,r&&r.name].concat(pres.map(k=>[typeof wsLvName==='function'?wsLvName(k.lv):'',k.barcode].join(' '))).filter(Boolean).join(' '));
  if(Q.min!=null&&pr<Q.min-0.001)return false;if(Q.max!=null&&pr>Q.max+0.001)return false;
  if(!Q.words.every(w=>hay.includes(w)))return false;
- return Q.eq.every(e=>hay.includes(e.w)||(e.v!=null&&Math.abs(pr-e.v)<0.005));}
+ if(!Q.eq.length)return true;const PR=prodPrices(p);
+ return Q.eq.every(e=>{if(hay.includes(e.w))return true;if(e.v==null)return false;
+  if(PR.some(x=>Math.abs(x-e.v)<0.005))return true;
+  const d=/^\d+$/.test(e.w)?e.w:'';if(!d)return false;
+  return PR.some(x=>{const pd=String(Math.trunc(x+0.0001));return d.length<pd.length&&pd.startsWith(d);});});}
+const invMatch=prodMatch;
 function invSortL(L){const k=invF.sort;if(!k)return L;const d=k==='pdesc'?-1:1;
  return L.slice().sort((a,b)=>k==='name'?a.name.localeCompare(b.name,'es',{sensitivity:'base'}):(((+a.price||0)-(+b.price||0))*d||a.name.localeCompare(b.name,'es')));}
 let invSel=new Set();
@@ -1122,7 +1131,7 @@ A.rubEdit=el=>{if(!can('edit_products'))return toast('Sin permiso',1);const r=el
   if(r){Object.assign(r,d);audit('RUBRO_EDITAR',n);}else{S.rubros.splice(S.rubros.findIndex(x=>x.kind==='shared'),0,Object.assign({id:uid(),reparte:false,kind:'rubro',mHint:''},d));audit('RUBRO_ALTA',n);}
   save();rerender();pubRefresh();toast(RW(1)+' guardad'+(ownerMode()?'a':'o'));}});
  w.addEventListener('click',e=>{const b=e.target.closest('.swatch');if(!b)return;$('#rb-c',w).value=b.dataset.col;$$('.swatch',w).forEach(x=>x.classList.toggle('on',x===b));});};
-A.pedit=el=>{const p=S.products.find(x=>x.id===el.dataset.id)||null;const cv=can('view_cost');
+A.pedit=el=>{const p=S.products.find(x=>x.id===el.dataset.id)||null;const cv=can('view_cost');const after=p?null:(typeof pEditAfter==='function'?pEditAfter:null);if(typeof pEditAfter!=='undefined')pEditAfter=null;
  const w=modal(p?'Editar producto':'Nuevo producto',`<label for="pm-n">Nombre</label><input id="pm-n" value="${esc(p?p.name:'')}" maxlength="80">
  <div class="grid g2"><div><label for="pm-r">${ownerMode()?'Categoría':'Rubro (a quién pertenece)'}</label><select id="pm-r"><option value="">— Elegí —</option>${S.rubros.filter(r=>r.kind==='rubro').map(r=>`<option value="${r.id}" ${p&&p.rubro===r.id?'selected':''}>${esc(r.name)}${r.owner&&!ownerMode()?' ('+esc(r.owner)+')':''}</option>`).join('')}</select></div>
  <div><label for="pm-u">Unidad</label><select id="pm-u">${['u','kg','l'].map(u=>`<option value="${u}" ${p&&p.unit===u?'selected':''}>${unitLbl(u)}</option>`).join('')}</select></div></div>
@@ -1149,7 +1158,7 @@ A.pedit=el=>{const p=S.products.find(x=>x.id===el.dataset.id)||null;const cv=can
   if(p&&p.stock!==d.stock)d.hist=true;
   d.msec=MP.msec;if(MP.img!==undefined){d.img=MP.img;d.imgOff=MP.imgOff;audit('FOTO_PRODUCTO',name+' · '+(MP.img?'foto nueva':'foto quitada'));}
   if(p){if(p.price!==pr||p.cost!==cost)audit('PRECIO_PRODUCTO',p.name+': precio '+money(p.price)+' → '+money(pr)+(p.cost!==cost?' · costo '+money(p.cost)+' → '+money(cost):''));Object.assign(p,d);audit('EDITAR_PRODUCTO',name);}
-  else{S.products.push(Object.assign({id:uid()},d));audit('ALTA_PRODUCTO',name+' · '+rubName(rubro));}save();rerender();toast('Producto guardado');}});
+  else{S.products.push(Object.assign({id:uid()},d));audit('ALTA_PRODUCTO',name+' · '+rubName(rubro));}save();rerender();toast('Producto guardado');if(after)setTimeout(()=>after(S.products[S.products.length-1]),0);}});
  const upd=()=>{const ul=$('#pm-ul',w);if(ul)ul.textContent=unitLbl(val('pm-u'));if(!cv)return;const c=cents(val('pm-c')),pc=parseNum(val('pm-p')),sg=sugPrice(c,val('pm-t'),pc);const s=$('#pm-s',w);
   if(val('pm-p')==='')s.textContent='Ingresá costo y porcentaje para ver el precio sugerido.';else if(isNaN(sg))s.textContent=val('pm-t')==='margen'?'El margen debe estar entre 0 y menos de 100 %.':'Porcentaje o costo inválido.';else s.innerHTML='Precio sugerido: <b>'+money(sg)+'</b> <button class="btn sm" type="button" id="pm-use">Usar sugerido</button>';
   const f=cents(val('pm-f'));const x=$('#pm-x',w);if(!isNaN(f)&&!isNaN(c)&&c>0){x.textContent='Con ese precio: recargo '+numAR((f-c)/c*100,1)+' % · margen bruto '+numAR((f-c)/f*100,1)+' %';}else x.textContent='';};
@@ -1419,14 +1428,17 @@ function commitSale(method,arca,channel,lines,opts){
  emit('sale.created',{sale:sale.n,total,method});if(digital)emit('payment.pending',{sale:sale.n,method});
  if(typeof pubRefresh==='function')pubRefresh();save();return{sale,stamp:stampRes&&stampRes.ok?stampRes:null};}
 
-function posGrid(){const g=$('#pgrid');if(!g)return;const q=pos.q.trim().toLowerCase();
- const list=S.products.filter(p=>p.active&&(!pos.rub||p.rubro===pos.rub)&&(!q||pfull(p).toLowerCase().includes(q)||(p.barcode&&p.barcode.includes(q))));
- g.innerHTML=list.map(p=>wsTile(p,`<button class="pbtn" data-act="padd" data-id="${p.id}" ${(stockOf(p)<=0&&!canOver(p))?'disabled':''}><b>${esc(p.name)}</b>${p.sub?`<span>${esc(p.sub)}</span>`:''}<span><i class="rdot" style="background:${rub(p.rubro)?safeColor(rub(p.rubro).color):'#999'}"></i>${esc(rubName(p.rubro))}</span><span>${money(p.price)}${p.unit!=='u'?' / '+unitLbl(p.unit):''} · <span class="${stockOf(p)<0?'negs':''}">stock ${stockTxt(p)}</span></span></button>`)).join('')||'<p class="mut">Sin resultados.</p>';}
+/* V26.36 · Vender busca igual que Inventario (palabras en cualquier orden, sin tildes, y números del precio) */
+function posFind(q){const Q=invQueryParse(q);return S.products.filter(p=>p.active&&!p.archived&&prodMatch(p,Q));}
+function posGrid(){const g=$('#pgrid');if(!g)return;const q=pos.q.trim();const ed=can('edit_products');
+ const list=(q?posFind(q):S.products.filter(p=>p.active&&!p.archived)).filter(p=>!pos.rub||p.rubro===pos.rub);
+ const nores=`<div class="card" style="grid-column:1/-1"><p class="mut" style="margin:0 0 .5rem">Sin resultados${q?' para «'+esc(q)+'»':''}.</p>${ed&&q?`<button class="btn gold" data-act="posNewItem">+ Crear artículo «${esc(q.slice(0,40))}»</button>`:''}</div>`;
+ g.innerHTML=list.map(p=>wsTile(p,`<div class="ptw${ed?' ed':''}">${ed?`<button type="button" class="pedq" data-act="posEditPrice" data-id="${p.id}" aria-label="Cambiar precio de ${esc(p.name)}" title="Cambiar precio">✎ $</button>`:''}<button class="pbtn" data-act="padd" data-id="${p.id}" ${(stockOf(p)<=0&&!canOver(p))?'disabled':''}><b>${esc(p.name)}</b>${p.sub?`<span>${esc(p.sub)}</span>`:''}<span><i class="rdot" style="background:${rub(p.rubro)?safeColor(rub(p.rubro).color):'#999'}"></i>${esc(rubName(p.rubro))}</span><span>${money(p.price)}${p.unit!=='u'?' / '+unitLbl(p.unit):''} · <span class="${stockOf(p)<0?'negs':''}">stock ${stockTxt(p)}</span></span></button></div>`)).join('')||nores;}
 function posCart(){const c=$('#pcart');if(!c)return;const sess=openSess();if(typeof wsRecalc==='function'){wsRecalc();wsGridSync();}
  const fb=$('#fbar');if(fb)fb.innerHTML=fbarHTML();
  c.innerHTML=(sess?'':`<div class="warnbox">No hay caja abierta. <a href="#panel/caja">Abrí la caja</a> para vender.</div>`)+
  (pos.lines.length?pos.lines.map((l,i)=>`<div class="cline" style="${i===pos.sel?'background:#fbf5e8;border-radius:10px;padding:.5rem':''}"><div class="row"><b class="sp">${esc(l.name)}</b><span class="tag">${esc(rubName(l.rubro))}</span><button class="btn sm red" data-act="prm" data-i="${i}" aria-label="Quitar">✕</button></div>
-  <div class="f"><div><label>Cant.${l.unit!=='u'?' ('+unitLbl(l.unit)+')':''}</label><input inputmode="decimal" data-line="${i}" data-fld="qty" value="${esc(String(l.qty).replace('.',','))}"></div><div><label>Precio $</label><input inputmode="decimal" data-line="${i}" data-fld="price" value="${esc(pesosStr(l.price))}"></div><div><label>Importe $</label><input inputmode="decimal" data-line="${i}" data-fld="amt" value="${esc(pesosStr(lineTotal(l)))}"></div></div>${(()=>{const q=prod(l.pid);if(q&&isKit(q)){const short=kitComps(q).filter(x=>{const n=kitNeed(pos.lines)[x.pid]||0;return n>x.p.stock+1e-9;});return`<div class="sm mut" style="margin-top:.2rem">Combo: descuenta ${esc(kitTxt(q))}</div>`+(short.length?`<div class="tag bad" style="margin-top:.3rem">Sin stock: ${short.map(x=>esc(pfull(x.p))).join(', ')} quedará en negativo</div>`:'');}return q&&qtyIn(l.pid)>q.stock+1e-9?`<div class="tag bad" style="margin-top:.3rem">Sin stock: quedará en negativo (${stockTxt({stock:q.stock-qtyIn(l.pid),unit:q.unit})})</div>`:'';})()}${typeof wsLineInfo==='function'?wsLineInfo(l,i):''}${l.price!==l.list?`<div class="sm warn tag warn" style="margin-top:.3rem">Precio de lista ${money(l.list)} · modificado</div>`:''}${(l.unit!=='u'&&scaleReady())?`<button class="btn sm" data-act="pesar" data-i="${i}">⚖ Pesar</button>`:''}</div>`).join(''):'<p class="mut">Tocá un producto o pasá el lector de código de barras.</p>')+
+  <div class="f"><div><label>Cant.${l.unit!=='u'?' ('+unitLbl(l.unit)+')':''}</label><input inputmode="decimal" data-line="${i}" data-fld="qty" value="${esc(String(l.qty).replace('.',','))}"></div><div><label>Precio $</label><input inputmode="decimal" data-line="${i}" data-fld="price" value="${esc(pesosStr(l.price))}"></div><div><label>Importe $</label><input inputmode="decimal" data-line="${i}" data-fld="amt" value="${esc(pesosStr(lineTotal(l)))}"></div></div>${typeof posSaveBtn==='function'?posSaveBtn(l,i):''}${(()=>{const q=prod(l.pid);if(q&&isKit(q)){const short=kitComps(q).filter(x=>{const n=kitNeed(pos.lines)[x.pid]||0;return n>x.p.stock+1e-9;});return`<div class="sm mut" style="margin-top:.2rem">Combo: descuenta ${esc(kitTxt(q))}</div>`+(short.length?`<div class="tag bad" style="margin-top:.3rem">Sin stock: ${short.map(x=>esc(pfull(x.p))).join(', ')} quedará en negativo</div>`:'');}return q&&qtyIn(l.pid)>q.stock+1e-9?`<div class="tag bad" style="margin-top:.3rem">Sin stock: quedará en negativo (${stockTxt({stock:q.stock-qtyIn(l.pid),unit:q.unit})})</div>`:'';})()}${typeof wsLineInfo==='function'?wsLineInfo(l,i):''}${l.price!==l.list?`<div class="sm warn tag warn" style="margin-top:.3rem">Precio de lista ${money(l.list)} · modificado</div>`:''}${(l.unit!=='u'&&scaleReady())?`<button class="btn sm" data-act="pesar" data-i="${i}">⚖ Pesar</button>`:''}</div>`).join(''):'<p class="mut">Tocá un producto o pasá el lector de código de barras.</p>')+
  `${typeof wsCartBar==='function'?wsCartBar():''}<div class="row" style="margin:.7rem 0"><span class="sp mut">Total</span><span class="total">${money(posTotal())}</span></div>
  <p class="sm ${pos.arca?'':'mut'}">${pos.arca?'Documento: Factura electrónica (el CAE se pide a ARCA al cobrar)':'Documento: Ticket interno — DOCUMENTO NO VÁLIDO COMO FACTURA'}</p>
  <p class="sm mut">Medio elegido: <b>${esc(MET[pos.method]||pos.method)}</b></p>
@@ -1565,11 +1577,11 @@ function payModal(s){const pdb=typeof pdPayBlock==='function'?pdPayBlock(s):'';
  if(pdb&&typeof pdBind==='function')pdBind(w);}
 A.paysale=el=>{const s=S.sales.find(x=>x.id===el.dataset.id);if(s)payModal(s);};
 
-reg('vender','Vender','cart','sell',()=>`<div class="fbar" id="fbar" role="toolbar" aria-label="Teclas de función"></div><div class="pos"><section><div class="card"><div class="row" style="flex-wrap:wrap"><input id="psearch" class="sp" style="min-width:12rem;flex:1 1 12rem" placeholder="Buscar producto o código de barras (F11)" autocomplete="off" aria-label="Buscar producto"><span id="devchips" class="row"></span></div>
+reg('vender','Vender','cart','sell',()=>`<div class="fbar" id="fbar" role="toolbar" aria-label="Teclas de función"></div><div class="pos"><section><div class="card"><div class="row" style="flex-wrap:wrap"><input id="psearch" class="sp" style="min-width:12rem;flex:1 1 12rem" placeholder="Buscar por nombre, precio o código (F11)" autocomplete="off" aria-label="Buscar producto por nombre, precio o código de barras">${can('edit_products')?'<button class="btn" data-act="posNewItem" title="Agregar un artículo nuevo al inventario y al ticket">+ Artículo</button>':''}<span id="devchips" class="row"></span></div>
  <div class="row" style="margin-top:.6rem"><button class="btn sm on" data-act="prub" data-id="">Todos</button>${S.rubros.filter(r=>r.kind==='rubro').map(r=>`<button class="btn sm" data-act="prub" data-id="${r.id}"><i class="rdot" style="background:${safeColor(r.color)}"></i>${esc(r.name)}</button>`).join('')}</div><div id="pgrid" class="pgrid"></div></div></section>
  <section class="card" id="pcart" aria-label="Ticket"></section></div>`,()=>{pos.rub='';posGrid();posCart();const s=$('#psearch');s.value=pos.q;if(typeof devChips==='function')devChips();
  s.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=s.value.trim();if(!q)return;if(addByCode(q)){s.value='';pos.q='';posGrid();return;}
-  const L=S.products.filter(x=>x.active&&pfull(x).toLowerCase().includes(q.toLowerCase()));if(L.length===1){A.padd({dataset:{id:L[0].id}});s.value='';pos.q='';posGrid();}}});},'Operación');
+  const L=posFind(q).filter(p=>!pos.rub||p.rubro===pos.rub);if(L.length===1){A.padd({dataset:{id:L[0].id}});s.value='';pos.q='';posGrid();}}});},'Operación');
 
 /* ---- lector de código de barras (teclado) y etiqueta EAN-13 de balanza ---- */
 function addByCode(code){code=String(code).trim();
@@ -1599,6 +1611,58 @@ document.addEventListener('keydown',e=>{if(curScreen!=='vender'||$('#panel').hid
  e.preventDefault();
  const k=FKEYS[n-1];const el={dataset:{m:k.m||''}};
  if(A[k.act])A[k.act](el);});
+
+/* ===== V26.36 · Vender más rápido: cambiar el precio de un artículo y crear artículos sin salir de Vender =====
+   · «✎ $» en cada artículo: cambia el precio de venta (y el costo, si se ven costos) del inventario; queda auditado.
+   · «+ Artículo» (o «Crear artículo» cuando la búsqueda no encuentra nada): abre el alta completa del inventario con el
+     nombre o el código ya escritos y, al guardar, lo suma al ticket.
+   · En el ticket, si se cambió el precio de una línea a mano, «Guardar como precio del producto» lo pasa al inventario.
+   Todo con el permiso «Editar productos» (edit_products), igual que en Inventario. */
+let pEditAfter=null;
+/* presentaciones mayoristas editables desde Vender (sólo con el módulo mayorista y permiso de listas de precios) */
+const posPresList=p=>(Array.isArray(p.pres)?p.pres:[]).map((k,i)=>({k,i})).filter(x=>x.k&&x.k.qty>0);
+const posPresEd=p=>typeof wsOn==='function'&&wsOn()&&can('price_lists')&&posPresList(p).length>0;
+function posPriceCheck(p,pr){if(!(pr>0))return'El precio de venta debe ser mayor a cero.';
+ const P=(Array.isArray(p.pres)?p.pres:[]).filter(k=>k&&k.unit>pr);
+ if(P.length)return'Con ese precio, '+P.map(k=>(typeof wsLvName==='function'?wsLvName(k.lv):'la presentación')+' ('+money(k.unit)+' c/u)').join(', ')+' quedaría más caro por unidad que la unidad suelta. Usá «Editar todo» para ajustar también las presentaciones.';
+ return'';}
+function posApplyPrice(p,pr,cost){const old=p.price,oc=p.cost;if(old===pr&&(cost==null||oc===cost))return false;
+ audit('PRECIO_PRODUCTO',p.name+': precio '+money(old)+' → '+money(pr)+(cost!=null&&oc!==cost?' · costo '+money(oc)+' → '+money(cost):'')+' · desde Vender');
+ p.price=pr;if(cost!=null)p.cost=cost;
+ /* las líneas del ticket con el precio anterior (no puestas a mano) pasan al precio nuevo */
+ pos.lines.forEach(l=>{if(l.pid===p.id&&!l.man&&l.price===old){l.price=pr;l.list=pr;}if(l.pid===p.id&&cost!=null)l.cost=cost;});
+ save();if(typeof pubRefresh==='function')pubRefresh();return true;}
+A.posEditPrice=el=>{if(!can('edit_products'))return toast('Sin permiso para cambiar precios',1);const p=prod(el.dataset.id);if(!p)return;const cv=can('view_cost');
+ const w=modal('Cambiar precio',`<p style="margin-top:0"><b>${esc(pfull(p))}</b><br><span class="sm mut">${esc(rubName(p.rubro))} · precio actual ${money(p.price)}${p.unit!=='u'?' / '+unitLbl(p.unit):''}</span></p>
+  <label for="qp-p">Precio de venta ($)</label>${numIn('qp-p',p.price)}
+  ${cv?`<label for="qp-c">Costo ($)</label>${numIn('qp-c',p.cost)}<p id="qp-m" class="sm mut"></p>`:''}
+  ${posPresEd(p)?`<fieldset style="border:1px solid var(--line);border-radius:12px;padding:.5rem .7rem;margin:.6rem 0"><legend class="sm"><b>Precios mayoristas (por unidad)</b></legend>${posPresList(p).map(({k,i})=>`<label for="qp-k${i}">${esc(typeof wsLvName==='function'?wsLvName(k.lv):k.lv)} ×${numAR(k.qty,3)} — precio por unidad ($)</label>${numIn('qp-k'+i,k.unit)}`).join('')}<p class="sm mut" style="margin:.3rem 0 0">A más cantidad, el precio por unidad no puede subir.</p></fieldset>`:''}
+  <p class="sm mut">Cambia el precio en el inventario${p.menu?' y en el menú público':''}. Queda registrado en Auditoría.</p>
+  <button type="button" class="btn sm" id="qp-all">Editar todo el artículo…</button>`,
+  {okText:'Guardar precio',onOk:w=>{const pr=cents(val('qp-p'));if(!(pr>0))return w._err('El precio de venta debe ser mayor a cero.'),false;
+   let cost=null;if(cv){const c=cents(val('qp-c')===''?'0':val('qp-c'));if(isNaN(c)||c<0)return w._err('Costo inválido.'),false;cost=c;}
+   let np=null;if(posPresEd(p)){np=(p.pres||[]).map(k=>Object.assign({},k));for(const {i} of posPresList(p)){const c=cents(val('qp-k'+i));if(!(c>0))return w._err('Cada precio mayorista debe ser mayor a cero.'),false;np[i].unit=c;}
+    const ord=np.map((k,i)=>({k,i})).filter(x=>x.k&&x.k.qty>0).sort((a,b)=>a.k.qty-b.k.qty);let prev=pr;for(const x of ord){if(x.k.unit>prev)return w._err((typeof wsLvName==='function'?wsLvName(x.k.lv):'Una presentación')+' quedaría más cara por unidad ('+money(x.k.unit)+') que la cantidad menor ('+money(prev)+').'),false;prev=x.k.unit;}}
+   else{const e2=posPriceCheck(p,pr);if(e2)return w._err(e2),false;}
+   let chP=false;if(np&&JSON.stringify(np)!==JSON.stringify(p.pres)){p.pres=np;chP=true;audit('PRESENTACIONES_PRODUCTO',p.name+' · '+np.map(k=>(typeof wsLvName==='function'?wsLvName(k.lv):k.lv)+' ×'+k.qty+' '+money(k.unit)+'/u').join(' · ')+' · desde Vender');}
+   const ch=posApplyPrice(p,pr,cost)||chP;if(chP){save();if(typeof pubRefresh==='function')pubRefresh();}rerender();toast(ch?'Precio de '+p.name+': '+money(pr):'Sin cambios');}});
+ const upd=()=>{const m=$('#qp-m',w);if(!m)return;const pr=cents(val('qp-p')),c=cents(val('qp-c'));m.textContent=pr>0&&c>0?'Margen bruto: '+numAR((pr-c)/pr*100,1)+' %':'';};
+ w.addEventListener('input',upd);upd();
+ $('#qp-all',w).addEventListener('click',()=>{w.remove();A.pedit({dataset:{id:p.id}});});};
+A.posNewItem=()=>{if(!can('edit_products'))return toast('Sin permiso para crear artículos',1);const q=(pos.q||'').trim();
+ pEditAfter=np=>{pos.q='';const s=$('#psearch');if(s)s.value='';posGrid();A.padd({dataset:{id:np.id}});toast('Artículo creado y agregado al ticket: '+np.name);};
+ A.pedit({dataset:{id:''}});
+ const n=$('#pm-n'),b=$('#pm-b'),r=$('#pm-r');
+ if(q&&/^\d{6,}$/.test(q)){if(b)b.value=q;}else if(q&&n&&!/^[<>$\d.,\-]+$/.test(q)){n.value=q.charAt(0).toUpperCase()+q.slice(1);}
+ if(r&&pos.rub&&rub(pos.rub))r.value=pos.rub;
+ setTimeout(()=>{const f=$('#pm-n');if(f&&!f.value)f.focus();else{const pf=$('#pm-f');if(pf)pf.focus();}},50);};
+function posSaveBtn(l,i){if(!l.man||!can('edit_products'))return'';const p=prod(l.pid);if(!p||isKit(p)||l.price===p.price)return'';
+ if(typeof wsOn==='function'&&wsOn()&&typeof wsChan==='function'&&wsChan()==='mayorista')return'';
+ return`<button class="btn sm" style="margin-top:.35rem" data-act="posSavePrice" data-i="${i}">Guardar ${money(l.price)} como precio de ${esc(p.name)}</button>`;}
+A.posSavePrice=el=>{if(!can('edit_products'))return toast('Sin permiso',1);const l=pos.lines[+el.dataset.i];if(!l)return;const p=prod(l.pid);if(!p)return;
+ const e=posPriceCheck(p,l.price);if(e)return toast(e,1);
+ modal('Guardar precio',`<p>¿Cambiar el precio de <b>${esc(p.name)}</b> de ${money(p.price)} a <b>${money(l.price)}</b> en el inventario${p.menu?' y en el menú':''}?</p>`,
+  {okText:'Sí, guardar',onOk:()=>{posApplyPrice(p,l.price,null);l.man=0;l.list=l.price;rerender();toast('Precio guardado: '+p.name+' '+money(l.price));}});};
 
 /* ===== V26 · 4.14 Cajas flexibles, caja principal y multisucursal =====
    Perfil de operación por comercio (cfg.cashProfile): simple (por defecto, igual que siempre) · multi · main · branches.
