@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-01 05:34 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-01 05:42 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -7098,6 +7098,38 @@ function answer(q){const d=D();const k=intent(q);const li=a=>'<ul>'+a.map(x=>'<l
  return'No entendí la pregunta. Probá con «¿cómo vamos hoy?», «¿qué tengo que reponer?» o escribí un artículo.';}
 CI.answer=q=>safe(()=>answer(q),'No pude responder ahora (el error quedó registrado).','gerente');
 
+/* ---------- voz (V26.38): hablarle al Gerente y que responda en voz alta ----------
+   · Micrófono: reconocimiento de voz del navegador (Chrome/Edge en PC y Android; Safari según versión). El navegador
+     envía el audio a su servicio (Google/Microsoft/Apple) para pasarlo a texto: por eso viene APAGADO y lo enciende el
+     administrador. El sistema no graba ni guarda audio; sólo escucha mientras el botón está encendido.
+   · Respuesta en voz alta: síntesis de voz del propio navegador (no sale del equipo).
+   · Configuración propia del módulo (S.cfg.ci.voice / .tts); no toca la del Asistente general. */
+const SRc=()=>window.SpeechRecognition||window.webkitSpeechRecognition||null;
+const voiceOK=()=>!!cfg().voice&&!!SRc();
+const ttsOK=()=>!!cfg().tts&&!!window.speechSynthesis&&!CI.st.mute;
+CI.st.listen=false;CI.st.mute=false;let rec=null;
+function plain(h){const d=document.createElement('div');d.innerHTML=String(h||'').replace(/<li>/g,'. ').replace(/<br\s*\/?>/g,'. ');return (d.textContent||'').replace(/\$\s?([\d.]+),(\d\d)/g,'$1 pesos con $2').replace(/\$\s?([\d.]+)/g,'$1 pesos').replace(/\s+/g,' ').replace(/(\. )+/g,'. ').trim();}
+function speak(h){if(!ttsOK())return;safe(()=>{const t=plain(h).slice(0,600);if(!t)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-AR';u.rate=1.02;
+ const vs=window.speechSynthesis.getVoices?window.speechSynthesis.getVoices():[];const v=vs.find(x=>/^es[-_]AR/i.test(x.lang))||vs.find(x=>/^es/i.test(x.lang));if(v)u.voice=v;
+ const bot=()=>document.querySelector('.ci-root .ci-bot');u.onstart=()=>{const b=bot();if(b)b.classList.add('ci-talk');};u.onend=u.onerror=()=>{const b=bot();if(b)b.classList.remove('ci-talk');};
+ window.speechSynthesis.speak(u);CI._spoken=t;},null,'voz');}
+CI.speak=speak;
+function listenStart(){if(!voiceOK())return toast('La voz del Centro Inteligente está apagada o este navegador no la ofrece. Escribí tu pregunta.',1);
+ if(CI.st.listen){safe(()=>rec&&rec.stop(),null,'micrófono');return;}
+ safe(()=>{const R=SRc();rec=new R();rec.lang='es-AR';rec.interimResults=false;rec.continuous=false;rec.maxAlternatives=1;
+  rec.onresult=ev=>{const t=ev.results&&ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:'';CI.st.listen=false;logEv('voz','pregunta por voz');if(t)ask(t,true);else rerender();};
+  rec.onerror=ev=>{CI.st.listen=false;logEv('voz','no se pudo escuchar ('+(ev&&ev.error||'error')+')');toast(ev&&ev.error==='not-allowed'?'El navegador no dio permiso al micrófono. Habilitalo desde el candado de la barra de direcciones.':'No pude escuchar. Probá de nuevo o escribí.',1);rerender();};
+  rec.onend=()=>{if(CI.st.listen){CI.st.listen=false;rerender();}};
+  if(window.speechSynthesis)window.speechSynthesis.cancel();CI.st.listen=true;rerender();rec.start();},null,'micrófono');}
+function voiceCard(){if(!isAdm())return'';const c=cfg();const sr=!!SRc(),ss=!!window.speechSynthesis;
+ return`<details class="ci-side" style="margin-bottom:.6rem"><summary style="min-height:44px;display:flex;align-items:center;cursor:pointer"><b>Voz del Gerente IA</b>&nbsp;<span class="tag ${c.voice||c.tts?'ok':''}">${c.voice&&c.tts?'micrófono y voz':c.voice?'micrófono':c.tts?'voz':'apagada'}</span></summary>
+  <label class="chk"><input type="checkbox" class="ci-vset" data-k="voice" ${c.voice?'checked':''} ${sr?'':'disabled'}> Hablarle por micrófono${sr?'':' — este navegador no lo ofrece (usá Chrome o Edge)'}</label>
+  <p class="sm mut" style="margin:.1rem 0 .4rem">El navegador manda el audio a su servicio (Google o Microsoft) para pasarlo a texto. El sistema no graba ni guarda audio y sólo escucha mientras tocás el micrófono.</p>
+  <label class="chk"><input type="checkbox" class="ci-vset" data-k="tts" ${c.tts?'checked':''} ${ss?'':'disabled'}> Que lea las respuestas en voz alta${ss?'':' — este navegador no lo ofrece'}</label>
+  <p class="sm mut" style="margin:.1rem 0 0">La lectura en voz alta la hace el propio equipo; no sale información.</p></details>`;}
+document.addEventListener('change',e=>safe(()=>{const t=e.target;if(!t||!t.classList||!t.classList.contains('ci-vset'))return;if(!isAdm()){toast('Sólo el administrador cambia la voz',1);rerender();return;}
+ const k=t.dataset.k==='tts'?'tts':'voice';S.cfg.ci=Object.assign({},cfg(),{[k]:!!t.checked});audit('CENTRO_INTELIGENTE','voz: '+(k==='voice'?'micrófono':'lectura en voz alta')+' '+(t.checked?'encendida':'apagada'));logEv('voz',(k==='voice'?'micrófono':'lectura')+' '+(t.checked?'encendido':'apagado'));save();rerender();},null,'voz config'));
+
 /* ---------- pantalla ---------- */
 function kpis(d){return`<div class="ci-kpis"><div class="ci-kpi"><span>Ventas de hoy</span><b>${$m(d.tot)}</b><span>${d.n} venta(s)</span></div>
  <div class="ci-kpi"><span>Cajas abiertas</span><b>${d.open.length}</b><span>${d.open.map(s=>E(s.regName||('Caja '+(s.caja||1)))).join(', ')||'—'}</span></div>
@@ -7119,8 +7151,9 @@ function view(){if(CI._failRender){CI._failRender=false;throw new Error('falla s
    <div class="tw" style="margin-top:.6rem"><table data-nosort><caption class="ci-sr">Góndolas por rubro (misma información que el mapa)</caption><thead><tr><th>Rubro</th><th class="r">Artículos</th><th class="r">Negativo</th><th class="r">Bajo</th><th class="r">Vendido hoy</th><th></th></tr></thead><tbody>
    ${d.R.map(r=>`<tr><td><span class="ci-dot" style="background:${r.color}"></span>${E(r.name)}</td><td class="r">${r.items}</td><td class="r ${r.neg?'ci-neg':''}">${r.neg}</td><td class="r ${r.low?'ci-low':''}">${r.low}</td><td class="r">${$m(r.today)}</td><td><button class="btn sm" style="min-height:44px" data-act="ciSel" data-id="${E(r.id)}">Ver</button></td></tr>`).join('')}</tbody></table></div></div>
    ${sideHTML(d)}</div>`;
- else if(t==='gerente')body=`<div class="ci-gm"><div>${BOT}<p class="sm mut">Gerente IA · responde con los datos de este equipo. Sólo lee.</p></div><div><div class="ci-chat" aria-live="polite">${st.chat.length?st.chat.map(m=>`<div class="ci-msg ${m.q?'ci-q':'ci-a'}">${m.q?E(m.q):m.a}</div>`).join(''):`<div class="ci-msg ci-a">Hola${typeof user!=='undefined'&&user?', '+E(user.name):''}. Preguntame cómo va el día, qué reponer, qué se vende más, cómo está la caja, márgenes o deudas.</div>`}</div>
-   <div class="ci-ask"><label class="ci-sr" for="ci-q">Pregunta al Gerente IA</label><input id="ci-q" autocomplete="off" maxlength="200" placeholder="Escribí tu pregunta o un artículo"><button class="btn gold" data-act="ciAsk">Preguntar</button></div>
+ else if(t==='gerente')body=`${voiceCard()}<div class="ci-gm"><div>${BOT}<p class="sm mut">Gerente IA · responde con los datos de este equipo. Sólo lee.</p></div><div><div class="ci-chat" aria-live="polite">${st.chat.length?st.chat.map(m=>`<div class="ci-msg ${m.q?'ci-q':'ci-a'}">${m.q?E(m.q):m.a}</div>`).join(''):`<div class="ci-msg ci-a">Hola${typeof user!=='undefined'&&user?', '+E(user.name):''}. Preguntame cómo va el día, qué reponer, qué se vende más, cómo está la caja, márgenes o deudas.</div>`}</div>
+   <div class="ci-ask"><label class="ci-sr" for="ci-q">Pregunta al Gerente IA</label><input id="ci-q" autocomplete="off" maxlength="200" placeholder="Escribí tu pregunta o un artículo"><button class="btn gold" data-act="ciAsk">Preguntar</button>${voiceOK()?`<button class="btn ${st.listen?'red':''}" data-act="ciMic" aria-pressed="${st.listen}" aria-label="${st.listen?'Detener el micrófono':'Hablar con el Gerente'}">${st.listen?'■ Detener':'🎙 Hablar'}</button>`:''}${cfg().tts&&window.speechSynthesis?`<button class="btn" data-act="ciMute" aria-pressed="${!st.mute}" aria-label="${st.mute?'Activar la voz de las respuestas':'Silenciar las respuestas'}">${st.mute?'🔇':'🔊'}</button>`:''}</div>
+   ${st.listen?'<p class="sm" role="status" style="margin:.3rem 0 0"><b>🎙 Escuchando…</b> hablá ahora (por ejemplo: «¿cómo vamos hoy?»).</p>':voiceOK()?'<p class="sm mut" style="margin:.3rem 0 0">Tocá «Hablar» y preguntá en voz alta. No se guarda audio.</p>':''}
    <div class="ci-chips">${CHIPS.map(c=>`<button class="btn sm" data-act="ciChip" data-id="${c[0]}">${E(c[1])}</button>`).join('')}</div></div></div>`;
  else body=`<div class="card"><p class="sm mut">Actividad y errores del Centro Inteligente en este equipo (los errores no afectan al resto del sistema).</p>${CI.log.length?`<div class="tw"><table data-nosort><thead><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th></tr></thead><tbody>${CI.log.slice().reverse().slice(0,60).map(x=>`<tr><td>${E(fmtDT(x.ts))}</td><td>${x.kind==='error'?'<span class="tag bad">error</span>':E(x.kind)}</td><td>${E(x.msg)}${x.u?' <span class="mut">· '+E(x.u)+'</span>':''}</td></tr>`).join('')}</tbody></table></div>`:'<p class="mut">Sin actividad todavía.</p>'}</div>`;
  return`<div class="ci-root"><div class="ci-head"><h1>Centro Inteligente</h1><span class="tag ok">Sólo lectura</span>${adm?'<button class="btn sm" style="min-height:44px" data-act="ciToggle">Desactivar</button>':''}</div>
@@ -7128,11 +7161,12 @@ function view(){if(CI._failRender){CI._failRender=false;throw new Error('falla s
 function after(){if(!isOn())return;if(CI.st.tab==='mapa'){draw();const cv=document.querySelector('.ci-root canvas.ci-cv');if(cv)cv.addEventListener('click',e=>safe(()=>{const b=cv.getBoundingClientRect();const x=e.clientX-b.left,y=e.clientY-b.top;
    for(let i=CI._hits.length-1;i>=0;i--){const h=CI._hits[i];if(inPoly(x,y,h.pts)){if(h.it.r){CI.st.sel=h.it.r.id;logEv('mapa','góndola '+h.it.r.name);rerender();}else if(h.it.kind==='caja'){go('caja');}return;}}},null,'clic mapa'));}
  if(CI.st.tab==='gerente'){const i=document.getElementById('ci-q');if(i)i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();A.ciAsk();}});const c=document.querySelector('.ci-root .ci-chat');if(c)c.scrollTop=c.scrollHeight;}}
+window.addEventListener('hashchange',()=>safe(()=>{if(!/#panel\/centro/.test(location.hash)){if(CI.st.listen&&rec){CI.st.listen=false;rec.abort&&rec.abort();}if(window.speechSynthesis&&CI._spoken)window.speechSynthesis.cancel();}},null,'salir'));
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(document.querySelector('.ci-root canvas.ci-cv'))CI.draw();},150);});
 
 /* ---------- acciones (todas protegidas) ---------- */
 const act=(name,fn)=>{A[name]=(el,e)=>safe(()=>fn(el,e),null,name);};
-act('ciToggle',()=>{if(!isAdm())return toast('Sólo el administrador activa o desactiva el Centro Inteligente',1);const was=isOn();
+act('ciToggle',()=>{if(!isAdm())return toast('Sólo el administrador activa o desactiva el Centro Inteligente',1);const was=isOn();if(was){CI.st.listen=false;safe(()=>{rec&&rec.abort&&rec.abort();window.speechSynthesis&&window.speechSynthesis.cancel();},null,'apagar voz');}
  const roles=was?(cfg().roles||[]):[...document.querySelectorAll('.ci-root .ci-role:checked')].map(x=>x.value);
  S.cfg.ci=Object.assign({},cfg(),{on:!was,roles,by:user.name,at:now()});audit('CENTRO_INTELIGENTE',(was?'desactivado':'activado')+(was?'':' · lo ven: administrador'+(roles.length?', '+roles.join(', '):'')));
  logEv(was?'desactivado':'activado','por '+user.name);CI.st.sel=null;save();rerender();toast(was?'Centro Inteligente desactivado. El sistema sigue igual.':'Centro Inteligente activado (sólo lectura).');});
@@ -7141,9 +7175,11 @@ act('ciMode',el=>{CI.st.mode=el.dataset.id==='2d'?'2d':'3d';logEv('mapa','vista 
 act('ciRot',()=>{CI.st.rot=(CI.st.rot+1)%4;CI.draw();});
 act('ciSel',el=>{CI.st.sel=el.dataset.id;rerender();});
 act('ciInv',el=>{if(typeof invF!=='undefined')invF.rub=el.dataset.id;go('inventario');});
-const ask=q=>{q=String(q||'').trim().slice(0,200);if(!q)return;const a=CI.answer(q);CI.st.chat.push({q},{a});if(CI.st.chat.length>40)CI.st.chat.splice(0,CI.st.chat.length-40);logEv('gerente','consulta: '+intent(q));
- rerender();const b=document.querySelector('.ci-root .ci-bot');if(b){b.classList.add('ci-talk');setTimeout(()=>b.classList.remove('ci-talk'),1400);}};
+const ask=(q,byVoice)=>{q=String(q||'').trim().slice(0,200);if(!q)return;const a=CI.answer(q);CI.st.chat.push({q:(byVoice?'🎙 ':'')+q},{a});if(CI.st.chat.length>40)CI.st.chat.splice(0,CI.st.chat.length-40);logEv('gerente','consulta: '+intent(q));
+ rerender();if(ttsOK())speak(a);else{const b=document.querySelector('.ci-root .ci-bot');if(b){b.classList.add('ci-talk');setTimeout(()=>b.classList.remove('ci-talk'),1400);}}};
 act('ciAsk',()=>{const i=document.getElementById('ci-q');ask(i?i.value:'');});
+act('ciMic',()=>listenStart());
+act('ciMute',()=>{CI.st.mute=!CI.st.mute;if(CI.st.mute&&window.speechSynthesis)window.speechSynthesis.cancel();rerender();});
 act('ciChip',el=>{const c=CHIPS.find(x=>x[0]===el.dataset.id);ask(c?c[1]:el.dataset.id);});
 
 /* ---------- registro en el menú (al final de Resumen; sólo admin o roles habilitados) ---------- */
