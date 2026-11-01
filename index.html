@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Sistema RAVE · Almacén y Licorería RAVE — Demo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-01 06:02 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-01 06:22 UTC", "variant": "demo", "db": "rave-cliente-v3", "publicUrl": "https://raveholding.github.io/raveV2/"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#242220;--gold:#c9963e;--gold2:#a87a28;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -7030,6 +7030,20 @@ function css(){if(document.getElementById('ci-style'))return;const s=document.cr
 .ci-root .ci-vc p{font-size:.78rem;color:var(--ci-mut);margin:.1rem 0 .4rem}
 .ci-root .ci-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .ci-root .ci-neg{color:var(--ci-bad)}.ci-root .ci-low{color:var(--ci-warn)}
+.ci-root .ci-ed{margin-top:12px;padding:.8rem}
+.ci-root .ci-edg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:.6rem}
+@media (max-width:800px){.ci-root .ci-edg{grid-template-columns:minmax(0,1fr)}}
+.ci-root .ci-ed label{display:block;color:var(--ci-mut);font-size:.8rem;margin:.35rem 0 .15rem}
+.ci-root .ci-ed input:not([type=color]),.ci-root .ci-ed select{min-height:44px;width:100%;background:var(--ci-bg);color:var(--ci-tx);border:1px solid var(--ci-ln);border-radius:10px;padding:0 .55rem;font:inherit}
+.ci-root .ci-ed input[type=color]{min-height:44px;width:100%;background:var(--ci-bg);border:1px solid var(--ci-ln);border-radius:10px}
+.ci-root .ci-ed2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}
+.ci-root .ci-adds{display:flex;gap:.35rem;flex-wrap:wrap}
+.ci-root .ci-adds .ci-btn{font-size:.8rem}
+.ci-root .ci-elist{max-height:260px;overflow:auto;border:1px solid var(--ci-ln);border-radius:12px;margin-top:.4rem}
+.ci-root .ci-elist button{display:flex;width:100%;justify-content:space-between;gap:.5rem;border:0;border-bottom:1px solid rgba(201,150,62,.15);background:transparent;color:var(--ci-tx);min-height:44px;padding:0 .7rem;text-align:left;font:inherit;cursor:pointer}
+.ci-root .ci-elist button.on{background:rgba(201,150,62,.18)}
+.ci-root .ci-pad{display:grid;grid-template-columns:repeat(3,48px);gap:4px;justify-content:start;margin-top:.4rem}
+.ci-root .ci-edf{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem;padding-top:.7rem;border-top:1px solid var(--ci-ln)}
 .ci-root details>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:var(--ci-mut)}
 .ci-root .ci-wave{display:inline-flex;gap:3px;align-items:center;height:20px;margin-left:.4rem}
 .ci-root .ci-wave i{display:block;width:3px;height:6px;background:var(--ci-acc);border-radius:2px;animation:ci-wv .8s infinite alternate}
@@ -7074,14 +7088,19 @@ function team(){const now0=typeof now==='function'?now():Date.now();const tk=dke
  (S.audit||[]).forEach(a=>{if(dkey(a.ts)!==tk||!a.user||a.user==='sistema')return;const p=get(a.user);if(!p)return;const c=CAT(a.action);p.cat[c]=(p.cat[c]||0)+1;p.acts.push(a);if(c!=='acceso')p.last=Math.max(p.last,a.ts);});
  (S.taskLogs||[]).forEach(l=>{if(l.day!==tk)return;const p=get(l.user);if(p)p.tasks++;});
  (S.punches||[]).forEach(x=>{if(dkey(x.ts)!==tk)return;const e=(S.employees||[]).find(e=>e.id===x.empId);const p=e&&get(e.name);if(p)p.punches.push(x);});
- const asg=cfg().staff||{};
- return Object.values(P).map(p=>{p.punches.sort((a,b)=>a.ts-b.ts);const lp=p.punches[p.punches.length-1];p.onShift=!!(lp&&lp.kind==='in');p.since=p.punches.find(x=>x.kind==='in')||null;
-  const pz=fold(p.puesto);let f=asg[p.k];
+  return Object.values(P).map(p=>{p.punches.sort((a,b)=>a.ts-b.ts);const lp=p.punches[p.punches.length-1];p.onShift=!!(lp&&lp.kind==='in');p.since=p.punches.find(x=>x.kind==='in')||null;
+  const pz=fold(p.puesto);const sc0=stf(p.k);p.cf=sc0;let f=sc0.fn;
   if(!FN[f]){if(p.roles.includes('admin'))f='gerente';else if(/caja|cajer/.test(pz))f='cajero';else if(/deposit/.test(pz)&&/repos/.test(pz))f=(p.cat.deposito||0)>(p.cat.stock||0)?'deposito':'repositor';else if(/deposit/.test(pz))f='deposito';else if(/repos/.test(pz))f='repositor';else if(/most|vend/.test(pz))f=p.tickets?'cajero':'vendedor';
    else if(p.cat.deposito)f='deposito';else if(p.cat.stock)f='repositor';else if(p.tickets||p.cat.caja)f='cajero';else f='vendedor';}
-  p.fn=f;p.active=!!(p.onShift||(p.last&&now0-p.last<45*60000));return p;})
+  p.fn=f;p.active=!!(p.onShift||(p.last&&now0-p.last<45*60000));p.show=(sc0.alias||p.name);p.av=sc0.av==='robot'?'robot':'humano';p.col=okCol(sc0.col)||FN[f].c;p.ph=okPh(sc0.ph)?sc0.ph:'';p.hide=!!sc0.hide;p.pos=okPos(sc0.pos);return p;})
   .sort((a,b)=>(b.active-a.active)||(b.last-a.last)||a.name.localeCompare(b.name,'es'));}
 CI.team=()=>safe(team,[],'equipo');
+/* configuración propia de cada persona dentro del módulo (no toca la ficha de Personal ni el usuario) */
+function stf(k){const v=(cfg().staff||{})[k];return typeof v==='string'?{fn:v}:(v&&typeof v==='object'?v:{});}
+const okCol=c=>/^#[0-9a-fA-F]{6}$/.test(String(c||''))?c:'';
+const okPh=v=>typeof v==='string'&&v.length<60000&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(v);
+const okPos=v=>Array.isArray(v)&&v.length===2&&v.every(n=>typeof n==='number'&&isFinite(n)&&n>=0&&n<=60)?v:null;
+CI._imgs={};function imgOf(src){if(!okPh(src))return null;let im=CI._imgs[src];if(!im){im=new Image();im.onload=()=>CI.draw();im.src=src;CI._imgs[src]=im;}return im.complete&&im.naturalWidth?im:null;}
 function personSum(p){const L=[];if(p.tickets)L.push(p.tickets+' venta'+(p.tickets>1?'s':'')+' · '+$m(p.total));
  if(p.cat.caja)L.push(p.cat.caja+' mov. de caja');if(p.cat.stock)L.push(p.cat.stock+' en inventario');if(p.cat.deposito)L.push(p.cat.deposito+' en depósito/compras');if(p.tasks)L.push(p.tasks+' tarea'+(p.tasks>1?'s':''));if(p.cat.admin)L.push(p.cat.admin+' de administración');
  return L.join(' · ')||'Sin actividad registrada hoy';}
@@ -7091,28 +7110,46 @@ function personState(p){if(p.onShift)return'En turno desde '+hm(p.since?p.since.
 function layout(R){const n=Math.max(1,R.length);const cols=Math.max(1,Math.min(4,Math.ceil(Math.sqrt(n*1.4))));const rows=Math.ceil(n/cols);
  const G=[];R.forEach((r,i)=>{const c=i%cols,w=Math.floor(i/cols);G.push({r,x:1.2+c*3.2,y:2+w*3,w:2.2,d:0.9});});
  const W=Math.max(cols*3.2+1.6,8.5),Dp=rows*3+5.2;return{G,W,D:Dp,cols,rows};}
+const MT={gond:{n:'Góndola / estantería',w:2.2,d:0.9,h:1.9},caja:{n:'Caja de cobro',w:1.5,d:0.75,h:0.75},mostr:{n:'Mostrador de atención',w:2,d:0.7,h:0.9,c:'#7a5d3c'},dep:{n:'Depósito',w:3,d:1.4,h:0.1},
+ heladera:{n:'Heladera',w:1.2,d:0.7,h:1.9,c:'#cfe3ee'},freezer:{n:'Freezer',w:1.6,d:0.8,h:0.85,c:'#e8eef2'},vitrina:{n:'Vitrina',w:1.6,d:0.6,h:1,c:'#9fc4d6'},isla:{n:'Isla / exhibidor',w:1.2,d:1.2,h:0.8,c:'#a07a4a'},oficina:{n:'Oficina / gerencia',w:1.8,d:1.4,h:0.1,c:'#4b4338'},puerta:{n:'Puerta / entrada',w:2.2,d:0.15,h:0,c:'#c9963e'},columna:{n:'Columna',w:0.4,d:0.4,h:2.4,c:'#8a8278'}};
+CI.MT=MT;
+function autoMap(R,nOpen){const L=layout(R);const it=[];L.G.forEach((g,i)=>it.push({id:'g'+i,t:'gond',x:g.x,y:g.y,w:g.w,d:g.d,rubro:g.r.id,label:''}));
+ it.push({id:'dep',t:'dep',x:+(L.W-3.3).toFixed(1),y:0.25,w:3,d:1.4,label:'Depósito'});
+ const n=Math.max(1,Math.min(4,nOpen||1));for(let i=0;i<n;i++)it.push({id:'c'+(i+1),t:'caja',x:+(0.7+i*2.1).toFixed(1),y:+(L.D-1.55).toFixed(2),w:1.5,d:0.75,label:'Caja '+(i+1)});
+ it.push({id:'pu',t:'puerta',x:+(L.W/2-1.1).toFixed(1),y:+(L.D-0.15).toFixed(2),w:2.2,d:0.15,label:'Entrada'});
+ return{W:+L.W.toFixed(1),D:+L.D.toFixed(1),items:it,auto:true,rows:L.rows};}
+function cleanMap(m){if(!m||!Array.isArray(m.items))return null;const W=Math.min(60,Math.max(3,+m.W||0)),Dd=Math.min(60,Math.max(3,+m.D||0));if(!W||!Dd)return null;
+ const items=m.items.slice(0,80).map((x,i)=>{const t=MT[x&&x.t]?x.t:null;if(!t)return null;const w=Math.min(W,Math.max(0.1,+x.w||MT[t].w)),dd=Math.min(Dd,Math.max(0.1,+x.d||MT[t].d));
+  return{id:String(x.id||('e'+i)).replace(/[^a-zA-Z0-9_-]/g,'').slice(0,20)||('e'+i),t,x:Math.min(W-w,Math.max(0,Math.round((+x.x||0)*10)/10)),y:Math.min(Dd-dd,Math.max(0,Math.round((+x.y||0)*10)/10)),w:Math.round(w*10)/10,d:Math.round(dd*10)/10,
+   label:String(x.label||'').slice(0,30),rubro:t==='gond'&&x.rubro&&(S.rubros||[]).some(r=>r.id===x.rubro)?x.rubro:'',color:okCol(x.color)};}).filter(Boolean);return{W,D:Dd,items};}
+function mapOf(d){if(CI.st.edit&&CI.st.draft)return CI.st.draft.map;const m=cleanMap(cfg().map);return m||autoMap(d.R,d.open.length);}
+CI.mapOf=()=>safe(()=>mapOf(D()),null,'local');
 function shade(hex,f){const n=parseInt(String(hex).slice(1),16);if(isNaN(n))return hex;let r=n>>16,g=n>>8&255,b=n&255;const m=x=>Math.max(0,Math.min(255,Math.round(f<0?x*(1+f):x+(255-x)*f)));return`rgb(${m(r)},${m(g)},${m(b)})`;}
-function zonePos(L,f,i){/* dónde se para cada función en el local (siempre del lado del pasillo, a la vista) */
- const n=Math.max(1,L.G.length);
- if(f==='cajero')return[1.45+(i%4)*2.1,L.D-2.25];if(f==='deposito')return[L.W-1.6-(i%2)*1.1,2.15];
- if(f==='repositor'){const g=L.G[(i*2+1)%n];return g?[g.x+g.w-0.25,g.y+g.d+0.75]:[L.W/2,L.D/2];}
- if(f==='gerente')return[L.W/2+1.5+(i%2)*0.9,L.D-3.3];
- const g=L.G[(i*2)%n];return g?[g.x+0.35,g.y+g.d+0.8]:[L.W/2,L.D-3];}
+function zonePos(M,f,i){/* dónde se para cada función (siempre del lado del pasillo, a la vista) */
+ const of=t=>M.items.filter(x=>x.t===t);const fr=(e,dx)=>[Math.min(M.W-0.3,Math.max(0.3,e.x+(dx==null?e.w/2:dx))),Math.min(M.D-0.3,e.y+e.d+0.75)];
+ const G=of('gond'),C=of('caja'),Dp=of('dep'),Mo=of('mostr'),Of=of('oficina');
+ if(f==='cajero'&&C.length)return fr(C[i%C.length],C[i%C.length].w/2-0.1-(i>=C.length?0.5:0));
+ if(f==='deposito'&&Dp.length)return fr(Dp[i%Dp.length],Dp[0].w/2+(i%2?0.6:-0.3));
+ if(f==='repositor'&&G.length){const g=G[(i*2+1)%G.length];return fr(g,g.w-0.25);}
+ if(f==='gerente'){if(Of.length)return[Of[0].x+Of[0].w/2+(i%2)*0.5,Of[0].y+Of[0].d/2];return[M.W/2+1.5+(i%2)*0.9,Math.max(1,M.D-3.3)];}
+ if(f==='vendedor'&&Mo.length)return fr(Mo[i%Mo.length],Mo[0].w/2);
+ const g=G[(i*2)%Math.max(1,G.length)];return g?fr(g,0.35):[M.W/2,Math.max(1,M.D-3)];}
 let anim=0,tick=0;
 const reduced=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){return false;}};
+const fsz=sc=>Math.max(10,Math.min(14,Math.round(sc*0.2)));
 function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
 function draw(){const cv=document.querySelector('.ci-root canvas.ci-cv');if(!cv)return;
  if(CI._failDraw){CI._failDraw=false;throw new Error('falla simulada del mapa (prueba de aislamiento)');}
  const ctx=cv.getContext&&cv.getContext('2d');if(!ctx){const f=document.querySelector('.ci-root .ci-nocv');if(f)f.hidden=false;return;}
  const dpr=Math.min(2,window.devicePixelRatio||1);const Wc=cv.clientWidth||600,Hc=cv.clientHeight||400;if(cv.width!==Math.round(Wc*dpr)||cv.height!==Math.round(Hc*dpr)){cv.width=Math.round(Wc*dpr);cv.height=Math.round(Hc*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);
  const gold=(getComputedStyle(cv).getPropertyValue('--ci-acc')||'').trim()||'#c9963e';
- ctx.clearRect(0,0,Wc,Hc);const d=CI._d||D();const T=CI._t||[];const L=layout(d.R);const st=CI.st;const is3=st.mode==='3d';const rot=((st.rot%4)+4)%4;const cx=L.W/2,cy=L.D/2;
+ ctx.clearRect(0,0,Wc,Hc);const d=CI._d||D();const T=CI._t||[];const L=mapOf(d);const st=CI.st;const is3=st.mode==='3d'&&!st.edit;const rot=st.edit?0:((st.rot%4)+4)%4;const cx=L.W/2,cy=L.D/2;
  const rp=(x,y)=>{let dx=x-cx,dy=y-cy;for(let i=0;i<rot;i++){const t=dx;dx=-dy;dy=t;}return[dx,dy];};
  const raw=(x,y,z)=>{const [a,b]=rp(x,y);return is3?[(a-b)*0.5,(a+b)*0.29-(z||0)*0.55]:[a,b];};
  const cn=[[0,0,0],[L.W,0,0],[L.W,L.D,0],[0,L.D,0],[0,0,2.6],[L.W,0,2.6],[L.W,L.D,2.6],[0,L.D,2.6]].map(c=>raw(c[0],c[1],is3?c[2]:0));
  const bx=[Math.min(...cn.map(c=>c[0])),Math.max(...cn.map(c=>c[0]))],by=[Math.min(...cn.map(c=>c[1])),Math.max(...cn.map(c=>c[1]))];
  const sbar=document.querySelector('.ci-root .ci-sbar');const top=sbar&&getComputedStyle(sbar).position==='absolute'?sbar.offsetHeight+22:16;const pad=is3?26:40;const sc=Math.min((Wc-pad*2)/(bx[1]-bx[0]),(Hc-pad-top)/(by[1]-by[0]));
- const ox=Wc/2-(bx[0]+bx[1])/2*sc,oy=top+(Hc-pad-top)/2-(by[0]+by[1])/2*sc;
+ const ox=Wc/2-(bx[0]+bx[1])/2*sc,oy=top+(Hc-pad-top)/2-(by[0]+by[1])/2*sc;CI._view={ox,oy,sc,cx,cy,is3,rot};
  const P=(x,y,z)=>{const r=raw(x,y,z);return[ox+r[0]*sc,oy+r[1]*sc];};
  const poly=(pts,fill,stroke,lw)=>{ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}};
  const box=(x0,y0,w,dd,z0,h,c,stroke)=>{const x1=x0+w,y1=y0+dd;const b=[P(x0,y0,z0),P(x1,y0,z0),P(x1,y1,z0),P(x0,y1,z0)];
@@ -7122,16 +7159,19 @@ function draw(){const cv=document.querySelector('.ci-root canvas.ci-cv');if(!cv)
  poly([P(0,0),P(L.W,0),P(L.W,L.D),P(0,L.D)],'#3a362f','rgba(201,150,62,.45)',1.5);
  ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=1;for(let x=1;x<L.W;x++){const a=P(x,0),b=P(x,L.D);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}for(let y=1;y<L.D;y++){const a=P(0,y),b=P(L.W,y);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
  ctx.strokeStyle='rgba(242,182,50,.7)';ctx.lineWidth=Math.max(2,sc*0.05);ctx.setLineDash([sc*0.35,sc*0.2]);
- for(let w=0;w<=L.rows;w++){const y=1.45+w*3;const a=P(0.6,y),b=P(L.W-0.6,y);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
+ if(L.auto)for(let w=0;w<=L.rows;w++){const y=1.45+w*3;const a=P(0.6,y),b=P(L.W-0.6,y);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
  ctx.setLineDash([]);
- const e1=P(cx-1.1,L.D),e2=P(cx+1.1,L.D);ctx.strokeStyle=gold;ctx.lineWidth=Math.max(4,sc*0.12);ctx.beginPath();ctx.moveTo(e1[0],e1[1]);ctx.lineTo(e2[0],e2[1]);ctx.stroke();
+
+ if(st.edit){ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1;ctx.setLineDash([2,4]);for(let x=0.5;x<L.W;x+=0.5){const a=P(x,0),b=P(x,L.D);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}ctx.setLineDash([]);}
  /* objetos con profundidad */
- const items=[];const maxU=Math.max(1,...d.R.map(r=>r.units));
- items.push({kind:'dep',x:L.W-3.3,y:0.25,w:3,d:1.4});
- const nC=Math.max(1,Math.min(4,d.open.length||1));for(let i=0;i<nC;i++){const s=d.open[i];items.push({kind:'caja',x:0.7+i*2.1,y:L.D-1.55,w:1.5,d:0.75,label:s?(s.regName||('Caja '+(s.caja||1))):'Caja cerrada',sess:s});}
- L.G.forEach(g=>items.push({kind:'gond',x:g.x,y:g.y,w:g.w,d:g.d,r:g.r,fill:Math.min(1,g.r.units/maxU)}));
- const T2=T.filter(p=>p.active||p.fn==='gerente');const cnt={};T2.forEach(p=>{const i=cnt[p.fn]=(cnt[p.fn]||0);cnt[p.fn]++;const [x,y]=zonePos(L,p.fn,i);items.push({kind:'person',x:x-0.2,y:y-0.2,w:0.4,d:0.4,p});});
- items.push({kind:'bot',x:cx-0.05,y:L.D-3.85,w:0.5,d:0.5});
+ const items=[];const maxU=Math.max(1,...d.R.map(r=>r.units));let ci=0;
+ L.items.forEach(e=>{const b={kind:e.t,e,x:e.x,y:e.y,w:e.w,d:e.d,label:e.label};
+  if(e.t==='gond'){const r=d.R.find(x=>x.id===e.rubro);b.r=r||{id:'',name:e.label||'Estantería',color:e.color||'#8f857a',units:maxU/2,neg:0,low:0,generic:true};b.fill=r?Math.min(1,r.units/maxU):0.5;}
+  if(e.t==='caja'){b.sess=d.open[ci++]||null;b.label=b.sess?(b.sess.regName||e.label||('Caja '+ci)):(e.label||'Caja')+' (cerrada)';}
+  items.push(b);});
+ const T2=T.filter(p=>!p.hide&&(p.active||p.fn==='gerente'||p.pos));const cnt={};const dpos=(st.edit&&st.draft)?st.draft.pos:null;
+ T2.forEach(p=>{const i=cnt[p.fn]=(cnt[p.fn]||0);cnt[p.fn]++;const pp=(dpos&&dpos[p.k]!==undefined)?dpos[p.k]:p.pos;const [x,y]=pp||zonePos(L,p.fn,i);items.push({kind:'person',x:x-0.2,y:y-0.2,w:0.4,d:0.4,p,fixed:!!pp});});
+ items.push({kind:'bot',x:Math.max(0.3,cx-0.05),y:Math.max(0.5,L.D-3.85),w:0.5,d:0.5});
  items.forEach(it=>{const c=rp(it.x+it.w/2,it.y+it.d/2);it.k=c[0]+c[1]+(it.kind==='person'||it.kind==='bot'?0.3:0);});items.sort((a,b)=>a.k-b.k);
  CI._hits=[];const bob=k=>(is3&&!reduced())?Math.sin(tick/6+k)*0.04:0;const tags=[];
  items.forEach((it,ix)=>{const sel=(it.r&&st.sel===it.r.id);
@@ -7141,13 +7181,23 @@ function draw(){const cv=document.querySelector('.ci-root canvas.ci-cv');if(!cv)
     for(let s=0;s<3;s++){const z=0.12+s*0.6;box(it.x,it.y,it.w,it.d,z,0.05,'#a69b8c');const nB=Math.round(5*Math.min(1,Math.max(0,it.fill*3-s)));for(let b=0;b<nB;b++)pts.push(...box(it.x+0.1+b*0.42,it.y+0.12,0.36,it.d-0.24,z+0.05,0.38,c));}
     pts.push(P(it.x,it.y,H+0.12),P(it.x+it.w,it.y+it.d,H+0.12),P(it.x+it.w,it.y,H+0.12),P(it.x,it.y+it.d,H+0.12));}
    else{box(it.x,it.y,it.w,it.d,0,0,c,sel?gold:null);pts.push(P(it.x,it.y),P(it.x+it.w,it.y),P(it.x+it.w,it.y+it.d),P(it.x,it.y+it.d));}
+   if(st.edit&&st.esel===it.e.id){poly([P(it.x,it.y),P(it.x+it.w,it.y),P(it.x+it.w,it.y+it.d),P(it.x,it.y+it.d)],'rgba(201,150,62,.22)',gold,3);}
    if(sel){const z=is3?2.05:0;poly([P(it.x,it.y,z),P(it.x+it.w,it.y,z),P(it.x+it.w,it.y+it.d,z),P(it.x,it.y+it.d,z)],'rgba(201,150,62,.18)',gold,3);}
    CI._hits.push({it,pts:hullOf(pts)});
-   const lc=P(it.x+it.w/2,it.y+it.d/2,is3?2.15:0);tags.push({x:lc[0],y:lc[1],t:it.r.name,c:it.r.color,alert:it.r.neg?['#ff6b5b',it.r.neg]:it.r.low?['#f2b632',it.r.low]:null});}
+   const lc=P(it.x+it.w/2,it.y+it.d/2,is3?2.15:0);tags.push({x:lc[0],y:lc[1],t:it.label||it.r.name,c:it.r.color,alert:it.r.neg?['#ff6b5b',it.r.neg]:it.r.low?['#f2b632',it.r.low]:null});}
   else if(it.kind==='dep'){const pts=[...box(it.x,it.y,it.w,it.d,0,is3?0.1:0,'#4a443b')];if(is3){for(let i=0;i<3;i++)for(let j=0;j<2;j++)pts.push(...box(it.x+0.15+i*0.95,it.y+0.15+j*0.6,0.8,0.5,0.1,0.25+((i+j)%2)*0.25,'#c79a5b'));pts.push(...box(it.x+0.15,it.y+0.15,0.8,0.5,0.6,0.3,'#d8ad6c'));}
-   const lc=P(it.x+it.w/2,it.y+it.d/2,is3?1.1:0);tags.push({x:lc[0],y:lc[1],t:'Depósito',c:'#c79a5b'});CI._hits.push({it,pts:hullOf(pts)});}
+   const lc=P(it.x+it.w/2,it.y+it.d/2,is3?1.1:0);if(st.edit&&st.esel===it.e.id)poly([P(it.x,it.y),P(it.x+it.w,it.y),P(it.x+it.w,it.y+it.d),P(it.x,it.y+it.d)],'rgba(201,150,62,.22)',gold,3);tags.push({x:lc[0],y:lc[1],t:it.label||'Depósito',c:'#c79a5b'});CI._hits.push({it,pts:hullOf(pts)});}
+  else if(it.kind==='puerta'){const a=P(it.x,it.y+it.d/2),b2=P(it.x+it.w,it.y+it.d/2);ctx.strokeStyle=it.e.color||gold;ctx.lineWidth=Math.max(4,sc*0.12);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b2[0],b2[1]);ctx.stroke();
+   const pts=[P(it.x,it.y),P(it.x+it.w,it.y),P(it.x+it.w,it.y+Math.max(it.d,0.4)),P(it.x,it.y+Math.max(it.d,0.4))];CI._hits.push({it,pts:hullOf(pts)});if(st.edit||it.label){const lc=P(it.x+it.w/2,it.y+it.d/2,0);tags.push({x:lc[0],y:lc[1]+fsz(sc)*1.2,t:it.label||'Entrada',c:gold});}}
+  else if(it.kind!=='gond'&&it.kind!=='dep'&&it.kind!=='caja'&&MT[it.kind]){const m=MT[it.kind];const c=it.e.color||m.c||'#8f857a';const pts=[...box(it.x,it.y,it.w,it.d,0,is3?m.h:0,c)];
+   if(is3&&it.kind==='heladera'){pts.push(...box(it.x+0.08,it.y+it.d-0.02,it.w-0.16,0.02,0.15,m.h-0.3,'#7fb8d6'));}
+   if(is3&&it.kind==='freezer'){pts.push(...box(it.x+0.08,it.y+0.08,it.w-0.16,it.d-0.16,m.h,0.03,'#8ec9e6'));}
+   if(is3&&it.kind==='oficina'){pts.push(...box(it.x+0.2,it.y+0.2,1,0.5,0.1,0.65,'#6b5137'));}
+   if(is3&&it.kind==='mostr'){pts.push(...box(it.x,it.y,it.w,0.1,m.h,0.05,'#c9a476'));}
+   if(st.edit&&st.esel===it.e.id){poly([P(it.x,it.y),P(it.x+it.w,it.y),P(it.x+it.w,it.y+it.d),P(it.x,it.y+it.d)],'rgba(201,150,62,.22)',gold,3);}
+   const lc=P(it.x+it.w/2,it.y+it.d/2,is3?m.h+0.25:0);tags.push({x:lc[0],y:lc[1],t:it.label||m.n,c:c});CI._hits.push({it,pts:hullOf(pts)});}
   else if(it.kind==='caja'){const on=!!it.sess;const pts=[...box(it.x,it.y,it.w,it.d,0,is3?0.75:0,on?'#2f7d55':'#6b665f')];if(is3)pts.push(...box(it.x+it.w-0.45,it.y+0.15,0.35,0.3,0.75,0.28,'#1b1813'));
-   const lc=P(it.x+it.w/2,it.y+it.d/2,is3?1.25:0);tags.push({x:lc[0],y:lc[1],t:it.label,c:on?'#3ccf7e':'#8a857c'});CI._hits.push({it,pts:hullOf(pts)});}
+   const lc=P(it.x+it.w/2,it.y+it.d/2,is3?1.25:0);if(st.edit&&st.esel===it.e.id)poly([P(it.x,it.y),P(it.x+it.w,it.y),P(it.x+it.w,it.y+it.d),P(it.x,it.y+it.d)],'rgba(201,150,62,.22)',gold,3);tags.push({x:lc[0],y:lc[1],t:it.label,c:on?'#3ccf7e':'#8a857c'});CI._hits.push({it,pts:hullOf(pts)});}
   else{const fx=it.x+it.w/2,fy=it.y+it.d/2,z=bob(ix);const g=P(fx,fy,0);
    ctx.save();ctx.translate(g[0],g[1]);ctx.scale(1,is3?0.5:1);const rr0=sc*0.42;const grd=ctx.createRadialGradient(0,0,rr0*0.2,0,0,rr0);grd.addColorStop(0,'rgba(201,150,62,0)');grd.addColorStop(0.7,'rgba(201,150,62,.35)');grd.addColorStop(1,'rgba(201,150,62,0)');ctx.fillStyle=grd;ctx.beginPath();ctx.arc(0,0,rr0,0,7);ctx.fill();ctx.strokeStyle='rgba(242,182,50,.8)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,rr0*0.62,0,7);ctx.stroke();ctx.restore();
    const s2=sc*(is3?1:0.8);const base=P(fx,fy,z);const bx0=base[0],by0=base[1];
@@ -7155,17 +7205,24 @@ function draw(){const cv=document.querySelector('.ci-root canvas.ci-cv');if(!cv)
     ctx.fillStyle='#1b1813';ctx.fillRect(bx0-s2*0.13,by0-s2*0.88,s2*0.26,s2*0.1);ctx.fillStyle=gold;ctx.beginPath();ctx.arc(bx0-s2*0.06,by0-s2*0.83,s2*0.03,0,7);ctx.arc(bx0+s2*0.06,by0-s2*0.83,s2*0.03,0,7);ctx.fill();
     ctx.strokeStyle=gold;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx0,by0-s2*0.99);ctx.lineTo(bx0,by0-s2*1.08);ctx.stroke();ctx.fillStyle=gold;ctx.beginPath();ctx.arc(bx0,by0-s2*1.1,s2*0.035,0,7);ctx.fill();
     tags.push({x:bx0,y:by0-s2*1.27,t:'Gerente IA',sub:'Asistente',c:gold,dot:'#3ccf7e'});CI._hits.push({it,pts:[[bx0-s2*0.3,by0-s2*1.2],[bx0+s2*0.3,by0-s2*1.2],[bx0+s2*0.3,by0+4],[bx0-s2*0.3,by0+4]]});}
-   else{const f=FN[it.p.fn]||FN.vendedor;
-    ctx.fillStyle='#2a2622';ctx.fillRect(bx0-s2*0.1,by0-s2*0.36,s2*0.08,s2*0.36);ctx.fillRect(bx0+s2*0.02,by0-s2*0.36,s2*0.08,s2*0.36);
-    ctx.fillStyle=f.c;ctx.beginPath();ctx.moveTo(bx0-s2*0.17,by0-s2*0.34);ctx.lineTo(bx0+s2*0.17,by0-s2*0.34);ctx.lineTo(bx0+s2*0.14,by0-s2*0.74);ctx.quadraticCurveTo(bx0,by0-s2*0.82,bx0-s2*0.14,by0-s2*0.74);ctx.closePath();ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.85)';ctx.fillRect(bx0-s2*0.04,by0-s2*0.7,s2*0.08,s2*0.3);
-    ctx.fillStyle='#e7c39d';ctx.beginPath();ctx.arc(bx0,by0-s2*0.92,s2*0.13,0,7);ctx.fill();ctx.fillStyle='#3b2a1e';ctx.beginPath();ctx.arc(bx0,by0-s2*0.96,s2*0.135,Math.PI,0);ctx.fill();
-    if(it.p.fn==='repositor'||it.p.fn==='deposito'){ctx.fillStyle='#c79a5b';ctx.fillRect(bx0+s2*0.08,by0-s2*0.62,s2*0.2,s2*0.16);ctx.strokeStyle='rgba(0,0,0,.35)';ctx.strokeRect(bx0+s2*0.08,by0-s2*0.62,s2*0.2,s2*0.16);}
-    if(it.p.fn==='gerente'||it.p.fn==='cajero'){ctx.fillStyle='#e9e3d6';ctx.fillRect(bx0-s2*0.3,by0-s2*0.62,s2*0.14,s2*0.18);}
-    const nm=seeTeam()?it.p.name.split(/\s+/)[0]:f.n;tags.push({x:bx0,y:by0-s2*1.14,t:nm,sub:f.n,c:f.c,dot:it.p.onShift||it.p.active?'#3ccf7e':'#8a857c'});
+   else{const f=FN[it.p.fn]||FN.vendedor;const uc=it.p.col||f.c;const im=imgOf(it.p.ph);
+    if(it.p.av==='robot'){ctx.fillStyle='#ece6da';ctx.beginPath();ctx.ellipse(bx0,by0-s2*0.42,s2*0.19,s2*0.25,0,0,7);ctx.fill();ctx.fillStyle=uc;ctx.fillRect(bx0-s2*0.12,by0-s2*0.52,s2*0.24,s2*0.16);
+     ctx.fillStyle='#ece6da';ctx.beginPath();ctx.arc(bx0,by0-s2*0.82,s2*0.17,0,7);ctx.fill();ctx.strokeStyle=uc;ctx.lineWidth=2;ctx.stroke();
+     if(im){ctx.save();ctx.beginPath();ctx.arc(bx0,by0-s2*0.82,s2*0.12,0,7);ctx.clip();ctx.drawImage(im,bx0-s2*0.12,by0-s2*0.94,s2*0.24,s2*0.24);ctx.restore();}
+     else{ctx.fillStyle='#1b1813';ctx.fillRect(bx0-s2*0.13,by0-s2*0.88,s2*0.26,s2*0.1);ctx.fillStyle=uc;ctx.beginPath();ctx.arc(bx0-s2*0.06,by0-s2*0.83,s2*0.03,0,7);ctx.arc(bx0+s2*0.06,by0-s2*0.83,s2*0.03,0,7);ctx.fill();}
+     ctx.strokeStyle=uc;ctx.beginPath();ctx.moveTo(bx0,by0-s2*0.99);ctx.lineTo(bx0,by0-s2*1.08);ctx.stroke();}
+    else{ctx.fillStyle='#2a2622';ctx.fillRect(bx0-s2*0.1,by0-s2*0.36,s2*0.08,s2*0.36);ctx.fillRect(bx0+s2*0.02,by0-s2*0.36,s2*0.08,s2*0.36);
+     ctx.fillStyle=uc;ctx.beginPath();ctx.moveTo(bx0-s2*0.17,by0-s2*0.34);ctx.lineTo(bx0+s2*0.17,by0-s2*0.34);ctx.lineTo(bx0+s2*0.14,by0-s2*0.74);ctx.quadraticCurveTo(bx0,by0-s2*0.82,bx0-s2*0.14,by0-s2*0.74);ctx.closePath();ctx.fill();
+     ctx.fillStyle='rgba(255,255,255,.85)';ctx.fillRect(bx0-s2*0.04,by0-s2*0.7,s2*0.08,s2*0.3);
+     if(im){ctx.save();ctx.beginPath();ctx.arc(bx0,by0-s2*0.93,s2*0.15,0,7);ctx.clip();ctx.drawImage(im,bx0-s2*0.15,by0-s2*1.08,s2*0.3,s2*0.3);ctx.restore();ctx.strokeStyle=uc;ctx.lineWidth=2;ctx.beginPath();ctx.arc(bx0,by0-s2*0.93,s2*0.15,0,7);ctx.stroke();}
+     else{ctx.fillStyle='#e7c39d';ctx.beginPath();ctx.arc(bx0,by0-s2*0.92,s2*0.13,0,7);ctx.fill();ctx.fillStyle='#3b2a1e';ctx.beginPath();ctx.arc(bx0,by0-s2*0.96,s2*0.135,Math.PI,0);ctx.fill();}
+     if(it.p.fn==='repositor'||it.p.fn==='deposito'){ctx.fillStyle='#c79a5b';ctx.fillRect(bx0+s2*0.08,by0-s2*0.62,s2*0.2,s2*0.16);ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1;ctx.strokeRect(bx0+s2*0.08,by0-s2*0.62,s2*0.2,s2*0.16);}
+     if(it.p.fn==='gerente'||it.p.fn==='cajero'){ctx.fillStyle='#e9e3d6';ctx.fillRect(bx0-s2*0.3,by0-s2*0.62,s2*0.14,s2*0.18);}}
+    if(st.edit&&st.psel===it.p.k){ctx.strokeStyle=gold;ctx.lineWidth=3;ctx.beginPath();ctx.arc(bx0,by0-s2*0.55,s2*0.55,0,7);ctx.stroke();}
+    const nm=seeTeam()?String(it.p.show).split(/\s+/)[0]:f.n;tags.push({x:bx0,y:by0-s2*1.14,t:nm,sub:f.n+(it.fixed&&st.edit?' · fijado':''),c:uc,dot:it.p.onShift||it.p.active?'#3ccf7e':'#8a857c'});
     CI._hits.push({it,pts:[[bx0-s2*0.3,by0-s2*1.25],[bx0+s2*0.3,by0-s2*1.25],[bx0+s2*0.3,by0+4],[bx0-s2*0.3,by0+4]]});}}});
  /* carteles arriba de todo */
- const fs=Math.max(10,Math.min(14,Math.round(sc*0.2)));
+ const fs=fsz(sc);
  /* carteles sin encimarse: se miden y, si chocan con uno ya puesto, se corren hacia arriba (con una guía al lugar) */
  const placed=[];tags.forEach(t=>{ctx.font='700 '+fs+'px sans-serif';t.t1=String(t.t).slice(0,20);t.t2=t.sub?String(t.sub):'';const w1=ctx.measureText(t.t1).width;ctx.font='500 '+(fs-2)+'px sans-serif';const w2=t.t2?ctx.measureText(t.t2).width:0;
   t.W=Math.max(w1,w2)+(t.dot?fs+12:14);t.H=t.t2?fs*2.3:fs*1.55;t.bx=t.x-t.W/2;t.by=t.y-t.H/2;t.oy=t.by;
@@ -7286,8 +7343,9 @@ function kpiHTML(d){const tp=d.n?Math.round(d.tot/d.n):0,tpY=d.nY?Math.round(d.t
  return`<div class="ci-kpis">${K('sales','linear-gradient(135deg,#3ccf7e,#1f8a52)','Ventas hoy',$m(d.tot),tr(t1))}${K('ticket','linear-gradient(135deg,#5aa0ff,#2b5fb8)','Ticket promedio',$m(tp),tr(t2))}${K('box','linear-gradient(135deg,#b88cff,#6d42c7)','Stock total',E(nf(d.units))+' u.',d.prods.length+' artículos')}${K('alert','linear-gradient(135deg,#f2b632,#c9783e)','Alertas',String(al),al?`<span class="ci-wn">Revisar: ${d.negAll.length} negativo · ${d.lowAll.length} bajo</span>`:'<span class="ci-up">Todo en orden</span>')}</div>`;}
 function teamHTML(T){if(!seeTeam())return'';
  return`<section class="ci-pan ci-team" aria-label="Actividad del equipo"><h3 style="display:flex;gap:.5rem;align-items:center">${ic('team').replace('<svg','<svg style="width:22px;height:22px;color:var(--ci-acc)"')} Actividad del equipo hoy</h3><p class="ci-mut" style="margin:.2rem 0 0;font-size:.85rem">Vendedor, cajero, repositor, depósito y gerente: lo que registró cada uno en el sistema hoy (ventas, caja, inventario, compras, tareas y fichaje). Tocá una persona para ver el detalle.</p>
- <div class="ci-tgrid">${T.map(p=>{const f=FN[p.fn]||FN.vendedor;const ini=p.name.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  return`<button type="button" class="ci-person" data-act="ciPerson" data-id="${E(p.k)}"><span class="ci-ph"><span class="ci-av" style="background:${f.c};color:${f.c}"><span style="color:#1b1813">${E(ini)}</span></span><span style="min-width:0"><b>${E(p.name)}</b><span class="ci-fn" style="background:${f.c}">${E(f.n)}</span></span></span>
+ <div class="ci-tgrid">${T.map(p=>{const f=FN[p.fn]||FN.vendedor;const ini=p.show.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const avh=p.ph?`<img alt="" src="${E(p.ph)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:p.av==='robot'?`<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="4" fill="#ece6da"/><rect x="7" y="9" width="10" height="5" rx="2" fill="#1b1813"/><circle cx="10" cy="11.5" r="1.2" fill="${p.col}"/><circle cx="14" cy="11.5" r="1.2" fill="${p.col}"/><path d="M12 6V3" stroke="#ece6da" stroke-width="2"/></svg>`:`<span style="color:#1b1813">${E(ini)}</span>`;
+  return`<button type="button" class="ci-person" data-act="ciPerson" data-id="${E(p.k)}"><span class="ci-ph"><span class="ci-av" style="background:${p.col};color:${p.col};overflow:hidden">${avh}</span><span style="min-width:0"><b>${E(p.show)}</b>${p.show!==p.name?' <span class="ci-mut" style="font-size:.75rem">('+E(p.name)+')</span>':''}${p.hide?' <span class="ci-mut" style="font-size:.75rem">· oculto en el local</span>':''}<span class="ci-fn" style="background:${p.col}">${E(f.n)}</span></span></span>
    <span class="ci-ps"><i class="ci-dot" style="background:${p.onShift||p.active?'#3ccf7e':'#6b665f'}"></i>${E(personState(p))}</span><span class="ci-pn">${E(personSum(p))}</span></button>`;}).join('')||'<p class="ci-mut">No hay personas cargadas en Personal ni en Usuarios.</p>'}</div>${isAdm()?'<p class="ci-mut" style="font-size:.8rem;margin:.5rem 0 0">La función se deduce del puesto y de lo que hace cada uno; el administrador la puede corregir desde el detalle.</p>':''}</section>`;}
 function offHTML(){const roles=Object.keys((typeof S!=='undefined'&&S.roles)||{}).filter(r=>r!=='admin');const c=cfg();
  return`<div class="ci-pan ci-off"><div class="ci-gmh" style="gap:1rem;align-items:flex-start;flex-wrap:wrap">${BOT}<div style="flex:1;min-width:220px"><h2>El Centro Inteligente está apagado</h2><p class="ci-mut">Es un módulo aparte: tablero con el local en 3D, el equipo trabajando, alertas de stock, gráficos y un Gerente IA que responde con los datos de este equipo. <b style="color:var(--ci-tx)">Sólo lee</b>: no cambia ventas, caja, inventario ni la sincronización. Apagarlo no borra nada.</p>
@@ -7299,8 +7357,8 @@ function view(){if(CI._failRender){CI._failRender=false;throw new Error('falla s
   ${on?`<span class="ci-live"><i class="ci-dotl"></i>Sólo lectura · ${E(typeof fmtDT==='function'?fmtDT(Date.now()):'')}</span><button class="ci-btn" data-act="ciLog">Registro</button>${adm?'<button class="ci-btn" data-act="ciToggle">Desactivar</button>':''}`:''}</div>`;
  if(!isOn())return`<div class="ci-root">${head(false)}${adm?offHTML():'<p class="ci-mut">El administrador no activó el Centro Inteligente.</p>'}</div>`;
  const d=D();CI._d=d;const T=team();CI._t=T;const st=CI.st;
- const stage=`<div class="ci-pan ci-stage" id="ci-stage"><div class="ci-sbar"><span class="ci-stitle">${ic('box').replace('<svg','<svg style="width:18px;height:18px;vertical-align:-3px;color:var(--ci-acc)"')} Local ${st.mode==='3d'?'3D':'2D'} · en vivo</span>
-   <button class="ci-btn ${st.mode==='2d'?'on':''}" data-act="ciMode" data-id="2d">2D</button><button class="ci-btn ${st.mode==='3d'?'on':''}" data-act="ciMode" data-id="3d">3D</button><button class="ci-btn" data-act="ciRot" aria-label="Girar el local">⟳</button><button class="ci-btn" data-act="ciFull" aria-label="Pantalla completa">⛶</button></div>
+ const stage=`<div class="ci-pan ci-stage" id="ci-stage"><div class="ci-sbar"><span class="ci-stitle">${ic('box').replace('<svg','<svg style="width:18px;height:18px;vertical-align:-3px;color:var(--ci-acc)"')} ${st.edit?'Editando el local (vista de plano)':'Local '+(st.mode==='3d'?'3D':'2D')+' · en vivo'}</span>
+   <button class="ci-btn ${st.mode==='2d'?'on':''}" data-act="ciMode" data-id="2d">2D</button><button class="ci-btn ${st.mode==='3d'?'on':''}" data-act="ciMode" data-id="3d">3D</button><button class="ci-btn" data-act="ciRot" aria-label="Girar el local">⟳</button><button class="ci-btn" data-act="ciFull" aria-label="Pantalla completa">⛶</button>${adm?`<button class="ci-btn ${st.edit?'on':''}" data-act="ciEdit">✎ Editar local</button>`:''}</div>
    <canvas class="ci-cv" aria-hidden="true"></canvas><p class="ci-sr ci-cvsum" aria-live="polite"></p><p class="ci-nocv" hidden style="padding:1rem">Este equipo no puede dibujar el local; usá las listas de abajo.</p>
    <div class="ci-legend"><span><i class="ci-dot" style="background:#ff6b5b"></i>stock negativo</span><span><i class="ci-dot" style="background:#f2b632"></i>stock bajo</span><span><i class="ci-dot" style="background:#3ccf7e"></i>en turno / caja abierta</span>${Object.values(FN).map(f=>`<span><i class="ci-dot" style="background:${f.c}"></i>${f.n}</span>`).join('')}<span>Tocá una góndola o una persona</span></div></div>`;
  const vb=voiceOK()?`<button class="ci-btn ${st.listen?'ci-rec':''}" data-act="ciMic" aria-pressed="${st.listen}" aria-label="${st.listen?'Detener el micrófono':'Hablar con el Gerente'}">${st.listen?'■ Detener':'🎙 Hablar'}</button>`:'';
@@ -7313,16 +7371,16 @@ function view(){if(CI._failRender){CI._failRender=false;throw new Error('falla s
    <div class="ci-ask"><label class="ci-sr" for="ci-q">Pregunta al Gerente IA</label><input id="ci-q" autocomplete="off" maxlength="200" placeholder="Escribí tu pregunta o un artículo"><button class="ci-btn on" data-act="ciAsk">Preguntar</button>${vb}${mb}</div>
    ${st.listen?'<p role="status" style="margin:0;font-size:.85rem"><b>🎙 Escuchando…</b><span class="ci-wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span> hablá ahora (por ejemplo: «¿cómo vamos hoy?»).</p>':voiceOK()?'<p class="ci-mut" style="margin:0;font-size:.8rem">Tocá «Hablar» y preguntá en voz alta. No se guarda audio.</p>':''}</div>`;
  const sel=d.R.find(r=>r.id===st.sel);
- const rubTable=`<details class="ci-pan" style="margin-top:12px;padding:0 .8rem" ${sel?'open':''}><summary>Rubros y artículos (misma información que el local)</summary><div class="tw"><table class="ci-tb" data-nosort><thead><tr><th>Rubro</th><th>Artículos</th><th>Negativo</th><th>Bajo</th><th>Vendido hoy</th><th></th></tr></thead><tbody>
+ const rubTable=`<details class="ci-pan" style="margin-top:12px;padding:0 .8rem" ${sel?'open':''}><summary>Rubros y artículos (misma información que el local)</summary><div class="tw"><table class="ci-tb"><thead><tr><th>Rubro</th><th>Artículos</th><th>Negativo</th><th>Bajo</th><th>Vendido hoy</th><th></th></tr></thead><tbody>
    ${d.R.map(r=>`<tr><td><span class="ci-dot" style="background:${r.color}"></span>${E(r.name)}</td><td>${r.items}</td><td class="${r.neg?'ci-neg':''}">${r.neg}</td><td class="${r.low?'ci-low':''}">${r.low}</td><td>${$m(r.today)}</td><td><button class="ci-btn" data-act="ciSel" data-id="${E(r.id)}">Ver</button></td></tr>`).join('')}</tbody></table></div>
-   ${sel?`<div class="ci-card" style="margin:.6rem 0" id="ci-rub"><h3><span class="ci-dot" style="background:${sel.color}"></span>${E(sel.name)}</h3><p class="ci-mut" style="font-size:.85rem;margin:0 0 .4rem">${sel.owner?E(sel.owner)+' · ':''}${sel.items} artículos · vendido hoy ${$m(sel.today)}</p><div class="tw" style="max-height:260px;overflow:auto"><table class="ci-tb" data-nosort><thead><tr><th>Artículo</th><th>Stock</th><th>Hoy</th></tr></thead><tbody>${sel.prods.slice().sort((a,b)=>(a.stock-b.stock)||a.name.localeCompare(b.name,'es')).map(p=>`<tr><td>${E(p.name)}${p.sub?' <span class="ci-mut">'+E(p.sub)+'</span>':''}</td><td class="${p.stock<0?'ci-neg':p.stock<=5?'ci-low':''}">${E(nf(p.stock))}</td><td>${d.sold[p.id]?E(nf(d.sold[p.id])):'—'}</td></tr>`).join('')}</tbody></table></div><button class="ci-btn" style="margin-top:.5rem" data-act="ciInv" data-id="${E(sel.id)}">Abrir en Inventario</button></div>`:''}</details>`;
+   ${sel?`<div class="ci-card" style="margin:.6rem 0" id="ci-rub"><h3><span class="ci-dot" style="background:${sel.color}"></span>${E(sel.name)}</h3><p class="ci-mut" style="font-size:.85rem;margin:0 0 .4rem">${sel.owner?E(sel.owner)+' · ':''}${sel.items} artículos · vendido hoy ${$m(sel.today)}</p><div class="tw" style="max-height:260px;overflow:auto"><table class="ci-tb"><thead><tr><th>Artículo</th><th>Stock</th><th>Hoy</th></tr></thead><tbody>${sel.prods.slice().sort((a,b)=>(a.stock-b.stock)||a.name.localeCompare(b.name,'es')).map(p=>`<tr><td>${E(p.name)}${p.sub?' <span class="ci-mut">'+E(p.sub)+'</span>':''}</td><td class="${p.stock<0?'ci-neg':p.stock<=5?'ci-low':''}">${E(nf(p.stock))}</td><td>${d.sold[p.id]?E(nf(d.sold[p.id])):'—'}</td></tr>`).join('')}</tbody></table></div><button class="ci-btn" style="margin-top:.5rem" data-act="ciInv" data-id="${E(sel.id)}">Abrir en Inventario</button></div>`:''}</details>`;
  const row2=`<div class="ci-row2"><div class="ci-pan ci-card"><h3>Ventas por día <span style="font-size:.8rem;margin-left:auto">${(()=>{const v=pct(d.tot,d.totY);return v==null?'':(v>=0?'<span class="ci-up">▲ +':'<span class="ci-dn">▼ ')+v+' %</span>';})()}</span></h3>${barsSVG(d)}</div>
    <div class="ci-pan ci-card"><h3>Medios de pago <span class="ci-mut" style="font-size:.8rem">· 7 días</span></h3>${donutSVG(d)}</div>
    <div class="ci-pan ci-card"><h3>Stock por rubro</h3>${stockBars(d)}</div>
    <div class="ci-pan ci-card"><h3>Actividad reciente</h3>${feed()}</div></div>`;
- return`<div class="ci-root">${head(true)}${kpiHTML(d)}<div class="ci-main">${stage}${gm}</div>${row2}${teamHTML(T)}${rubTable}</div>`;}
+ return`<div class="ci-root">${head(true)}${kpiHTML(d)}<div class="ci-main">${stage}${gm}</div>${st.edit&&adm?edHTML(d):''}${row2}${teamHTML(T)}${rubTable}</div>`;}
 function after(){if(!isOn())return;draw();loop();const cv=document.querySelector('.ci-root canvas.ci-cv');
- if(cv)cv.addEventListener('click',e=>safe(()=>{const b=cv.getBoundingClientRect();const x=e.clientX-b.left,y=e.clientY-b.top;
+ if(cv)edBind(cv);if(cv)cv.addEventListener('click',e=>safe(()=>{if(CI.st.edit)return;const b=cv.getBoundingClientRect();const x=e.clientX-b.left,y=e.clientY-b.top;
    const order=CI._hits.slice().sort((a,b)=>(b.it.kind==='person'||b.it.kind==='bot')-(a.it.kind==='person'||a.it.kind==='bot'));
    for(const h of order){if(inPoly(x,y,h.pts)){const it=h.it;
      if(it.kind==='gond'){CI.st.sel=it.r.id;logEv('mapa','góndola '+it.r.name);rerender();setTimeout(()=>{const r=document.getElementById('ci-rub');if(r&&r.scrollIntoView)r.scrollIntoView({block:'nearest'});},50);}
@@ -7331,21 +7389,90 @@ function after(){if(!isOn())return;draw();loop();const cv=document.querySelector
      else if(it.kind==='caja'){go('caja');}else if(it.kind==='dep'){if(typeof can==='function'&&can('purchases'))go('proveedores');}
      return;}}},null,'clic mapa'));
  const i=document.getElementById('ci-q');if(i)i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();A.ciAsk();}});const c=document.querySelector('.ci-root .ci-chat');if(c)c.scrollTop=c.scrollHeight;}
-window.addEventListener('hashchange',()=>safe(()=>{if(!/#panel\/centro/.test(location.hash)){if(CI.st.listen&&rec){CI.st.listen=false;rec.abort&&rec.abort();}if(window.speechSynthesis&&CI._spoken)window.speechSynthesis.cancel();}},null,'salir'));
+window.addEventListener('hashchange',()=>safe(()=>{if(!/#panel\/centro/.test(location.hash)){if(CI.st.edit){CI.st.edit=false;CI.st.draft=null;}if(CI.st.listen&&rec){CI.st.listen=false;rec.abort&&rec.abort();}if(window.speechSynthesis&&CI._spoken)window.speechSynthesis.cancel();}},null,'salir'));
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(document.querySelector('.ci-root canvas.ci-cv'))CI.draw();},150);});
 document.addEventListener('fullscreenchange',()=>{setTimeout(()=>{if(document.querySelector('.ci-root canvas.ci-cv'))CI.draw();},60);});
 
+/* ---------- editor del local (sólo administrador; trabaja sobre un borrador y se guarda con «Guardar») ---------- */
+function edHTML(d){const st=CI.st;const M=st.draft.map;const e=M.items.find(x=>x.id===st.esel);const T=(CI._t||[]).filter(p=>!p.hide);const pp=T.find(p=>p.k===st.psel);
+ const rubOpt=v=>`<option value="">— sin rubro —</option>${(S.rubros||[]).filter(r=>r.kind==='rubro').map(r=>`<option value="${E(r.id)}" ${v===r.id?'selected':''}>${E(r.name)}</option>`).join('')}`;
+ const num=(k,v,l,mx)=>`<div><label for="ci-e-${k}">${l}</label><input id="ci-e-${k}" data-ef="${k}" inputmode="decimal" type="number" step="0.1" min="0" max="${mx}" value="${E(String(v))}"></div>`;
+ const pad=(id)=>`<div class="ci-pad" role="group" aria-label="Mover"><span></span><button class="ci-btn" data-act="ciEdMove" data-dx="0" data-dy="-0.5" aria-label="Mover hacia el fondo">↑</button><span></span><button class="ci-btn" data-act="ciEdMove" data-dx="-0.5" data-dy="0" aria-label="Mover a la izquierda">←</button><span></span><button class="ci-btn" data-act="ciEdMove" data-dx="0.5" data-dy="0" aria-label="Mover a la derecha">→</button><span></span><button class="ci-btn" data-act="ciEdMove" data-dx="0" data-dy="0.5" aria-label="Mover hacia el frente">↓</button><span></span></div>`;
+ const form=e?`<h3 style="font-size:1rem">${E(e.label||MT[e.t].n)}</h3><div class="ci-ed2"><div><label for="ci-e-t">Tipo</label><select id="ci-e-t" data-ef="t">${Object.entries(MT).map(([k,v])=>`<option value="${k}" ${e.t===k?'selected':''}>${v.n}</option>`).join('')}</select></div>
+   <div><label for="ci-e-label">Nombre</label><input id="ci-e-label" data-ef="label" maxlength="30" value="${E(e.label||'')}" placeholder="${E(MT[e.t].n)}"></div></div>
+   ${e.t==='gond'?`<label for="ci-e-rubro">Rubro que muestra (stock, alertas y color)</label><select id="ci-e-rubro" data-ef="rubro">${rubOpt(e.rubro)}</select>`:''}
+   <div class="ci-ed2">${num('w',e.w,'Ancho (m)',M.W)}${num('d',e.d,'Fondo (m)',M.D)}${num('x',e.x,'Posición X (m)',M.W)}${num('y',e.y,'Posición Y (m)',M.D)}</div>
+   ${e.t!=='gond'||!e.rubro?`<label for="ci-e-color">Color</label><input id="ci-e-color" data-ef="color" type="color" value="${E(e.color||MT[e.t].c||'#8f857a')}">`:''}
+   ${pad()}<div class="ci-adds" style="margin-top:.5rem"><button class="ci-btn" data-act="ciEdRot">Girar 90°</button><button class="ci-btn" data-act="ciEdDup">Duplicar</button><button class="ci-btn" data-act="ciEdDel" style="border-color:var(--ci-bad);color:var(--ci-bad)">Eliminar</button></div>`
+  :pp?`<h3 style="font-size:1rem">${E(pp.show)} <span class="ci-mut" style="font-size:.8rem">· ${E((FN[pp.fn]||FN.vendedor).n)}</span></h3><p class="ci-mut" style="font-size:.85rem;margin:.2rem 0">Ubicación: <b style="color:var(--ci-tx)">${(st.draft.pos[pp.k]!==undefined?st.draft.pos[pp.k]:pp.pos)?'fijada a mano':'automática según su función'}</b>. Arrastrala en el plano o usá las flechas.</p>${pad()}<button class="ci-btn" style="margin-top:.5rem" data-act="ciEdPAuto">Volver a ubicación automática</button>`
+  :'<p class="ci-mut">Tocá un elemento o una persona en el plano (o en la lista) para editarlo. Arrastrá para moverlo.</p>';
+ return`<section class="ci-pan ci-ed" aria-label="Editar el local"><h3>Editar el local</h3><p class="ci-mut" style="margin:.2rem 0 0;font-size:.85rem">Agregá, mové, cambiá o eliminá góndolas, cajas, mostradores, heladeras y más. El plano se ve desde arriba mientras editás. Nada se guarda hasta tocar «Guardar cambios».</p>
+  <div class="ci-edg"><div><div class="ci-ed2">${num('W',M.W,'Ancho del local (m)',60)}${num('D',M.D,'Fondo del local (m)',60)}</div>
+   <label>Agregar</label><div class="ci-adds">${Object.entries(MT).map(([k,v])=>`<button class="ci-btn" data-act="ciEdAdd" data-t="${k}">+ ${E(v.n)}</button>`).join('')}</div>
+   <label>Elementos del local (${M.items.length})</label><div class="ci-elist">${M.items.map(x=>`<button class="${x.id===st.esel?'on':''}" data-act="ciEdSel" data-id="${E(x.id)}"><span>${E(x.label||(x.t==='gond'&&(S.rubros||[]).find(r=>r.id===x.rubro)||{}).name||MT[x.t].n)}</span><span class="ci-mut">${E(MT[x.t].n)}</span></button>`).join('')||'<p class="ci-mut" style="padding:.5rem">Sin elementos.</p>'}</div>
+   ${T.length?`<label>Personas</label><div class="ci-adds">${T.map(p=>`<button class="ci-btn ${p.k===st.psel?'on':''}" data-act="ciEdPSel" data-id="${E(p.k)}">${E(String(p.show).split(/\s+/)[0])}</button>`).join('')}</div>`:''}</div>
+   <div>${form}</div></div>
+  <div class="ci-edf"><button class="ci-btn on" data-act="ciEdSave">Guardar cambios</button><button class="ci-btn" data-act="ciEdCancel">Descartar</button><button class="ci-btn" data-act="ciEdAuto">Volver al plano automático</button></div></section>`;}
+function edItem(){const st=CI.st;return st.draft&&st.draft.map.items.find(x=>x.id===st.esel);}
+function edClamp(e,M){e.w=Math.round(Math.min(M.W,Math.max(0.1,+e.w||0.1))*10)/10;e.d=Math.round(Math.min(M.D,Math.max(0.1,+e.d||0.1))*10)/10;e.x=Math.round(Math.min(M.W-e.w,Math.max(0,+e.x||0))*10)/10;e.y=Math.round(Math.min(M.D-e.d,Math.max(0,+e.y||0))*10)/10;}
+document.addEventListener('input',e=>safe(()=>{const t=e.target;if(!t||!t.dataset||!t.dataset.ef||!CI.st.edit||!t.closest('.ci-ed'))return;const M=CI.st.draft.map;const k=t.dataset.ef;M.auto=false;
+ if(k==='W'||k==='D'){const v=parseFloat(String(t.value).replace(',','.'));if(isFinite(v)&&v>=3&&v<=60){M[k]=Math.round(v*10)/10;M.items.forEach(x=>edClamp(x,M));CI.draw();}return;}
+ const it=edItem();if(!it)return;
+ if(k==='label'){it.label=String(t.value).slice(0,30);const lb=document.querySelector('.ci-elist [data-id="'+it.id+'"] span');if(lb)lb.textContent=it.label||MT[it.t].n;CI.draw();return;}
+ if(k==='color'){it.color=okCol(t.value)||'';CI.draw();return;}
+ if(k==='t'||k==='rubro'){it[k]=t.value;if(k==='t'&&MT[t.value]){it.w=MT[t.value].w;it.d=MT[t.value].d;edClamp(it,M);if(t.value!=='gond')it.rubro='';}rerender();return;}
+ const v=parseFloat(String(t.value).replace(',','.'));if(!isFinite(v))return;it[k]=v;edClamp(it,M);CI.draw();},null,'editar local'));
+/* los campos de texto y números no redibujan la pantalla (así no se pierde el foco al pasar de un campo a otro) */
+function edStart(){if(!isAdm())return toast('Sólo el administrador edita el local',1);const d=D();const M=JSON.parse(JSON.stringify(mapOf(d)));M.auto=!!M.auto;const pos={};
+ CI.st.edit=true;CI.st.draft={map:M,pos};CI.st.esel=null;CI.st.psel=null;logEv('local','edición iniciada');rerender();}
+function edMovePerson(k,x,y){const M=CI.st.draft.map;CI.st.draft.pos[k]=[Math.round(Math.min(M.W-0.3,Math.max(0.3,x))*10)/10,Math.round(Math.min(M.D-0.3,Math.max(0.3,y))*10)/10];}
+function personXY(k){const h=CI._hits.find(h=>h.it.kind==='person'&&h.it.p.k===k);return h?[h.it.x+0.2,h.it.y+0.2]:null;}
+function edBind(cv){let drag=null;const W=(ev)=>{const b=cv.getBoundingClientRect(),v=CI._view;return[(ev.clientX-b.left-v.ox)/v.sc+v.cx,(ev.clientY-b.top-v.oy)/v.sc+v.cy];};
+ cv.addEventListener('pointerdown',ev=>safe(()=>{if(!CI.st.edit)return;const [wx,wy]=W(ev);const b=cv.getBoundingClientRect();const sx=ev.clientX-b.left,sy=ev.clientY-b.top;
+  const ph=CI._hits.filter(h=>h.it.kind==='person').reverse().find(h=>inPoly(sx,sy,h.pts));
+  if(ph){CI.st.psel=ph.it.p.k;CI.st.esel=null;const xy=personXY(ph.it.p.k);drag={k:ph.it.p.k,ox:wx-xy[0],oy:wy-xy[1],moved:false};}
+  else{const M=CI.st.draft.map;const e=M.items.slice().reverse().find(x=>wx>=x.x&&wx<=x.x+x.w&&wy>=x.y-(x.t==='puerta'?0.2:0)&&wy<=x.y+Math.max(x.d,x.t==='puerta'?0.4:0));
+   CI.st.esel=e?e.id:null;CI.st.psel=null;if(e)drag={e,ox:wx-e.x,oy:wy-e.y,moved:false};}
+  if(drag){cv.setPointerCapture&&cv.setPointerCapture(ev.pointerId);ev.preventDefault();}CI.draw();},null,'arrastre'));
+ cv.addEventListener('pointermove',ev=>safe(()=>{if(!drag||!CI.st.edit)return;const [wx,wy]=W(ev);const M=CI.st.draft.map;drag.moved=true;M.auto=false;
+  if(drag.e){drag.e.x=wx-drag.ox;drag.e.y=wy-drag.oy;edClamp(drag.e,M);}else edMovePerson(drag.k,wx-drag.ox,wy-drag.oy);CI.draw();},null,'arrastre'));
+ const up=()=>{if(!drag)return;drag=null;rerender();};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);}
+CI.ed={start:()=>safe(edStart,null,'editar local'),move:(id,x,y)=>safe(()=>{const e=CI.st.draft.map.items.find(z=>z.id===id);if(e){e.x=x;e.y=y;edClamp(e,CI.st.draft.map);CI.st.draft.map.auto=false;CI.draw();}},null,'editar local'),movePerson:(k,x,y)=>safe(()=>{edMovePerson(k,x,y);CI.draw();},null,'editar local')};
+
 /* ---------- detalle de una persona ---------- */
-function personModal(k){const p=team().find(x=>x.k===k);if(!p)return;const f=FN[p.fn]||FN.vendedor;const tk=dkey(Date.now());
+function personModal(k){const p=team().find(x=>x.k===k);if(!p)return;const f=FN[p.fn]||FN.vendedor;const tk=dkey(Date.now());const adm=isAdm();
  const rows=[];p.punches.forEach(x=>rows.push({ts:x.ts,t:'Fichaje · '+(x.kind==='in'?'entrada':'salida')}));
  (S.sales||[]).forEach(s=>{if(ok(s)&&dkey(s.ts)===tk&&String(s.user||'').trim().toLowerCase()===k)rows.push({ts:s.ts,t:'Venta '+(s.n||'')+' · '+$m(s.total)+' · '+((typeof MET!=='undefined'&&MET[s.method])||s.method||'')});});
  p.acts.forEach(a=>{if(a.action==='VENTA')return;rows.push({ts:a.ts,t:(CATN[CAT(a.action)]||a.action)+' · '+(a.detail||a.action)});});
- rows.sort((a,b)=>b.ts-a.ts);
- const w=modal('Actividad de '+p.name,`<p><b>${E(f.n)}</b>${p.puesto?' · puesto '+E(p.puesto):''}${p.roles.length?' · usuario '+E(p.roles.join(', ')):''}<br><span class="mut">${E(personState(p))}</span></p><p>${E(personSum(p))}</p>
-  ${isAdm()?`<label for="ci-fn">Función en el Centro Inteligente</label><select id="ci-fn"><option value="">Automática (según puesto y actividad)</option>${Object.entries(FN).map(([key,v])=>`<option value="${key}" ${(cfg().staff||{})[p.k]===key?'selected':''}>${v.n}</option>`).join('')}</select>`:''}
-  <div class="tw" style="max-height:320px;overflow:auto;margin-top:.6rem"><table data-nosort><thead><tr><th>Hora</th><th>Actividad de hoy</th></tr></thead><tbody>${rows.slice(0,120).map(r=>`<tr><td>${E(hm(r.ts))}</td><td>${E(r.t)}</td></tr>`).join('')||'<tr><td colspan="2" class="mut">Sin actividad registrada hoy.</td></tr>'}</tbody></table></div>`,
-  {okText:isAdm()?'Guardar':'Cerrar',onOk:()=>safe(()=>{if(!isAdm())return;const v=val('ci-fn');const st=Object.assign({},cfg().staff||{});if(v)st[p.k]=v;else delete st[p.k];
-   if(JSON.stringify(st)!==JSON.stringify(cfg().staff||{})){S.cfg.ci=Object.assign({},cfg(),{staff:st});audit('CENTRO_INTELIGENTE','función de '+p.name+': '+(v?FN[v].n:'automática'));save();logEv('equipo','función de '+p.name);rerender();}},null,'función')});
+ rows.sort((a,b)=>b.ts-a.ts);const c0=p.cf||{};let ph=p.ph;
+ const ed=adm?`<fieldset style="border:1px solid var(--line);border-radius:12px;padding:.6rem .8rem;margin:.4rem 0"><legend><b>Cómo se ve en el Centro Inteligente</b></legend>
+  <div class="grid g2"><div><label for="ci-al">Nombre que se muestra</label><input id="ci-al" maxlength="30" value="${E(c0.alias||'')}" placeholder="${E(p.name)}"></div>
+  <div><label for="ci-fn">Función</label><select id="ci-fn"><option value="">Automática (según puesto y actividad)</option>${Object.entries(FN).map(([key,v])=>`<option value="${key}" ${c0.fn===key?'selected':''}>${v.n}</option>`).join('')}</select></div></div>
+  <div class="grid g2"><div><span class="sm"><b>Avatar</b></span><label class="chk"><input type="radio" name="ci-av" value="humano" ${p.av!=='robot'?'checked':''}> Persona</label><label class="chk"><input type="radio" name="ci-av" value="robot" ${p.av==='robot'?'checked':''}> Robot</label></div>
+  <div><label for="ci-col">Color del uniforme</label><input id="ci-col" type="color" value="${E(p.col||f.c)}" style="min-height:44px;width:100%"></div></div>
+  <div style="display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;margin-top:.4rem"><span id="ci-phv" style="width:64px;height:64px;border-radius:50%;overflow:hidden;background:${E(p.col||f.c)};display:grid;place-items:center;font-weight:800;color:#1b1813;flex:0 0 64px">${ph?`<img alt="" src="${E(ph)}" style="width:100%;height:100%;object-fit:cover">`:E(p.show.slice(0,2).toUpperCase())}</span>
+   <div style="flex:1;min-width:180px"><label for="ci-ph">Foto para el avatar (opcional)</label><input id="ci-ph" type="file" accept="image/jpeg,image/png,image/webp"><button type="button" class="btn sm" id="ci-phx" style="margin-top:.3rem;min-height:44px" ${ph?'':'hidden'}>Quitar foto</button>
+   <p class="sm mut" style="margin:.2rem 0 0">Se achica a 128 × 128 en este equipo y se guarda con la configuración del módulo. Subila sólo con permiso de la persona.</p></div></div>
+  <label class="chk" style="margin-top:.4rem"><input type="checkbox" id="ci-sh" ${p.hide?'':'checked'}> Mostrar en el local 3D</label>
+  <p class="sm" style="margin:.2rem 0 0">Ubicación en el local: <b>${p.pos?'fijada a mano':'automática según su función'}</b>${p.pos?' <button type="button" class="btn sm" id="ci-pa" style="min-height:44px">Volver a automática</button>':''} <span class="mut">(se mueve desde «Editar local»).</span></p>
+  <p class="sm mut" style="margin:.4rem 0 0">Los datos de la persona (nombre real, PIN, valor hora, puesto) se editan en ${p.empId?'<a href="#panel/personal">Personal y fichaje</a>':''}${p.empId&&p.roles.length?' o ':''}${p.roles.length?'<a href="#panel/roles">Usuarios y permisos</a>':''}${!p.empId&&!p.roles.length?'Personal y fichaje':''}.</p></fieldset>`:'';
+ let clrPos=false;
+ const w=modal('Actividad de '+p.show,`<p><b>${E(f.n)}</b>${p.show!==p.name?' · '+E(p.name):''}${p.puesto?' · puesto '+E(p.puesto):''}${p.roles.length?' · usuario '+E(p.roles.join(', ')):''}<br><span class="mut">${E(personState(p))}</span></p><p>${E(personSum(p))}</p>${ed}
+  <div class="tw" style="max-height:300px;overflow:auto;margin-top:.6rem"><table data-nosort><thead><tr><th>Hora</th><th>Actividad de hoy</th></tr></thead><tbody>${rows.slice(0,120).map(r=>`<tr><td>${E(hm(r.ts))}</td><td>${E(r.t)}</td></tr>`).join('')||'<tr><td colspan="2" class="mut">Sin actividad registrada hoy.</td></tr>'}</tbody></table></div>`,
+  {wide:adm,okText:adm?'Guardar':'Cerrar',onOk:()=>safe(()=>{if(!adm)return;const n={};const v=val('ci-fn');if(FN[v])n.fn=v;const al=String(val('ci-al')||'').trim().slice(0,30);if(al&&al!==p.name)n.alias=al;
+   const av=(w.querySelector('input[name=ci-av]:checked')||{}).value;if(av==='robot')n.av='robot';const cl=okCol(val('ci-col'));if(cl&&cl.toLowerCase()!==f.c.toLowerCase())n.col=cl;if(okPh(ph))n.ph=ph;
+   if(!$('#ci-sh',w).checked)n.hide=true;if(p.pos&&!clrPos)n.pos=p.pos;
+   const st=Object.assign({},cfg().staff||{});if(Object.keys(n).length)st[p.k]=n;else delete st[p.k];
+   if(JSON.stringify(st)!==JSON.stringify(cfg().staff||{})){S.cfg.ci=Object.assign({},cfg(),{staff:st});const ch=[];if((c0.fn||'')!==(n.fn||''))ch.push('función '+(n.fn?FN[n.fn].n:'automática'));if((c0.alias||'')!==(n.alias||''))ch.push('nombre visible');if((c0.av||'humano')!==(n.av||'humano'))ch.push('avatar '+(n.av||'persona'));if((c0.col||'')!==(n.col||''))ch.push('color');if((c0.ph||'')!==(n.ph||''))ch.push(n.ph?'foto nueva':'foto quitada');if(!!c0.hide!==!!n.hide)ch.push(n.hide?'oculto en el local':'visible en el local');if(clrPos)ch.push('ubicación automática');
+    audit('CENTRO_INTELIGENTE','equipo · '+p.name+': '+(ch.join(', ')||'cambios'));save();logEv('equipo','editado '+p.name);rerender();toast('Guardado: '+p.show);}},null,'editar persona')});
+ if(adm){const inp=$('#ci-ph',w),pv=$('#ci-phv',w),bx=$('#ci-phx',w);
+  inp.addEventListener('change',()=>safe(()=>{const fl=inp.files&&inp.files[0];if(!fl)return;if(!/^image\/(jpeg|png|webp)$/.test(fl.type))return w._err('Elegí una imagen JPG, PNG o WebP.');if(fl.size>8e6)return w._err('La imagen es muy grande (máximo 8 MB).');
+   const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>safe(()=>{const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');const m=Math.min(im.width,im.height);g.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,128,128);
+     let q=0.85,u=c.toDataURL('image/jpeg',q);while(u.length>40000&&q>0.4){q-=0.1;u=c.toDataURL('image/jpeg',q);}if(!okPh(u))return w._err('No se pudo procesar la imagen.');ph=u;w._err('');pv.innerHTML='<img alt="" style="width:100%;height:100%;object-fit:cover">';pv.firstChild.src=u;bx.hidden=false;},null,'foto');
+    im.onerror=()=>w._err('No se pudo leer la imagen.');im.src=rd.result;};rd.readAsDataURL(fl);},null,'foto'));
+  bx.addEventListener('click',()=>{ph='';pv.textContent=p.show.slice(0,2).toUpperCase();bx.hidden=true;inp.value='';});
+  const pa=$('#ci-pa',w);if(pa)pa.addEventListener('click',()=>{clrPos=true;pa.parentNode.innerHTML='Ubicación en el local: <b>automática</b> (al guardar).';});
+  w.querySelectorAll('a[href^="#panel/"]').forEach(a=>a.addEventListener('click',()=>w.remove()));}
  logEv('equipo','detalle de '+p.name);return w;}
 CI.personModal=k=>safe(()=>personModal(k),null,'equipo');
 
@@ -7356,6 +7483,24 @@ act('ciToggle',()=>{if(!isAdm())return toast('Sólo el administrador activa o de
  S.cfg.ci=Object.assign({},cfg(),{on:!was,roles,by:user.name,at:now()});audit('CENTRO_INTELIGENTE',(was?'desactivado':'activado')+(was?'':' · lo ven: administrador'+(roles.length?', '+roles.join(', '):'')));
  logEv(was?'desactivado':'activado','por '+user.name);CI.st.sel=null;cancelAnimationFrame(anim);anim=0;save();rerender();toast(was?'Centro Inteligente desactivado. El sistema sigue igual.':'Centro Inteligente activado (sólo lectura).');});
 act('ciTab',el=>{/* compatibilidad: el tablero ya muestra todo junto; lleva a la sección pedida */const m={gerente:'ci-gm',mapa:'ci-stage'};const t=document.getElementById(m[el.dataset.id]||'');if(el.dataset.id==='registro')return A.ciLog();if(t&&t.scrollIntoView)t.scrollIntoView({block:'nearest'});});
+act('ciEdit',()=>{if(CI.st.edit){A.ciEdCancel();return;}edStart();});
+act('ciEdSel',el=>{CI.st.esel=el.dataset.id;CI.st.psel=null;rerender();});
+act('ciEdPSel',el=>{CI.st.psel=el.dataset.id;CI.st.esel=null;rerender();});
+act('ciEdAdd',el=>{const t=MT[el.dataset.t]?el.dataset.t:'gond';const M=CI.st.draft.map;if(M.items.length>=80)return toast('Máximo 80 elementos en el local',1);M.auto=false;
+ const n=M.items.filter(x=>x.t===t).length+1;const e={id:'e'+Date.now().toString(36),t,x:M.W/2-MT[t].w/2,y:M.D/2-MT[t].d/2,w:MT[t].w,d:MT[t].d,label:t==='gond'?'':MT[t].n.split(' /')[0]+(n>1?' '+n:''),rubro:'',color:''};edClamp(e,M);M.items.push(e);CI.st.esel=e.id;CI.st.psel=null;rerender();});
+act('ciEdDel',()=>{const M=CI.st.draft.map;const i=M.items.findIndex(x=>x.id===CI.st.esel);if(i<0)return;M.items.splice(i,1);M.auto=false;CI.st.esel=null;rerender();});
+act('ciEdDup',()=>{const e=edItem();if(!e)return;const M=CI.st.draft.map;if(M.items.length>=80)return;const c=Object.assign({},e,{id:'e'+Date.now().toString(36),x:e.x+0.5,y:e.y+0.5});edClamp(c,M);M.items.push(c);M.auto=false;CI.st.esel=c.id;rerender();});
+act('ciEdRot',()=>{const e=edItem();if(!e)return;const w=e.w;e.w=e.d;e.d=w;edClamp(e,CI.st.draft.map);CI.st.draft.map.auto=false;rerender();});
+act('ciEdMove',el=>{const dx=+el.dataset.dx||0,dy=+el.dataset.dy||0;const e=edItem();if(e){e.x+=dx;e.y+=dy;edClamp(e,CI.st.draft.map);CI.st.draft.map.auto=false;rerender();return;}
+ if(CI.st.psel){const xy=CI.st.draft.pos[CI.st.psel]||personXY(CI.st.psel);if(xy){edMovePerson(CI.st.psel,xy[0]+dx,xy[1]+dy);rerender();}}});
+act('ciEdPAuto',()=>{if(CI.st.psel){CI.st.draft.pos[CI.st.psel]=null;rerender();}});
+act('ciEdCancel',()=>{CI.st.edit=false;CI.st.draft=null;CI.st.esel=CI.st.psel=null;logEv('local','edición descartada');rerender();});
+act('ciEdAuto',()=>{modal('Volver al plano automático','<p>El local vuelve a armarse solo: una góndola por rubro, cajas, depósito y entrada. Se descartan los elementos agregados a mano (al guardar).</p>',{okText:'Volver al automático',onOk:()=>{const d=D();CI.st.draft.map=autoMap(d.R,d.open.length);CI.st.esel=null;rerender();}});});
+act('ciEdSave',()=>{if(!isAdm())return;const dr=CI.st.draft;const st=Object.assign({},cfg().staff||{});let np=0;
+ Object.entries(dr.pos).forEach(([k,v])=>{const cur=Object.assign({},stf(k));if(v)cur.pos=v;else delete cur.pos;np++;if(Object.keys(cur).length)st[k]=cur;else delete st[k];});
+ const map=dr.map.auto?undefined:cleanMap(dr.map);const nc=Object.assign({},cfg(),{staff:st});if(map)nc.map=map;else delete nc.map;S.cfg.ci=nc;
+ audit('CENTRO_INTELIGENTE','local '+(map?'personalizado: '+map.items.length+' elementos, '+map.W+' × '+map.D+' m':'automático')+(np?' · '+np+' ubicación(es) de personas':''));logEv('local','guardado');
+ CI.st.edit=false;CI.st.draft=null;CI.st.esel=CI.st.psel=null;save();rerender();toast('Local guardado');});
 act('ciMode',el=>{CI.st.mode=el.dataset.id==='2d'?'2d':'3d';logEv('mapa','vista '+CI.st.mode);rerender();});
 act('ciRot',()=>{CI.st.rot=(CI.st.rot+1)%4;CI.draw();});
 act('ciFull',()=>{const s=document.getElementById('ci-stage');if(!s)return;if(document.fullscreenElement)document.exitFullscreen();else if(s.requestFullscreen)s.requestFullscreen().catch(()=>toast('Este navegador no permite pantalla completa',1));});
