@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Mi Comercio · Demo de un solo dueño · Sistema VB</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-02 05:12 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-03 04:04 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#1f2a37;--gold:#2e8b74;--gold2:#23695a;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -60,7 +60,7 @@ td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
 #side .brand{display:flex;gap:.6rem;align-items:center;padding:.3rem .5rem 1rem;color:#fff;font-family:Georgia,serif;font-weight:700;font-size:1.1rem}
 #side .brand i{width:36px;height:36px;border-radius:10px;background:var(--gold);color:#1b1100;display:grid;place-items:center;font-style:normal}
 #side a{display:flex;gap:.65rem;align-items:center;min-height:44px;padding:.45rem .7rem;border-radius:12px;color:#d8d1c3;text-decoration:none;cursor:pointer;font-weight:500}
-#side a:hover{background:#34312d}#side a.on{background:var(--gold);color:#1b1100;font-weight:700}
+#side a:hover{background:#34312d}#side a.on{background:var(--gold);color:#000;font-weight:700}
 #side svg{width:20px;height:20px;flex:none}
 #side .sec{font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:#a39b8c;margin:.9rem .7rem .2rem}
 #main{flex:1;min-width:0}
@@ -2949,7 +2949,8 @@ A.emptyDemo=()=>confirmBox('Borrar todo y empezar vacío','Se borran productos, 
    propio de Almacén RAVE (nombre, dirección, WhatsApp, redes, rubros, catálogo, Wi-Fi). Venta minorista de almacén/kiosco.
    Los productos se agrupan en CATEGORÍAS (sólo ordenan inventario, Vender y menú). Todo el dinero es del dueño.
    No lleva el Centro Inteligente ni los asistentes SVB R2AVE (eso es raveV3). Todo rotulado «ejemplo». */
-function isSoloBuild(){return!!(typeof window!=='undefined'&&window.RAVE_BUILD&&window.RAVE_BUILD.profile==='solo');}
+/* V26.46: raveV3 (perfil v3) usa la misma base genérica de un solo dueño, más el Centro Inteligente con los asistentes */
+function isSoloBuild(){return!!(typeof window!=='undefined'&&window.RAVE_BUILD&&(window.RAVE_BUILD.profile==='solo'||window.RAVE_BUILD.profile==='v3'));}
 function soloCats(){return[
  {id:'s-alm',name:'Almacén',color:'#5b7d3a',mNom:'Almacén',mTitle:'Almacén',layout:'rows',alcohol:false},
  {id:'s-beb',name:'Bebidas',color:'#2f6f8f',mNom:'Bebidas',mTitle:'Bebidas',layout:'grid',alcohol:false},
