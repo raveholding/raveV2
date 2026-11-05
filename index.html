@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Mi Comercio · Demo de un solo dueño · Sistema VB</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-05 14:41 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-05 20:45 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#1f2a37;--gold:#2e8b74;--gold2:#23695a;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -757,6 +757,14 @@ function modal(title,body,opt={}){const root=$('#modal-root');const w=document.c
  return w;}
 function confirmBox(title,msg,onYes,okText='Confirmar'){return modal(title,`<p>${msg}</p>`,{okText,onOk:()=>{onYes();}});}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){const o=$$('#modal-root .ov');if(o.length)o[o.length-1].remove();}});
+/* V26.51 · con una ventana abierta, Tab y Mayús+Tab recorren SÓLO los campos y botones de esa ventana (la de más arriba)
+   y vuelven al primero: el cursor nunca se va a la pantalla de atrás, donde se podría escribir sin querer */
+const modalFocusables=w=>[...w.querySelectorAll('a[href],button,input,select,textarea,[tabindex]')].filter(el=>!el.disabled&&el.tabIndex>=0&&el.type!=='hidden'&&!el.closest('[hidden],[inert]')&&(el.offsetWidth||el.offsetHeight||el.getClientRects().length));
+document.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const o=$$('#modal-root .ov');if(!o.length)return;const top=o[o.length-1];const f=modalFocusables(top);
+ if(!f.length){e.preventDefault();return;}const first=f[0],last=f[f.length-1],a=document.activeElement;
+ if(!top.contains(a)){e.preventDefault();(e.shiftKey?last:first).focus();return;}
+ if(!e.shiftKey&&a===last){e.preventDefault();first.focus();}else if(e.shiftKey&&a===first){e.preventDefault();last.focus();}},true);
+document.addEventListener('focusin',e=>{const o=$$('#modal-root .ov');if(!o.length)return;const top=o[o.length-1];if(!top.contains(e.target)&&e.target.closest&&e.target.closest('#app')){ /* sólo la pantalla de atrás; no el Asistente ni ayudas temporales */const f=modalFocusables(top);if(f.length)f[0].focus();}});
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.disabled)return;const f=A[el.dataset.act];if(f){e.preventDefault();f(el,e);}});
 /* campos numéricos: todo seleccionado al entrar (también con mouse) */
 let _md=false;
@@ -3840,7 +3848,7 @@ A.cuEdit=el=>{const c=el.dataset.id?custById(el.dataset.id):null;const isAdm=can
  ${!c&&ownerMode()&&typeof wsOn==='function'&&wsOn()?`<div class="card" style="margin:.6rem 0"><h3 style="margin-top:0">Mayorista y crédito</h3><div class="grid g2"><div ${(typeof wsOnly==='function'&&wsOnly())?'hidden':''}><label for="wc-ch">Canal habitual</label><select id="wc-ch"><option value="mayorista" selected>Mayorista</option><option value="minorista">Minorista</option></select></div><div><label for="wc-tx">CUIT ${(typeof wsOnly==='function'&&wsOnly())?'(opcional)':'(obligatorio para vender como mayorista)'}</label><input id="wc-tx" inputmode="numeric" maxlength="13" autocomplete="off" placeholder="20-12345678-6"></div></div><div class="grid g2"><div><label for="wc-tm">Plazo máximo de pago (días)</label><input id="wc-tm" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="Sin plazo"></div><div><label for="cu-lim">Límite de crédito ($)</label>${numIn('cu-lim',0,'0',can('config')||can('void')?'':'disabled')}</div></div><div class="grid g2"><div><label for="wc-zn">Zona de cobranza</label><input id="wc-zn" maxlength="30" autocomplete="off"></div><div><label for="wc-sl">Vendedor asignado</label><input id="wc-sl" maxlength="30" autocomplete="off"></div></div></div>`:''}
  <label class="chk"><input type="checkbox" id="cu-c1" ${c?(c.consent.club?'checked':''):(ownerMode()?'':'checked')} ${sd}> Participa del Club Mi Comercio (tratamiento de datos)</label><label class="chk"><input type="checkbox" id="cu-c2" ${c&&c.consent.comm?'checked':''} ${sd}> Aceptó recibir promociones por WhatsApp</label>
  ${c&&adm?`<label for="cu-proof">Constancia al OTORGAR un consentimiento (cómo y cuándo lo dio el titular; revocar no la necesita)</label><input id="cu-proof" maxlength="140" autocomplete="off" placeholder="Ej.: lo aceptó por escrito en el mostrador el 20/10" value="">${c.consent.proof?`<p class="sm mut">Última constancia: ${esc(c.consent.by||'')} · ${esc(c.consent.proof)}</p>`:''}`:''}
- ${c&&typeof wsCustCard==='function'?wsCustCard(c):''}${c?`<div class="card" style="margin:.6rem 0"><div class="row"><b class="sp">Cuenta corriente</b><span>Debe ${money(debtOf(c.id))}${typeof ccKindsHTML==='function'?ccKindsHTML(c.id):''}</span></div>${ccLedgerHTML(c.id)}<label for="cu-lim">Límite de crédito ($) — sólo administración</label>${numIn('cu-lim',c.limit||0,'0',can('config')||can('void')?'':'disabled')}<div class="row" style="margin-top:.5rem"><button class="btn sm" data-act="cuPay" data-id="${c.id}">Registrar cobro de deuda</button><button class="btn sm" data-act="cuMember" data-id="${c.id}">Membresía</button><button class="btn sm" data-act="cuRedeem" data-id="${c.id}">Canjear premio (${Math.min(stampsOf(c.id),S.loyalty.goal)}/${S.loyalty.goal})</button></div></div>
+ ${c&&typeof wsCustCard==='function'?wsCustCard(c):''}${c?`<div class="card" style="margin:.6rem 0"><div class="row"><b class="sp">Cuenta corriente</b><span>Debe ${money(debtOf(c.id))}${typeof ccKindsHTML==='function'?ccKindsHTML(c.id):''}</span></div>${ccLedgerHTML(c.id)}<label for="cu-lim">Límite de crédito ($) — sólo administración</label>${numIn('cu-lim',c.limit||0,'0',can('config')||can('void')?'':'disabled')}<div class="row" style="margin-top:.5rem"><button class="btn sm" data-act="cuPay" data-id="${c.id}">Registrar cobro de deuda</button><button class="btn sm" data-act="cuWa" data-id="${c.id}" ${typeof waOk==='function'&&waOk(c)?'':'disabled title="Sin WhatsApp cargado"'}>WhatsApp${debtOf(c.id)>0?' (avisar saldo)':''}</button><button class="btn sm" data-act="cuMember" data-id="${c.id}">Membresía</button><button class="btn sm" data-act="cuRedeem" data-id="${c.id}">Canjear premio (${Math.min(stampsOf(c.id),S.loyalty.goal)}/${S.loyalty.goal})</button></div></div>
  <label for="cu-nt">Notas internas</label><input id="cu-nt" maxlength="120" value="${esc(c.notes||'')}"><div class="row" style="margin-top:.6rem">${adm&&c.status!=='baja'&&c.secret?`<button class="btn sm" data-act="cuCardLink" data-id="${c.id}">Enviar tarjeta (enlace y Wallet)</button>`:''}${custDelAdm()&&c.status!=='baja'?`<button class="btn sm red" data-act="cuBaja" data-id="${c.id}">Dar de baja (anonimizar)</button>`:''}${custDelAdm()&&!c.elim?`<button class="btn sm red" data-act="cuDel" data-id="${c.id}">Eliminar socio</button>`:''}${!custDelAdm()&&c.status!=='baja'?'<span class="sm mut">La baja y la eliminación las hace sólo el administrador.</span>':''}</div>`:''}`,
  {wide:true,okText:'Guardar',onOk:w=>{const nm=val('cu-n').trim(),ls=val('cu-l').trim();const OW=ownerMode(),club=$('#cu-c1',w).checked;
   if(OW){if(nm.length<2)return w._err('Escribí el nombre o la razón social.'),false;}else if(nm.length<2||ls.length<2)return w._err('Nombre y apellido son obligatorios.'),false;
@@ -4530,6 +4538,38 @@ function creditCfgCard(){if(!can('config'))return'';const c=creditConf();
  <button class="btn gold" data-act="ckSave">Guardar</button></div>`;}
 A.ckSave=()=>{if(!can('config'))return toast('Sin permiso',1);const d=Math.round(parseNum(val('ck-d')));if(!(d>=1&&d<=365))return toast('Los días del fiado van de 1 a 365.',1);
  const prev=JSON.stringify(creditConf());S.cfg.credit={split:$('#ck-on').checked,fiadoDays:d};audit('CONFIG_CREDITO',prev+' → '+JSON.stringify(S.cfg.credit));save();toast('Guardado');rerender();};
+
+/* ===== V26.51 · WhatsApp al cliente desde su ficha (aviso libre o saldo de Fiado / Cuenta corriente) =====
+   · Abre wa.me con el número del cliente (guardado como +549 + 10 dígitos) y el mensaje ya escrito; el mensaje se puede editar
+     antes de abrir WhatsApp. El sistema NO envía nada solo: el envío lo confirma la persona en WhatsApp.
+   · Saldo: total y, si están separados, Fiado / Cuenta corriente, con cada compra abierta (fecha, saldo y vencimiento).
+   · Queda en Auditoría (WHATSAPP_CLIENTE) con el tipo de mensaje; no se guarda el texto. */
+const waDigits=c=>String((c&&c.wa)||'').replace(/\D/g,'');
+const waOk=c=>/^549\d{10}$/.test(waDigits(c));
+function waDebtText(c){const first=String(c.name||'').trim().split(/\s+/)[0]||'';const biz=(S.tenant&&S.tenant.name)||'el comercio';const tot=debtOf(c.id);
+ if(!(tot>0))return `Hola ${first}, te escribimos de ${biz}. Tu cuenta está al día: no tenés saldo pendiente. ¡Gracias!`;
+ const L=[`Hola ${first}, te escribimos de ${biz}.`,`Te recordamos que tu saldo pendiente es de ${money(tot)}.`];
+ if(typeof creditSplit==='function'&&creditSplit()){const k=ccByKind(c.id);if(k.fiado&&k.cc)L.push(`(Fiado ${money(k.fiado)} · Cuenta corriente ${money(k.cc)})`);}
+ const docs=typeof wsOpenDocs==='function'?wsOpenDocs(c.id).slice(0,10):[];
+ if(docs.length){L.push('');L.push('Detalle:');const t=now();
+  docs.forEach(d=>{const ven=d.due?(d.due<t?' · VENCIDO el '+dmy(dkey(d.due)):' · vence el '+dmy(dkey(d.due))):'';L.push(`• ${dmy(dkey(d.s.ts))} · ${typeof saleCk==='function'&&creditSplit()?(saleCk(d.s)==='fiado'?'Fiado':'Cta. cte.')+' · ':''}${money(d.left)}${ven}`);});}
+ L.push('');L.push('Podés acercarte al local o consultarnos por acá para abonarlo. ¡Gracias!');return L.join('\n');}
+function waFreeText(c){const first=String(c.name||'').trim().split(/\s+/)[0]||'';return `Hola ${first}, te escribimos de ${(S.tenant&&S.tenant.name)||'el comercio'}. `;}
+A.cuWa=el=>{const c=custById(el.dataset.id);if(!c)return;
+ if(!waOk(c))return toast('Este cliente no tiene un WhatsApp válido cargado (código de área + número).',1);
+ const debt=debtOf(c.id);const kind0=debt>0?'saldo':'aviso';
+ const body=`<p class="sm">Para: <b>${esc(custFull(c))}</b> · ${esc(c.wa)}</p>
+  <div class="row" role="group" aria-label="Tipo de mensaje"><button type="button" class="btn sm ${kind0==='saldo'?'on':''}" data-wk="saldo" aria-pressed="${kind0==='saldo'}">Saldo de la cuenta${debt>0?' ('+money(debt)+')':''}</button><button type="button" class="btn sm ${kind0==='aviso'?'on':''}" data-wk="aviso" aria-pressed="${kind0==='aviso'}">Aviso</button></div>
+  <label for="wa-t">Mensaje (lo podés cambiar)</label><textarea id="wa-t" rows="9" maxlength="1500">${esc(kind0==='saldo'?waDebtText(c):waFreeText(c))}</textarea>
+  ${typeof hasComm==='function'&&!hasComm(c)?'<p class="sm mut">Este cliente no aceptó recibir promociones: usalo sólo para avisos de su cuenta o de sus pedidos.</p>':''}
+  <p class="sm mut">Se abre WhatsApp con el mensaje escrito; el envío lo confirmás vos en WhatsApp.</p>`;
+ let kind=kind0;
+ const w=modal('WhatsApp a '+custFull(c),body,{okText:'Abrir WhatsApp',onOk:()=>{const t=String($('#wa-t',w).value||'').trim();if(!t){w._err('Escribí el mensaje.');return false;}
+  audit('WHATSAPP_CLIENTE',(kind==='saldo'?'saldo de la cuenta':'aviso')+' · '+custFull(c)+(kind==='saldo'?' · '+money(debtOf(c.id)):''));save();
+  openExternal('https://wa.me/'+waDigits(c)+'?text='+encodeURIComponent(t));}});
+ w.addEventListener('click',e=>{const b=e.target.closest('[data-wk]');if(!b)return;kind=b.dataset.wk;w.querySelectorAll('[data-wk]').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on);});
+  $('#wa-t',w).value=kind==='saldo'?waDebtText(c):waFreeText(c);const ta=$('#wa-t',w);ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);});
+ setTimeout(()=>{const ta=$('#wa-t',w);if(ta){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);}},60);};
 
 /* ===== Personal: fichaje, horas, empleados ===== */
 let perTab='fichaje';
