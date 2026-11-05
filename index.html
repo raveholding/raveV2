@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Mi Comercio · Demo de un solo dueño · Sistema VB</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-05 14:23 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-05 14:41 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#1f2a37;--gold:#2e8b74;--gold2:#23695a;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -224,6 +224,10 @@ html[data-theme=dark] .cm-card,html[data-theme=dark] .cm-card *{color-scheme:lig
 .ckbtn.selected{border:3px solid var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 35%,transparent)}
 .ckbtn:active{transform:translateY(1px)}
 @media(max-width:420px){.ckrow{grid-template-columns:1fr}}
+/* V26.50 · línea seleccionada del ticket: el fondo acompaña el modo claro/oscuro (antes era un claro fijo y en oscuro no se leía) */
+.cline.sel{background:var(--selbg,#fbf5e8);border-radius:10px;padding:.5rem;box-shadow:inset 3px 0 0 var(--gold)}
+html[data-theme=dark]{--selbg:#2f2921}
+.btn.gold,.fk.gold,.fk.gold small,.cmp .btn.gold,html[data-theme=dark] .btn.gold,html[data-theme=dark] .fk.gold,html[data-theme=dark] .fk.gold small{color:#000!important}html[data-theme=dark] .cmp-tab.on{color:#45ad92}
 </style>
 </head>
 <body>
@@ -1461,7 +1465,7 @@ function posGrid(){const g=$('#pgrid');if(!g)return;const q=pos.q.trim();const e
 function posCart(){const c=$('#pcart');if(!c)return;const sess=openSess();if(typeof wsRecalc==='function'){wsRecalc();wsGridSync();}
  const fb=$('#fbar');if(fb)fb.innerHTML=fbarHTML();
  c.innerHTML=(sess?'':`<div class="warnbox">No hay caja abierta. <a href="#panel/caja">Abrí la caja</a> para vender.</div>`)+
- (pos.lines.length?pos.lines.map((l,i)=>`<div class="cline" style="${i===pos.sel?'background:#fbf5e8;border-radius:10px;padding:.5rem':''}"><div class="row"><b class="sp">${esc(l.name)}</b><span class="tag">${esc(rubName(l.rubro))}</span><button class="btn sm red" data-act="prm" data-i="${i}" aria-label="Quitar">✕</button></div>
+ (pos.lines.length?pos.lines.map((l,i)=>`<div class="cline${i===pos.sel?' sel':''}"><div class="row"><b class="sp">${esc(l.name)}</b><span class="tag">${esc(rubName(l.rubro))}</span><button class="btn sm red" data-act="prm" data-i="${i}" aria-label="Quitar">✕</button></div>
   <div class="f"><div><label>Cant.${l.unit!=='u'?' ('+unitLbl(l.unit)+')':''}</label><input inputmode="decimal" data-line="${i}" data-fld="qty" value="${esc(String(l.qty).replace('.',','))}"></div><div><label>Precio $</label><input inputmode="decimal" data-line="${i}" data-fld="price" value="${esc(pesosStr(l.price))}"></div><div><label>Importe $</label><input inputmode="decimal" data-line="${i}" data-fld="amt" value="${esc(pesosStr(lineTotal(l)))}"></div></div>${typeof posSaveBtn==='function'?posSaveBtn(l,i):''}${(()=>{const q=prod(l.pid);if(q&&isKit(q)){const short=kitComps(q).filter(x=>{const n=kitNeed(pos.lines)[x.pid]||0;return n>x.p.stock+1e-9;});return`<div class="sm mut" style="margin-top:.2rem">Combo: descuenta ${esc(kitTxt(q))}</div>`+(short.length?`<div class="tag bad" style="margin-top:.3rem">Sin stock: ${short.map(x=>esc(pfull(x.p))).join(', ')} quedará en negativo</div>`:'');}return q&&qtyIn(l.pid)>q.stock+1e-9?`<div class="tag bad" style="margin-top:.3rem">Sin stock: quedará en negativo (${stockTxt({stock:q.stock-qtyIn(l.pid),unit:q.unit})})</div>`:'';})()}${typeof wsLineInfo==='function'?wsLineInfo(l,i):''}${l.price!==l.list?`<div class="sm warn tag warn" style="margin-top:.3rem">Precio de lista ${money(l.list)} · modificado</div>`:''}${(l.unit!=='u'&&scaleReady())?`<button class="btn sm" data-act="pesar" data-i="${i}">⚖ Pesar</button>`:''}</div>`).join(''):'<p class="mut">Tocá un producto o pasá el lector de código de barras.</p>')+
  `${typeof wsCartBar==='function'?wsCartBar():''}<div class="row" style="margin:.7rem 0"><span class="sp mut">Total</span><span class="total">${money(posTotal())}</span></div>${typeof paCartHTML==='function'?paCartHTML():''}
  <p class="sm ${pos.arca?'':'mut'}">${pos.arca?'Documento: Factura electrónica (el CAE se pide a ARCA al cobrar)':'Documento: Ticket interno — DOCUMENTO NO VÁLIDO COMO FACTURA'}</p>
@@ -1700,7 +1704,7 @@ function paCalcFor(parts){const c=paConf();if(!paOn())return{pays:parts.map(p=>(
 function posFinal(m){const b=posTotal();return paCalcFor([{m:m||pos.method,b}]).total;}
 function paFinalOf(m,b){return paCalcFor([{m,b}]).pays[0].a;}
 function paChipTag(m){const r=paConf().on?paConf().rules[m]:null;if(!paRuleOk(r))return'';return ' '+(r.sign>0?'+':'−')+(r.kind==='pct'?String(r.v/100).replace('.',',')+'%':money(r.v));}
-function paRowsHTML(R){return R.adj.map(a=>`<div class="row sm" style="color:${a.amt<0?'var(--ok)':'var(--bad,#b42318)'}"><span class="sp">${esc(a.label)}</span><b>${a.amt<0?'− ':'+ '}${money(Math.abs(a.amt))}</b></div>`).join('')+(R.skip.length?`<div class="warnbox sm">El descuento por ${esc(R.skip.map(m=>MET[m]||m).join(', '))} no se suma al cupón o membresía.</div>`:'');}
+function paRowsHTML(R){return R.adj.map(a=>`<div class="row sm" style="color:${a.amt<0?'var(--ok)':'var(--red)'}"><span class="sp">${esc(a.label)}</span><b>${a.amt<0?'− ':'+ '}${money(Math.abs(a.amt))}</b></div>`).join('')+(R.skip.length?`<div class="warnbox sm">El descuento por ${esc(R.skip.map(m=>MET[m]||m).join(', '))} no se suma al cupón o membresía.</div>`:'');}
 
 /* ---- Configuración → Recargos y descuentos por medio de pago (sólo administrador) ---- */
 function paCfgCard(){if(!isAdm())return'';const c=paConf();const R=c.rules||{};
@@ -2493,7 +2497,7 @@ function pdFieldHTML(medio,f,ent,ph){
  else if(f.t==='num4'||f.t==='cuotas')inp=`<input id="${id}" inputmode="numeric" autocomplete="off" maxlength="${f.t==='num4'?30:2}" placeholder="${f.t==='num4'?'0000':'1'}" ${at} value="${esc(v)}">`;
  else if(f.t==='dest'&&cfg.accounts.length)inp=`<input id="${id}" list="${id}-l" maxlength="60" autocomplete="off" ${at} value="${esc(v)}"><datalist id="${id}-l">${cfg.accounts.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>`;
  else inp=`<input id="${id}" maxlength="${f.t==='id'?70:(f.max||60)}" autocomplete="off" ${f.pii?'data-pii="1"':''} ${at} value="${esc(v)}">`;
- return `<div>${lab}${inp}${f.hint?`<div class="sm mut">${esc(f.hint)}</div>`:''}<div class="sm" style="color:var(--bad,#b3261e)" id="${id}-e" role="alert"></div></div>`;}
+ return `<div>${lab}${inp}${f.hint?`<div class="sm mut">${esc(f.hint)}</div>`:''}<div class="sm" style="color:var(--red)" id="${id}-e" role="alert"></div></div>`;}
 function pdBlockHTML(medio,ent,amt){
  const cfgNote=medio==='debito'||medio==='credito'?'Datos del cupón de la terminal. Nunca cargues el número de tarjeta completo.':medio==='transferencia'?'Datos del comprobante que muestra el cliente.':'Datos del cobro según la app del proveedor.';
  return `<div class="card pdblk" data-pdm="${medio}" style="margin:.6rem 0"><h3 style="margin-top:0">Datos del comprobante · ${esc(MET[medio])}</h3><p class="sm mut">${esc(cfgNote)} Queda como <b>declarado</b>: lo cargado a mano no acredita el cobro.</p>
@@ -4514,7 +4518,7 @@ function ckPickHTML(){if(!ckNeeded())return'';const cust=custById(pos.cust);cons
  const b=(k,t,sub)=>`<button type="button" class="ckbtn ${pos.ck===k?'selected':''}" data-act="cbck" data-k="${k}" aria-pressed="${pos.ck===k?'true':'false'}"><b>${pos.ck===k?'✔ ':''}${t}</b><small>${sub}</small></button>`;
  return `<div class="card" id="ckpick" style="margin:.5rem 0"><h3 style="margin:0 0 .4rem">¿Cómo queda la deuda? <span class="tag warn">obligatorio</span></h3><div class="ckrow">
   ${b('fiado','Mandar a Fiado','Vence el '+d+' ('+creditConf().fiadoDays+' días)')}${b('cc','Mandar a Cuenta Corriente',cd?'Vence el '+dmy(dkey(cd))+' (plazo del cliente: '+cust.term+' días)':'Según el plazo del cliente'+(cust?' (sin plazo cargado)':''))}</div>
-  ${pos.ck?'':'<p class="sm" style="margin:.4rem 0 0;color:var(--bad,#b42318)">Elegí una de las dos opciones para poder cobrar.</p>'}</div>`;}
+  ${pos.ck?'':'<p class="sm" style="margin:.4rem 0 0;color:var(--red)">Elegí una de las dos opciones para poder cobrar.</p>'}</div>`;}
 A.cbck=el=>{pos.ck=el.dataset.k==='fiado'?'fiado':'cc';cobroRender();};
 
 /* ---- Configuración ---- */
