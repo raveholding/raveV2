@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Mi Comercio · Demo de un solo dueño · Sistema VB</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-03 12:23 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-05 00:34 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#1f2a37;--gold:#2e8b74;--gold2:#23695a;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -217,6 +217,13 @@ html[data-theme=dark] .cmp{--nm-l:#2c2824;--nm-d:#0b0a09;--nm-bg:#221f1c}html[da
 html[data-theme=dark] #view [style*="background:#fff"],html[data-theme=dark] .dlg [style*="background:#fff;"]{background:var(--card)!important}
 html[data-theme=dark] #view [style*="color:#242220"]:not(.cm-card){color:var(--ink)!important}
 html[data-theme=dark] .cm-card,html[data-theme=dark] .cm-card *{color-scheme:light}
+/* V26.49 · Fiado / Cuenta corriente: selección obligatoria y excluyente, estados inequívocos, ≥ 60 px */
+.ckrow{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.ckbtn{min-height:64px;padding:.55rem .7rem;border:2px solid var(--line);border-radius:12px;background:var(--card,#fff);color:inherit;text-align:left;display:flex;flex-direction:column;gap:.15rem;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;font:inherit}
+.ckbtn small{opacity:.8}
+.ckbtn.selected{border:3px solid var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 35%,transparent)}
+.ckbtn:active{transform:translateY(1px)}
+@media(max-width:420px){.ckrow{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -635,7 +642,7 @@ function seedProducts(){return SEED_PRODS.map((p,i)=>({id:p.id,name:p.nom,sub:p.
  .concat([{id:'granel-1',name:'Maní con cáscara a granel',sub:'ejemplo para probar la balanza',grupo:'',rubro:'promo',price:850000,cost:610000,stock:12.5,unit:'kg',barcode:'',plu:'12',menu:false,active:true,desc:'',demo:true}]);}
 const BUILD_VER=(typeof window!=='undefined'&&window.RAVE_BUILD&&window.RAVE_BUILD.ver)||'sin dato';
 const IS_CLIENT=!!(typeof window!=='undefined'&&window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente');
-const DEF=()=>{const d=DEF0();if(IS_CLIENT)return clientClean(d);const r=wsDemoSeed(d);if(typeof comboDemoSeed==='function')comboDemoSeed(r);if(typeof isKiniBuild==='function'&&isKiniBuild())kiniBase(r);if(typeof isSoloBuild==='function'&&isSoloBuild())soloBase(r);return r;};
+const DEF=()=>{const d=DEF0();if(IS_CLIENT)return clientClean(d);const r=wsDemoSeed(d);if(typeof paDemoSeed==='function')paDemoSeed(r);if(typeof comboDemoSeed==='function')comboDemoSeed(r);if(typeof isKiniBuild==='function'&&isKiniBuild())kiniBase(r);if(typeof isSoloBuild==='function'&&isSoloBuild())soloBase(r);return r;};
 /* DEMO: canal mayorista encendido con datos rotulados «ejemplo» (el sistema del cliente nace apagado y sin esto) */
 function wsDemoSeed(d){d.cfg=d.cfg||{};if(!d.cfg.wholesale)d.cfg.wholesale={on:true,example:true,allowClub:false,grace:0,levels:[{id:'d',name:'Display'},{id:'f',name:'Fardo'},{id:'p',name:'Pallet'}]};
  wsDemoPres(d.products);d.cfg.wholesale.seeded=1;return wsDemoCust(d);}
@@ -663,6 +670,7 @@ function clientClean(d){d.products=d.products.filter(p=>!/granel-1/.test(p.id)).
 const DEF0=()=>({v:3,
  tenant:{name:'RAVE',legal:'Mi Comercio',slogan:'Almacén y kiosco · demo',wa:'5493874574892',address:'Urquiza 1052, Salta, Argentina',phone:'(387) 4 57 48 92',cuit:'',iva:'',caja:1,ig:'RAVE_LICORERIA',fb:'LICORERIA_RAVE'},
  rubros:SEED_RUBROS.map(r=>({...r})),branches:[],registers:[],transfers:[],transferEvents:[],payDetails:[],
+ payadj:{on:false,stack:false,rules:{}},cortesX:[],
  cfg:{biz:'rubros',permNotice:{ack:true},xfer:{strict:true,closedMode:'transito',approvalOver:0,transitAlertH:0,selfAuth:true,ownerV:1},cashProfile:'simple',negStock:true,tax:{promo:3000000,vino:3000000},fee:{qr:0,modo:0,debito:0,credito:0,pedidosya:0},movAffectProfit:true,payFromCash:true,scaleMode:'peso',ticket:{w:80,msg:'¡Gracias por tu compra! Seguinos en Instagram @rave_licoreria',showLogo:true,legal:true}},
  products:seedProducts(),
  sales:[],sessions:[],movs:[],closures:[],seq:{},
@@ -785,7 +793,7 @@ const stockTxt=p=>{const v=(typeof isKit==='function'&&isKit(p))?kitStock(p):p.s
 const empName=id=>(S.employees.find(e=>e.id===id)||{name:'—'}).name;
 const openSess=()=>S.sessions.find(s=>!s.closedAt&&(s.caja===undefined||s.caja===S.tenant.caja)); /* la sesión abierta de ESTE equipo (otros equipos tienen la suya) */
 const saleOk=s=>s.status==='ok';
-const lineTotal=it=>(it.tr&&it.amt>0?it.amt:Math.round(it.qty*it.price))-(it.disc||0);
+const lineTotal=it=>(it.tr&&it.amt>0?it.amt:Math.round(it.qty*it.price))-(it.disc||0)+(it.pa||0); /* V26.49: pa = recargo(+)/descuento(−) por medio de pago repartido */
 const lineCost=it=>Math.round(it.qty*it.cost);
 const initial=n=>(String(n||'?').trim()[0]||'?').toUpperCase();
 
@@ -942,8 +950,8 @@ function arqueoCalc(sess,inp){
  const sales=S.sales.filter(s=>s.sessId===sess.id&&s.status==='ok');
  const pend=S.sales.filter(s=>s.sessId===sess.id&&s.status==='pendiente');
  const byMethod={};let total=0;
- let aCtaCte=0,vueltoTot=0;
- sales.forEach(s=>{const L=salePays(s);L.forEach(pp=>{const m=byMethod[pp.m]||(byMethod[pp.m]={n:0,gross:0,fee:0});m.n++;m.gross+=pp.a;m.fee+=(L.length>1?(pp.fee||0):(s.fee||0));});total+=s.total;aCtaCte+=saleFiadoAmt(s);vueltoTot+=s.vuelto||0;});
+ let aCtaCte=0,vueltoTot=0,aFiado=0,aCC=0;
+ sales.forEach(s=>{const L=salePays(s);L.forEach(pp=>{const m=byMethod[pp.m]||(byMethod[pp.m]={n:0,gross:0,fee:0});m.n++;m.gross+=pp.a;m.fee+=(L.length>1?(pp.fee||0):(s.fee||0));});total+=s.total;{const fa=saleFiadoAmt(s);aCtaCte+=fa;if(fa){if(typeof saleCk==='function'&&s.ck==='fiado')aFiado+=fa;else aCC+=fa;}}vueltoTot+=s.vuelto||0;});
  const cobrado=total-aCtaCte;
  const R={};S.rubros.forEach(r=>R[r.id]={sold:0,profit:0,fees:0,mov:0,items:{},cash:0,dig:0,fia:0,ing:0,egr:0,cing:0,cegr:0,adj:0});
  sales.forEach(s=>{const fees=allocFees(s);s.items.forEach((it,i)=>{const q=R[it.rubro];if(!q)return;const t=lineTotal(it);q.sold+=t;q.profit+=t-lineCost(it);q.fees+=fees[i];const e=q.items[it.name]||(q.items[it.name]={qty:0,total:0});e.qty+=it.qty;e.total+=t;});
@@ -977,7 +985,7 @@ function arqueoCalc(sess,inp){
  const expectedCash=sess.opening+cashSales+ing-egr-paid+tr.tin-tr.tout;
  const declared=inp.declared;const diff=isNaN(declared)?0:declared-expectedCash;
  const fondo=sess.opening+tr.tin-tr.tout;const fisSum=reparte.concat(otros).reduce((a,r)=>a+r.fis,0);const resto=expectedCash-fondo-fisSum;
- return{owner:ownerMode(),sessId:sess.id,accts:(typeof accArq==='function'?accArq(sess):null),total,cobrado,aCtaCte,vueltoTot,count:sales.length,byMethod,pend:{n:pend.length,total:pend.reduce((a,s)=>a+s.total,0)},rub:R,ing,egr,gAuto,gManual:inp.gastosManual,gastos,sueldo,merienda:mer,
+ return{owner:ownerMode(),sessId:sess.id,accts:(typeof accArq==='function'?accArq(sess):null),total,cobrado,aCtaCte,aFiado,aCC,vueltoTot,count:sales.length,byMethod,pend:{n:pend.length,total:pend.reduce((a,s)=>a+s.total,0)},rub:R,ing,egr,gAuto,gManual:inp.gastosManual,gastos,sueldo,merienda:mer,
   detMissing:typeof pdMissingCount==='function'?pdMissingCount(sess):0,empName:inp.emp?inp.emp.name:'',hours:inp.hours,rate:inp.rate,reparte,otros,pool,netSum,fondo,resto,cashSales,paid,opening:sess.opening,tin:tr.tin,tout:tr.tout,transfers:tr.list,expectedCash,declared:isNaN(declared)?null:declared,diff,
   movs:movs.map(m=>({ts:m.ts,type:m.type,rubro:m.rubroName||rubName(m.rubro),concept:m.concept,amount:m.amount,user:m.user}))};}
 function buildReport(a,dayKey,who,inp){if(a.owner&&typeof buildReportOwner==='function')return buildReportOwner(a,dayKey,who,inp);
@@ -987,6 +995,7 @@ function buildReport(a,dayKey,who,inp){if(a.owner&&typeof buildReportOwner==='fu
  Object.keys(a.byMethod).filter(m=>m!=='fiado').forEach(m=>{const x=a.byMethod[m];P((MET[m]||m)+' '+money(x.gross)+(x.n>1?' ('+x.n+')':''));if(x.fee>0)P('  comisión - '+money(x.fee).replace('$ ','$ ')+' · neto '+money(x.gross-x.fee));});
  P('COBRADO REAL (dinero que entró) : '+money(a.cobrado),'h');
  if(a.aCtaCte>0)P('A CUENTA CORRIENTE (deuda de clientes, NO entró a caja) : '+money(a.aCtaCte),'w');
+ if(a.aCtaCte>0&&a.aFiado>0)P('   de eso: Fiado '+money(a.aFiado)+' · Cuenta corriente '+money(a.aCC||0));
  if(a.vueltoTot>0)P('Vuelto entregado en el turno : '+money(a.vueltoTot)+' (ya descontado del efectivo)');
  if(a.pend.n)P('⚠ Cobros digitales pendientes de confirmar: '+a.pend.n+' · '+money(a.pend.total),'w');
  if(a.detMissing)P('⚠ Cobros digitales sin el detalle del comprobante: '+a.detMissing,'w');
@@ -1233,9 +1242,9 @@ reg('caja','Caja','cash','cash_mov',()=>{const s=openSess();
  if(!s)return `<h1>Caja</h1><div class="card" style="max-width:480px"><p>No hay caja abierta.</p>${cashOpenPick()}<label for="ap">Efectivo inicial (apertura) $</label>${numIn('ap',0,'0')}${xfOpenHint()}<button class="btn gold" style="margin-top:.8rem" data-act="openCaja">Abrir caja ${S.tenant.caja}</button></div>${S.sessions.length||IS_CLIENT?'':'<p class="mut sm">Tip: en Configuración podés cargar la jornada de ejemplo del 6/10 para ver el arqueo completo.</p>'}`;
  const inp=arqInputs(s),a=arqueoCalc(s,inp),ms=S.movs.filter(m=>m.sessId===s.id);
  const old=dkey(s.openedAt)!==dkey(now());
- return `<div class="row"><h1 class="sp">Caja ${S.tenant.caja}${cashHdr(s)}</h1>${expBar('movimientos')}<button class="btn gold" data-act="nav" data-id="arqueo">Arqueo y cierre →</button></div>
+ return `<div class="row"><h1 class="sp">Caja ${S.tenant.caja}${cashHdr(s)}</h1>${expBar('movimientos')}${typeof tkDrawer==='function'&&tkDrawer().when!=='no'?'<button class="btn" data-act="openDrawer">Abrir cajón</button>':''}<button class="btn gold" data-act="nav" data-id="arqueo">Arqueo y cierre →</button></div>
  ${old?`<div class="errbox">Esta caja se abrió el ${dmy(dkey(s.openedAt))} y sigue abierta: hay días con ventas sin cierre.</div>`:''}
- <div class="grid g4"><div class="card kpi"><b>${money(s.opening)}</b><span>Apertura (${esc(s.openedBy)} · ${fmtDT(s.openedAt)})</span></div><div class="card kpi"><b>${money(a.total)}</b><span>Ventas confirmadas (${a.count})</span></div><div class="card kpi"><b>${money(a.cobrado)}</b><span>Cobrado real hoy</span></div>${a.aCtaCte?`<div class="card kpi"><b class="neg">${money(a.aCtaCte)}</b><span>A cuenta corriente (no entró a caja)</span></div>`:''}<div class="card kpi"><b>${money(a.expectedCash)}</b><span>Efectivo esperado hoy</span></div>${a.pend.n?`<div class="card kpi"><b class="neg">${a.pend.n}</b><span>Cobros digitales pendientes · ${money(a.pend.total)}</span></div>`:''}</div>
+ <div class="grid g4"><div class="card kpi"><b>${money(s.opening)}</b><span>Apertura (${esc(s.openedBy)} · ${fmtDT(s.openedAt)})</span></div><div class="card kpi"><b>${money(a.total)}</b><span>Ventas confirmadas (${a.count})</span></div><div class="card kpi"><b>${money(a.cobrado)}</b><span>Cobrado real hoy</span></div>${a.aCtaCte?`<div class="card kpi"><b class="neg">${money(a.aCtaCte)}</b><span>A cuenta corriente (no entró a caja)${a.aFiado?` · Fiado ${money(a.aFiado)} · Cta. cte. ${money(a.aCC)}`:''}</span></div>`:''}<div class="card kpi"><b>${money(a.expectedCash)}</b><span>Efectivo esperado hoy</span></div>${a.pend.n?`<div class="card kpi"><b class="neg">${a.pend.n}</b><span>Cobros digitales pendientes · ${money(a.pend.total)}</span></div>`:''}</div>
  ${ownerMode()?'':(typeof rubCashCard==='function'?rubCashCard(s):'')}
  <div class="row" style="margin:1rem 0"><button class="btn" data-act="mov" data-type="ingreso">+ Ingreso de efectivo</button><button class="btn" data-act="mov" data-type="egreso">− Egreso de efectivo</button></div>
  <div class="card"><h3>Movimientos</h3><div class="tw"><table><thead><tr><th>Hora</th><th>Tipo</th>${ownerMode()?'':'<th>Rubro</th>'}<th>Concepto</th><th class="r">Importe</th><th>Usuario</th><th></th></tr></thead><tbody>${ms.map(m=>`<tr><td>${hm(m.ts)}</td><td>${m.type==='ingreso'?'<span class="tag ok">Ingreso</span>':'<span class="tag bad">Egreso</span>'}</td>${ownerMode()?'':`<td>${esc(m.rubroName)}</td>`}<td>${esc(m.concept)}</td><td class="r">${m.type==='ingreso'?'':'- '}${money(m.amount)}</td><td>${esc(m.user)}</td><td>${typeof expBtn==='function'?expBtn('mov',m.id,'Expediente'):''}</td></tr>`).join('')||`<tr><td colspan="${ownerMode()?6:7}" class="mut">Sin movimientos.</td></tr>`}</tbody></table></div></div>
@@ -1271,7 +1280,7 @@ reg('arqueo','Arqueo / cierre','list','close_cash',()=>{const s=arqSess();if(!s)
  const modeBar=many?`<div class="card" style="margin-bottom:1rem"><div class="row"><b class="sp">Hay ${openAllSess().length} cajas abiertas: ${esc(openAllSess().map(x=>x.regName||('caja '+x.caja)).join(' y '))}</b><button class="btn ${uni?'gold':''}" data-act="arqMode" data-id="union">Cierre unificado (todas las cajas)</button><button class="btn ${uni?'':'gold'}" data-act="arqMode" data-id="one">Sólo la caja de este equipo</button></div><p class="sm mut" style="margin:.4rem 0 0">${uni?'Se juntan las ventas de todas las cajas; el sueldo, los gastos y los impuestos se cuentan <b>una sola vez</b> y la ganancia se reparte sobre el total. Al confirmar se cierran <b>todas</b> las cajas (cada una con su efectivo contado y su sello).':'Se arquea y cierra sólo la caja de este equipo.'}</p></div>`:'';
  const declHtml=uni?openAllSess().map(x=>`<label for="aq-dc-${x.id}">Efectivo contado en ${esc(x.regName||('caja '+x.caja))} ($)</label><input id="aq-dc-${x.id}" data-aq="decl" data-sid="${x.id}" inputmode="decimal" placeholder="Escribí el número" value="${esc((d.decl&&d.decl[x.id])||'')}" autocomplete="off">`).join('')+`<label for="aq-pay">¿De qué caja se pagaron el sueldo y los gastos?</label><select id="aq-pay" data-aq="payer">${openAllSess().map(x=>`<option value="${x.id}" ${(d.payer||(openSess()||{}).id||openAllSess()[0].id)===x.id?'selected':''}>${esc(x.regName||('caja '+x.caja))}</option>`).join('')}</select>`
   :`<label for="aq-d">Efectivo contado en caja ($)</label><input id="aq-d" data-aq="declared" inputmode="decimal" placeholder="Escribí el número" value="${esc(d.declared||'')}" autocomplete="off">`;
- return `${modeBar}<div class="row"><h1 class="sp">${uni?'Arqueo unificado de todas las cajas':'Arqueo y detalle de reparto'}</h1><span class="tag warn">Vista previa · todavía no cierra ${uni?'las cajas':'la caja'}</span></div>
+ return `${modeBar}<div class="row"><h1 class="sp">${uni?'Arqueo unificado de todas las cajas':'Arqueo y detalle de reparto'}</h1><span class="tag warn">Vista previa · todavía no cierra ${uni?'las cajas':'la caja'}</span><button class="btn" data-act="corteX" title="Guarda e imprime una foto del turno sin cerrar la caja">Corte X</button></div>
  <div class="grid g2" style="align-items:start"><div class="card"><h3>1 · Sueldo del empleado</h3>
  <label for="aq-emp">Empleado</label><select id="aq-emp" data-aq="empId"><option value="">— Sin empleado —</option>${emps.map(e=>`<option value="${e.id}" ${d.empId===e.id?'selected':''}>${esc(e.name)}</option>`).join('')}</select>
  <div class="grid g2"><div><label for="aq-h">Horas trabajadas</label><input id="aq-h" data-aq="hours" inputmode="decimal" placeholder="0" value="${esc(d.hours||'')}" autocomplete="off"><div class="sm mut" id="aq-fich"></div></div><div><label for="aq-r">Valor hora ($)</label><input id="aq-r" data-aq="rate" inputmode="decimal" placeholder="valor del empleado" value="${esc(d.rate||'')}" autocomplete="off"></div></div>
@@ -1286,7 +1295,7 @@ reg('arqueo','Arqueo / cierre','list','close_cash',()=>{const s=arqSess();if(!s)
  <label for="aq-n">Observaciones del cierre</label><input id="aq-n" data-aq="notes" maxlength="200" value="${esc(d.notes||'')}"></div>
  <div><div class="card" id="arq-tabs"></div><div class="card"><div class="row"><h3 class="sp">Texto para WhatsApp</h3></div><div class="rep" id="arq-prev" aria-live="polite"></div><div id="arq-warn"></div>
  <div class="row" style="margin-top:.8rem"><button class="btn" data-act="arqCopy">Copiar</button><button class="btn" data-act="arqWa">WhatsApp</button><button class="btn" data-act="arqWeb">WhatsApp Web</button><button class="btn" data-act="arqMail">Correo</button></div>
- <button class="btn gold" style="width:100%;margin-top:.8rem;min-height:52px" data-act="arqClose">${uni?'Confirmar cierre de TODAS las cajas':'Confirmar cierre de caja'}</button></div></div></div>`;},
+ <button class="btn gold" style="width:100%;margin-top:.8rem;min-height:52px" data-act="arqClose">${uni?'Confirmar cierre de TODAS las cajas':'Confirmar cierre de caja'}</button></div></div></div>${typeof corteXListHTML==='function'?corteXListHTML(s.id):''}`;},
  ()=>{arqPreview();arqFich();},'Operación');
 function arqFich(){const s=arqSess();if(!s)return;const d=arqDraft(s);const el=$('#aq-fich');if(!el)return;if(!d.empId){el.textContent='';return;}const h=hoursOn(d.empId,dkey(s.openedAt)===dkey(now())?dkey(now()):dkey(s.openedAt));
  el.innerHTML=h.h>0||h.flag?`Fichaje: <b>${numAR(h.h,2)} hs</b>${h.flag?' ⚠ falta fichar entrada o salida':''} <button class="btn sm" data-act="arqUseFich">Usar</button>`:'Sin fichadas hoy.';}
@@ -1305,8 +1314,8 @@ A.arqMode=el=>{S.arqDraft.__mode=el.dataset.id==='one'?'one':'union';audit('ARQU
 A.arqClose=()=>{const c=arqCtx();if(!c)return;if(c.s.union)return arqCloseUnion(c);if(c.a.declared===null)return toast('Escribí el efectivo contado en caja antes de cerrar.',1);
  const warn=(c.a.detMissing?`<div class="warnbox">${c.a.detMissing} cobro(s) digital(es) sin el detalle del comprobante (queda anotado en el cierre).</div>`:'')+(c.a.pend.n?`<div class="warnbox">${c.a.pend.n} cobro(s) digital(es) pendiente(s) (${money(c.a.pend.total)}) quedan fuera del cierre; si se confirman después se informan como cobro posterior.</div>`:'')+(c.a.reparte.some(r=>r.falta>0)?'<div class="errbox">Hay impuestos que no se llegan a cubrir con la ganancia del día.</div>':'');
  modal('Cerrar caja',`${warn}<p>Esperado ${money(c.a.expectedCash)} · contado ${money(c.a.declared)} · ${c.a.diff===0?'sin diferencia':(c.a.diff>0?'sobrante ':'faltante ')+money(Math.abs(c.a.diff))}</p><p>El cierre queda <b>congelado</b> con sello SHA-256. Sólo se podrán agregar notas.</p>`,{okText:'Cerrar y sellar',onOk:()=>{
-  const day=dkey(now());const data=JSON.parse(JSON.stringify(c.a));const text=reportText(c.L,false);const ts=now();
-  const cl={id:uid(),ts,sessId:c.s.id,caja:c.s.caja,regId:c.s.regId||'',regName:c.s.regName||'',branchId:c.s.branchId||'',user:user.name,day,opening:c.s.opening,data,text,notes:[],obs:c.inp.notes};cl.hash=sha256(JSON.stringify({data,text,ts,user:cl.user,sess:c.s.id}));
+  const day=dkey(now());const data=JSON.parse(JSON.stringify(c.a));const zn=zNext(c.s.caja);const text='CORTE Z N.º '+zLabel(c.s.caja,zn)+'\n'+reportText(c.L,false);const ts=now();
+  const cl={id:uid(),ts,zn,sessId:c.s.id,caja:c.s.caja,regId:c.s.regId||'',regName:c.s.regName||'',branchId:c.s.branchId||'',user:user.name,day,opening:c.s.opening,data,text,notes:[],obs:c.inp.notes};cl.hash=sha256(JSON.stringify({data,text,ts,user:cl.user,sess:c.s.id}));
   S.closures.push(cl);c.s.closedAt=ts;audit('CIERRE_CAJA','caja '+c.s.caja+' · total '+money(data.total)+' · dif '+money(data.diff)+' · sello '+cl.hash.slice(0,12));emit('cash.closed',{caja:c.s.caja,total:data.total});save();toast('Caja cerrada y sellada');location.hash='#panel/cierres';}});};
 
 function arqCloseUnion(c){const d=arqDraft(c.s);const L=openAllSess().filter(x=>c.s.union.includes(x.id));
@@ -1322,14 +1331,14 @@ function arqCloseUnion(c){const d=arqDraft(c.s);const L=openAllSess().filter(x=>
  <p>Se cierran <b>${L.length} cajas</b>. Cada una queda <b>congelada</b> con su sello SHA-256 y todas llevan la misma liquidación unificada del día.</p>`,{okText:'Cerrar y sellar todas',onOk:()=>{
   const day=dkey(now()),ts=now(),gid=uid();const uniText=reportText(c.L,false);
   per.forEach(p=>{const data=JSON.parse(JSON.stringify(p.a));data.uni={gid,cajas:L.map(x=>x.regName||('caja '+x.caja)),total:c.a.total,declared:c.a.declared,diff:c.a.diff,expectedCash:c.a.expectedCash,reparte:c.a.reparte,otros:c.a.otros};
-   const text='CIERRE UNIFICADO · '+L.map(x=>x.regName||('caja '+x.caja)).join(' + ')+'\nEsta caja ('+(p.x.regName||('caja '+p.x.caja))+'): ventas '+money(p.a.total)+' · esperado '+money(p.a.expectedCash)+' · contado '+money(p.a.declared)+' · diferencia '+money(p.a.diff)+'\n\n'+uniText;
-   const cl={id:uid(),ts,sessId:p.x.id,caja:p.x.caja,regId:p.x.regId||'',regName:p.x.regName||'',branchId:p.x.branchId||'',user:user.name,day,opening:p.x.opening,data,text,notes:[],obs:c.inp.notes,union:gid};cl.hash=sha256(JSON.stringify({data,text,ts,user:cl.user,sess:p.x.id}));
+   const zn=zNext(p.x.caja);const text='CIERRE UNIFICADO · '+L.map(x=>x.regName||('caja '+x.caja)).join(' + ')+'\nCORTE Z N.º '+zLabel(p.x.caja,zn)+'\nEsta caja ('+(p.x.regName||('caja '+p.x.caja))+'): ventas '+money(p.a.total)+' · esperado '+money(p.a.expectedCash)+' · contado '+money(p.a.declared)+' · diferencia '+money(p.a.diff)+'\n\n'+uniText;
+   const cl={id:uid(),ts,zn,sessId:p.x.id,caja:p.x.caja,regId:p.x.regId||'',regName:p.x.regName||'',branchId:p.x.branchId||'',user:user.name,day,opening:p.x.opening,data,text,notes:[],obs:c.inp.notes,union:gid};cl.hash=sha256(JSON.stringify({data,text,ts,user:cl.user,sess:p.x.id}));
    S.closures.push(cl);p.x.closedAt=ts;audit('CIERRE_CAJA','caja '+p.x.caja+' · unificado · total '+money(p.a.total)+' · dif '+money(p.a.diff)+' · sello '+cl.hash.slice(0,12));emit('cash.closed',{caja:p.x.caja,total:p.a.total});});
   audit('CIERRE_UNIFICADO',L.length+' cajas · total '+money(c.a.total)+' · dif '+money(c.a.diff));delete S.arqDraft.U;save();toast('Cajas cerradas y selladas');location.hash='#panel/cierres';}});}
 
 /* ===== Cajas cerradas ===== */
 const verifyClosure=c=>c.hash===sha256(JSON.stringify({data:c.data,text:c.text,ts:c.ts,user:c.user,sess:c.sessId}));
-reg('cierres','Cajas cerradas','lock','close_cash',()=>`<div class="row"><h1 class="sp">Cajas cerradas</h1>${expBar('cierres')}</div><div class="card"><div class="tw"><table><thead><tr><th>Fecha</th><th>Caja</th><th>Cerró</th><th class="r">Ventas</th><th class="r">Diferencia</th><th>Sello</th><th></th></tr></thead><tbody>${S.closures.slice().reverse().map(c=>`<tr><td>${fmtDT(c.ts)}</td><td>${c.caja}${c.regName?' · '+esc(c.regName):''}</td><td>${esc(c.user)}</td><td class="r">${money(c.data.total)}</td><td class="r ${c.data.diff<0?'neg':''}">${money(c.data.diff)}</td><td class="sm mut">${c.hash.slice(0,10)}…</td><td class="r"><button class="btn sm" data-act="clview" data-id="${c.id}">Ver detalle</button></td></tr>`).join('')||'<tr><td colspan="7" class="mut">Todavía no hay cierres.</td></tr>'}</tbody></table></div></div>`,null,'Operación');
+reg('cierres','Cajas cerradas','lock','close_cash',()=>`<div class="row"><h1 class="sp">Cajas cerradas</h1>${expBar('cierres')}</div><div class="card"><div class="tw"><table><thead><tr><th>Fecha</th><th>Caja</th><th>Cerró</th><th class="r">Ventas</th><th class="r">Diferencia</th><th>Sello</th><th></th></tr></thead><tbody>${S.closures.slice().reverse().map(c=>`<tr><td>${fmtDT(c.ts)}</td><td>${c.caja}${c.regName?' · '+esc(c.regName):''}${c.zn?' <span class="tag">'+esc(zLabel(c.caja,c.zn))+'</span>':''}</td><td>${esc(c.user)}</td><td class="r">${money(c.data.total)}</td><td class="r ${c.data.diff<0?'neg':''}">${money(c.data.diff)}</td><td class="sm mut">${c.hash.slice(0,10)}…</td><td class="r"><button class="btn sm" data-act="clview" data-id="${c.id}">Ver detalle</button></td></tr>`).join('')||'<tr><td colspan="7" class="mut">Todavía no hay cierres.</td></tr>'}</tbody></table></div></div>`,null,'Operación');
 A.clview=el=>{const c=S.closures.find(x=>x.id===el.dataset.id);if(!c)return;const ok=verifyClosure(c);
  const w=modal('Cierre de caja '+fmtDT(c.ts),`<div class="${ok?'okbox':'errbox'}">Integridad: ${ok?'verificada (el sello coincide)':'ALTERADO: el sello no coincide'} · SHA-256 ${c.hash.slice(0,16)}…</div>${c.data&&c.data.owner&&typeof ownerTablesHTML==='function'?ownerTablesHTML(c.data):(c.data&&c.data.reparte&&c.data.reparte[0]&&c.data.reparte[0].fis!==undefined&&typeof arqTablesHTML==='function'?arqTablesHTML(c.data):'')}<div class="rep">${esc(c.text)}</div>
  <h3 style="margin-top:.8rem">Movimientos${c.data&&c.data.owner?'':' (con rubro)'}</h3><div class="tw"><table><tbody>${c.data.movs.map(m=>`<tr><td>${hm(m.ts)}</td><td>${esc(m.type)}</td>${c.data.owner?'':`<td>${esc(m.rubro)}</td>`}<td>${esc(m.concept)}</td><td class="r">${money(m.amount)}</td></tr>`).join('')||'<tr><td class="mut">Sin movimientos</td></tr>'}</tbody></table></div>
@@ -1343,7 +1352,7 @@ A.clwa=el=>{const c=S.closures.find(x=>x.id===el.dataset.id);c&&openExternal(waL
 /* ===== Inicio / dashboard ===== */
 
 /* ===== Venta (POS) · barra de teclas F arriba, cobro con cliente, cupón y fiado ===== */
-const pos={lines:[],method:'efectivo',arca:false,rcp:null,sel:-1,q:'',rub:'',cust:'',coupon:'',stamp:'',recv:'',mix:false,pays:[]};
+const pos={lines:[],method:'efectivo',arca:false,rcp:null,sel:-1,q:'',rub:'',cust:'',coupon:'',stamp:'',recv:'',mix:false,pays:[],ck:''};
 const prod=id=>S.products.find(p=>p.id===id);
 const pfull=p=>p.name+(p.sub?' ('+p.sub+')':'');
 const qtyIn=pid=>pos.lines.filter(l=>l.pid===pid).reduce((a,l)=>a+l.qty,0);
@@ -1399,9 +1408,15 @@ function commitSale(method,arca,channel,lines,opts){
  const ben=(W&&W.chan==='mayorista'&&!W.club)?{disc:0,kind:'',label:'',code:'',couponId:'',couponErr:'',base:0}:(typeof applyBenefit==='function')?applyBenefit(lines,cust?cust.id:'',opts.coupon||''):{disc:0,kind:''};
  if(opts.coupon&&ben.kind!=='coupon'&&ben.couponErr)return{err:'Cupón: '+ben.couponErr};
  if(opts.extraDisc>0){ben.disc+=opts.extraDisc;if(!ben.kind){ben.kind='tn';ben.label='Descuento de Tiendanube';}}   /* descuento ya aplicado por la tienda online (Tiendanube): no es un cupón del sistema */
- const gross=lines.reduce((a,l)=>a+Math.round(l.qty*l.price),0);const total=gross-ben.disc;const alloc=allocDisc(lines,ben.disc);
+ const gross=lines.reduce((a,l)=>a+Math.round(l.qty*l.price),0);let total=gross-ben.disc;const alloc=allocDisc(lines,ben.disc);
  /* pagos: una sola línea (venta simple) o varias (mixta). Todo se valida ANTES de tocar stock, caja o cuenta corriente. */
  const pays=(opts.pays&&opts.pays.length?opts.pays:[{m:method,a:total}]).map(p=>({m:p.m,a:p.a}));if(typeof accStamp==='function')accStamp(pays,opts.acc);
+ /* V26.49 · 4.33 · recargo/descuento por medio de pago: cada parte (base) recibe su ajuste; pays[].a pasa a ser el importe final */
+ let PA=null;if(typeof paOn==='function'&&paOn()&&(channel||'local')==='local'&&!opts.noAdj){
+  const bs=pays.reduce((a,p)=>a+(Number.isInteger(p.a)?p.a:NaN),0);
+  if(pays.length>1&&bs!==total)return{err:'La suma de los pagos ('+money(bs)+') no coincide con el total ('+money(total)+'): '+(bs<total?'faltan ':'sobran ')+money(Math.abs(total-bs))+'.'};
+  const pc0=paConf();PA=payAdjCalc(pays.map(p=>({m:p.m,b:p.a})),pc0.rules,{ben:ben.disc>0,stack:!!pc0.stack,fiado:!!pc0.fiado});
+  if(PA.adj.length){PA.pays.forEach((q,i)=>{pays[i].a=q.a;if(q.adj){pays[i].b=q.b;pays[i].adj=q.adj;}});if(PA.total<=0)return{err:'El descuento deja la venta en cero: revisá el ajuste del medio de pago.'};total=PA.total;}else PA=null;}
  const pc=payCheck(pays,total,cust,opts.recv||0);if(pc.err)return{err:pc.err};
  {const pe=typeof pdPre==='function'?pdPre(pays,opts):'';if(pe)return{err:pe};}
  method=pays.length>1?'mixto':pays[0].m;
@@ -1410,13 +1425,15 @@ function commitSale(method,arca,channel,lines,opts){
  const c=S.tenant.caja;S.seq[c]=(S.seq[c]||0)+1;const digital=method==='qr'||method==='modo';
  pays.forEach(p=>{p.fee=(digital||p.m==='fiado')?0:Math.round(p.a*((S.cfg.fee[p.m]||0))/100);});
  const fiadoAmt=pc.fiadoAmt;
- const sale={id:opts.saleId||uid(),n:c+'-'+S.seq[c],ts:now(),user:user?user.name:'sistema',caja:c,sessId:sess.id,items:lines.map((l,i)=>({pid:l.pid,name:l.name,rubro:l.rubro,qty:l.qty,price:l.price,cost:isKit(prod(l.pid))?kitCost(prod(l.pid)):l.cost,list:l.list,disc:alloc[i]||0,...(isKit(prod(l.pid))?{kit:kitSnap(l.pid)}:{}),...(W&&l.rule?{lr:l.rule,ll:l.lst||'',lb:l.base||0}:{})})),total,method,
+ const sale={id:opts.saleId||uid(),n:c+'-'+S.seq[c],ts:now(),user:user?user.name:'sistema',caja:c,sessId:sess.id,items:lines.map((l,i)=>({pid:l.pid,name:l.name,rubro:l.rubro,qty:l.qty,price:l.price,cost:isKit(prod(l.pid))?kitCost(prod(l.pid)):l.cost,list:l.list,disc:alloc[i]||0,...(isKit(prod(l.pid))?{kit:kitSnap(l.pid)}:{}),...(W&&l.rule?{lr:l.rule,ll:l.lst||'',lb:l.base||0}:{}),...(l.src?{src:l.src}:{})})),total,method,
   doc:arca?'factura_pendiente_cae':'ticket_interno',status:digital?'pendiente':'ok',fee:0,channel:channel||'local',cust:cust?cust.id:'',custName:cust?cust.name+' '+cust.last:'',
   coupon:ben.kind==='coupon'?ben.code:'',benefit:ben.disc?{kind:ben.kind,label:ben.label,disc:ben.disc}:null,recv:opts.recv||0,fiado:fiadoAmt>0,
   pays,fiadoAmt,paid:total-fiadoAmt,balance:fiadoAmt,vuelto:pc.vuelto,pstate:fiadoAmt<=0?'pagada':(fiadoAmt>=total?'pendiente':'parcial')};
+ if(PA){const al=paAlloc(sale.items.map(lineTotal),total-(gross-ben.disc));sale.items.forEach((it,i)=>{if(al[i])it.pa=al[i];});sale.sub=gross;sale.adj=PA.adj;}
  sale.fee=pays.reduce((a,p)=>a+p.fee,0);
  if(opts.tnOrder)sale.tn=opts.tnOrder;
  if(W)sale.wch=W.chan;if(cr.ov)sale.cov=cr.ov;if(fiadoAmt>0&&wsOn()&&cust&&cust.term>0){sale.term=cust.term;sale.due=sale.ts+cust.term*WS_DAY;}
+ if(fiadoAmt>0&&typeof creditSplit==='function'&&creditSplit()){sale.ck=opts.ck==='fiado'?'fiado':'cc';const du=ccDueFor(sale.ck,sale.ts,cust);if(du){sale.due=du;if(sale.ck==='cc'&&cust&&cust.term>0)sale.term=cust.term;}else if(sale.ck==='cc'){delete sale.due;}} /* V26.49 · Fiado / Cuenta corriente */
  const neg=[];for(const pid in need){const p=prod(pid);p.stock=Math.round((p.stock-need[pid])*1000)/1000;if(p.stock<0)neg.push(p.name+' → '+p.stock);}if(neg.length)audit('VENTA_SIN_STOCK',neg.join(' · '));
  S.sales.push(sale);S.lastSale=sale.id;
  if(typeof pdCommitAll==='function')pdCommitAll(sale,opts.det);
@@ -1440,11 +1457,11 @@ function posCart(){const c=$('#pcart');if(!c)return;const sess=openSess();if(typ
  c.innerHTML=(sess?'':`<div class="warnbox">No hay caja abierta. <a href="#panel/caja">Abrí la caja</a> para vender.</div>`)+
  (pos.lines.length?pos.lines.map((l,i)=>`<div class="cline" style="${i===pos.sel?'background:#fbf5e8;border-radius:10px;padding:.5rem':''}"><div class="row"><b class="sp">${esc(l.name)}</b><span class="tag">${esc(rubName(l.rubro))}</span><button class="btn sm red" data-act="prm" data-i="${i}" aria-label="Quitar">✕</button></div>
   <div class="f"><div><label>Cant.${l.unit!=='u'?' ('+unitLbl(l.unit)+')':''}</label><input inputmode="decimal" data-line="${i}" data-fld="qty" value="${esc(String(l.qty).replace('.',','))}"></div><div><label>Precio $</label><input inputmode="decimal" data-line="${i}" data-fld="price" value="${esc(pesosStr(l.price))}"></div><div><label>Importe $</label><input inputmode="decimal" data-line="${i}" data-fld="amt" value="${esc(pesosStr(lineTotal(l)))}"></div></div>${typeof posSaveBtn==='function'?posSaveBtn(l,i):''}${(()=>{const q=prod(l.pid);if(q&&isKit(q)){const short=kitComps(q).filter(x=>{const n=kitNeed(pos.lines)[x.pid]||0;return n>x.p.stock+1e-9;});return`<div class="sm mut" style="margin-top:.2rem">Combo: descuenta ${esc(kitTxt(q))}</div>`+(short.length?`<div class="tag bad" style="margin-top:.3rem">Sin stock: ${short.map(x=>esc(pfull(x.p))).join(', ')} quedará en negativo</div>`:'');}return q&&qtyIn(l.pid)>q.stock+1e-9?`<div class="tag bad" style="margin-top:.3rem">Sin stock: quedará en negativo (${stockTxt({stock:q.stock-qtyIn(l.pid),unit:q.unit})})</div>`:'';})()}${typeof wsLineInfo==='function'?wsLineInfo(l,i):''}${l.price!==l.list?`<div class="sm warn tag warn" style="margin-top:.3rem">Precio de lista ${money(l.list)} · modificado</div>`:''}${(l.unit!=='u'&&scaleReady())?`<button class="btn sm" data-act="pesar" data-i="${i}">⚖ Pesar</button>`:''}</div>`).join(''):'<p class="mut">Tocá un producto o pasá el lector de código de barras.</p>')+
- `${typeof wsCartBar==='function'?wsCartBar():''}<div class="row" style="margin:.7rem 0"><span class="sp mut">Total</span><span class="total">${money(posTotal())}</span></div>
+ `${typeof wsCartBar==='function'?wsCartBar():''}<div class="row" style="margin:.7rem 0"><span class="sp mut">Total</span><span class="total">${money(posTotal())}</span></div>${typeof paCartHTML==='function'?paCartHTML():''}
  <p class="sm ${pos.arca?'':'mut'}">${pos.arca?'Documento: Factura electrónica (el CAE se pide a ARCA al cobrar)':'Documento: Ticket interno — DOCUMENTO NO VÁLIDO COMO FACTURA'}</p>
  <p class="sm mut">Medio elegido: <b>${esc(MET[pos.method]||pos.method)}</b></p>
  <button class="btn gold" style="width:100%;min-height:56px;font-size:1.1rem" data-act="cobrar" ${pos.lines.length?'':'disabled'}>Cobrar (F12)</button>
- <div class="row" style="margin-top:.6rem"><button class="btn sm sp" data-act="mov" data-type="ingreso">Ingreso de efectivo</button><button class="btn sm sp" data-act="mov" data-type="egreso">Egreso de efectivo</button></div>`;}
+ <div class="row" style="margin-top:.6rem"><button class="btn sm sp" data-act="mov" data-type="ingreso">Ingreso de efectivo</button><button class="btn sm sp" data-act="mov" data-type="egreso">Egreso de efectivo</button>${typeof csSupported==='function'&&csSupported()?'<button class="btn sm sp" data-act="csOpen" title="Abre la vista del carrito para el segundo monitor">Pantalla del cliente</button>':''}</div>`;if(typeof csPush==='function')csPush();}
 A.padd=el=>{const p=prod(el.dataset.id);if(!p)return;const cur=qtyIn(p.id);const step=1;if(!canOver(p)&&cur+step>stockOf(p)){toast('Sin stock suficiente de '+p.name+' (este producto exige stock)',1);return;}if(cur+step>stockOf(p))toast('Sin stock: se vende igual y queda en negativo ('+p.name+')');
  const L=pos.lines.find(l=>l.pid===p.id);if(L){L.qty+=step;pos.sel=pos.lines.indexOf(L);}else{pos.lines.push({pid:p.id,name:pfull(p),rubro:p.rubro,qty:1,price:p.price,cost:p.cost,unit:p.unit,list:p.price});pos.sel=pos.lines.length-1;}posCart();};
 A.prm=el=>{pos.lines.splice(+el.dataset.i,1);pos.sel=pos.lines.length-1;posCart();};
@@ -1477,14 +1494,15 @@ A.ncgo=el=>{$$('#modal-root .ov').forEach(o=>o.remove());A.voidsale(el);};
 /* ---- cobro ---- */
 function cobroW(){const d=$('#modal-root .dlg[aria-label="Confirmar cobro"]');return d?d.closest('.ov'):null;}
 function cobroSync(){const w=cobroW();if(!w)return;const g=id=>w.querySelector('#'+id);if(g('cb-cup'))pos.coupon=g('cb-cup').value.trim().toUpperCase();if(g('cb-code'))pos.stamp=g('cb-code').value.trim();if(g('rcv'))pos.recv=g('rcv').value;if(typeof arcaRcpSync==='function')arcaRcpSync(w);if(typeof pdCobroSync==='function')pdCobroSync(w);}
-function cobroRender(){const w=cobroW();if(!w)return;cobroSync();w.querySelector('.mb').innerHTML=cobroView();if(typeof pdAfterRender==='function')pdAfterRender(w);}
+function cobroRender(){const w=cobroW();if(!w)return;cobroSync();w.querySelector('.mb').innerHTML=cobroView();if(typeof pdAfterRender==='function')pdAfterRender(w);if(typeof csPush==='function')csPush();}
 function mixParsed(){ /* pagos tal como están cargados en pantalla (centavos); NaN = número inválido */
  return pos.pays.map(p=>({m:p.m,a:p.a===''?0:cents(p.a),r:p.r===''?0:cents(p.r)}));}
 function mixSummaryHTML(tot){
  const L=mixParsed();const sum=L.reduce((a,p)=>a+(isNaN(p.a)?0:p.a),0);const diff=tot-sum;
- const ef=L.find(p=>p.m==='efectivo');const rc=ef&&!isNaN(ef.r)?ef.r:0;const efA=ef&&!isNaN(ef.a)?ef.a:0;
+ const ef=L.find(p=>p.m==='efectivo');const rc=ef&&!isNaN(ef.r)?ef.r:0;const PAm=typeof paCalcFor==='function'?paCalcFor(L.filter(p=>!isNaN(p.a)&&p.a>0).map(p=>({m:p.m,b:p.a}))):null;const efA=ef&&!isNaN(ef.a)?(PAm?(PAm.pays.find(q=>q.m==='efectivo')||{a:ef.a}).a:ef.a):0;
  const fi=L.find(p=>p.m==='fiado'&&!isNaN(p.a)&&p.a>0);
  let h=`<div class="row sm"><span class="sp">Total a cobrar</span><b>${money(tot)}</b></div><div class="row sm"><span class="sp">Imputado en los medios</span><b>${money(sum)}</b></div>`;
+ if(PAm&&PAm.adj.length)h+=paRowsHTML(PAm)+`<div class="row"><span class="sp"><b>Total a cobrar con ajustes</b></span><b>${money(PAm.total+Math.max(0,diff))}</b></div>`;
  h+=diff===0?'<div class="okbox sm" role="status"><b>✔ Cubierto exacto.</b></div>':diff>0?`<div class="errbox sm" role="status"><b>Faltan ${money(diff)}</b> para completar el total.</div>`:`<div class="errbox sm" role="status"><b>Sobran ${money(-diff)}</b>: los medios suman más que el total.</div>`;
  if(fi)h+=`<div class="warnbox sm">A cuenta corriente: <b>${money(fi.a)}</b> · <u>no ingresa a la caja</u>, queda como deuda del cliente.</div>`;
  if(ef&&rc>0){if(rc>=efA&&efA>0){const v=rc-efA;h+=v>0?`<div class="vuelto" role="alert" aria-live="assertive"><span>VUELTO A ENTREGAR</span><b>${money(v)}</b><small>Recibido ${money(rc)} − efectivo imputado ${money(efA)}</small></div>`:'<div class="okbox sm">Efectivo justo: sin vuelto.</div>';}
@@ -1494,8 +1512,8 @@ function cobroView(){
  if(typeof wsRecalc==='function')wsRecalc();
  const cust=custById(pos.cust);const ben=posBen();const gross=posGross();const tot=gross-ben.disc;const m=pos.mix?'mixto':pos.method;
  const needCust=m==='fiado'||(pos.mix&&pos.pays.some(p=>p.m==='fiado'));
- const chips=POS_METHODS.map((k,i)=>`<button type="button" class="btn sm ${m===k?'on':''}" data-act="cbmet" data-m="${k}">${esc(MET[k]||k)}${i<4?` (F${i+1})`:''}</button>`).join('')+`<button type="button" class="btn sm ${pos.mix?'on':''}" data-act="cbmix" aria-pressed="${pos.mix?'true':'false'}">Dividir el pago (mixto)</button>`;
- const custBox=cust?`<div class="okbox row"><span class="sp"><b>${esc(cust.name+' '+cust.last)}</b> · socio ${esc(pad4(cust.num))}${memberActive(cust)?' · ⭐ '+esc(memberActive(cust).name):''}${needCust?` · debe ${money(debtOf(cust.id))} de ${money(cust.limit||0)}`:''}</span><button class="btn sm" data-act="cbcust" data-id="">Quitar</button></div>`
+ const chips=POS_METHODS.map((k,i)=>`<button type="button" class="btn sm ${m===k?'on':''}" data-act="cbmet" data-m="${k}">${esc(MET[k]||k)}${typeof paChipTag==='function'?esc(paChipTag(k)):''}${i<4?` (F${i+1})`:''}</button>`).join('')+`<button type="button" class="btn sm ${pos.mix?'on':''}" data-act="cbmix" aria-pressed="${pos.mix?'true':'false'}">Dividir el pago (mixto)</button>`;
+ const custBox=cust?`<div class="okbox row"><span class="sp"><b>${esc(cust.name+' '+cust.last)}</b> · socio ${esc(pad4(cust.num))}${memberActive(cust)?' · ⭐ '+esc(memberActive(cust).name):''}${needCust?` · debe ${money(debtOf(cust.id))} de ${money(cust.limit||0)}${typeof ccKindsHTML==='function'?ccKindsHTML(cust.id):''}`:''}</span><button class="btn sm" data-act="cbcust" data-id="">Quitar</button></div>`
   :`<label for="cb-q">Cliente ${needCust?'(obligatorio para cuenta corriente)':'(opcional: sellos, cupones, membresía)'}</label><input id="cb-q" placeholder="Buscar por nombre, WhatsApp o DNI" autocomplete="off"><div id="cb-res"></div>`;
  const benTxt=(ben.disc?`<div class="okbox">${esc(ben.label)}: − ${money(ben.disc)}${ben.note?'<br><span class="sm">'+esc(ben.note)+'</span>':''}</div>`:'')+(pos.coupon&&ben.couponErr?`<div class="errbox">Cupón: ${esc(ben.couponErr)}</div>`:'')+(!ben.disc&&ben.note?`<div class="warnbox sm">${esc(ben.note)}</div>`:'');
  const mixHtml=pos.mix?`<div class="card" id="mixbox" style="margin:.5rem 0"><h3 style="margin-top:0">Pagos del cliente</h3><p class="sm mut">Repartí el total entre los medios. La suma debe dar exactamente el total. El efectivo que entrega el cliente va en “Recibe en mano”; si es más que el importe, se calcula el vuelto.</p>
@@ -1505,11 +1523,12 @@ function cobroView(){
    <div class="mixbtns"><button type="button" class="btn sm" data-act="cbrest" data-i="${i}">Resto</button>${pos.pays.length>1?`<button type="button" class="btn sm red" data-act="cbmrm" data-i="${i}" aria-label="Quitar este medio">✕</button>`:''}</div></div>`).join('')}
   ${pos.pays.length<PAY_MIX.length?'<button type="button" class="btn sm" data-act="cbmadd">+ Agregar medio</button>':''}
   <div id="mx-sum" style="margin-top:.6rem">${mixSummaryHTML(tot)}</div></div>`:'';
- return `<div class="card" style="margin-bottom:.6rem">${pos.lines.map(l=>`<div class="row sm"><span class="sp">${esc(l.name)} × ${numAR(l.qty,3)}${typeof wsLineTag==='function'?wsLineTag(l):''}</span><b>${money(Math.round(l.qty*l.price))}</b></div>`).join('')}${ben.disc?`<div class="row sm"><span class="sp">Subtotal</span><span>${money(gross)}</span></div><div class="row sm" style="color:var(--ok)"><span class="sp">${esc(ben.label)}</span><b>− ${money(ben.disc)}</b></div>`:''}<hr><div class="row"><span class="sp">TOTAL</span><span class="total">${money(tot)}</span></div></div>
+ return `<div class="card" style="margin-bottom:.6rem">${pos.lines.map(l=>`<div class="row sm"><span class="sp">${esc(l.name)} × ${numAR(l.qty,3)}${typeof wsLineTag==='function'?wsLineTag(l):''}</span><b>${money(Math.round(l.qty*l.price))}</b></div>`).join('')}${ben.disc?`<div class="row sm"><span class="sp">Subtotal</span><span>${money(gross)}</span></div><div class="row sm" style="color:var(--ok)"><span class="sp">${esc(ben.label)}</span><b>− ${money(ben.disc)}</b></div>`:''}${typeof paCobroTotHTML==='function'?paCobroTotHTML(tot,gross,ben):`<hr><div class="row"><span class="sp">TOTAL</span><span class="total">${money(tot)}</span></div>`}</div>
  <div class="row" style="margin-bottom:.5rem">${chips}</div>
  <p class="sm"><b>Documento:</b> ${pos.arca?'Factura electrónica (CAE al cobrar)':'Ticket interno — DOCUMENTO NO VÁLIDO COMO FACTURA'} <button class="btn sm" data-act="parca">${pos.arca?'CON ARCA':'SIN ARCA'} (F8)</button></p>
  ${custBox}
  ${mixHtml}
+ ${typeof ckPickHTML==='function'?ckPickHTML():''}
  ${typeof accPickHTML==='function'?accPickHTML():''}
  ${typeof pdHostHTML==='function'?pdHostHTML():''}
  ${typeof arcaRcpHtml==='function'?arcaRcpHtml():''}
@@ -1524,7 +1543,7 @@ function cobroView(){
 function vueltoHTML(r,tot){if(isNaN(r)||!r)return '';if(r>tot)return `<div class="vuelto" role="alert"><span>VUELTO A ENTREGAR</span><b>${money(r-tot)}</b><small>Recibido ${money(r)} − total ${money(tot)}</small></div>`;if(r===tot)return '<div class="okbox sm">Efectivo justo: sin vuelto.</div>';return `<div class="errbox sm"><b>Falta ${money(tot-r)}</b> para completar el efectivo.</div>`;}
 A.cobrar=()=>{if(!pos.lines.length)return;if(!can('sell'))return toast('Sin permiso',1);if(!openSess()){toast('Abrí la caja para vender.',1);return;}
  if(cobroW())return;
- pos.pdet={};
+ pos.pdet={};pos.ck='';
  if(typeof stampPrep==='function')stampPrep();
  const w=modal('Confirmar cobro',cobroView(),{wide:true,okText:'Cobrar (F12)',onOk:()=>{cobroSync();
   const rc=pos.recv?cents(pos.recv):0;
@@ -1535,15 +1554,16 @@ A.cobrar=()=>{if(!pos.lines.length)return;if(!can('sell'))return toast('Sin perm
   if(pos.mix){const L=mixParsed();if(L.some(p=>isNaN(p.a)||isNaN(p.r))){toast('Revisá los importes: hay un número inválido.',1);return false;}
    pays=L.filter(p=>p.a>0).map(p=>({m:p.m,a:p.a}));}
   const ag=typeof accGate==='function'?accGate():{acc:null};if(ag.err){toast(ag.err,1);return false;}
+  if(typeof ckNeeded==='function'&&ckNeeded()&&!pos.ck){toast('Elegí «Mandar a Fiado» o «Mandar a Cuenta Corriente».',1);const k=$('#ckpick');if(k)k.scrollIntoView({block:'center'});return false;}
   if(pos.mix){const L=mixParsed();const ef=L.find(p=>p.m==='efectivo');recv=ef?ef.r:0;}
-  const r=commitSale(pos.mix?'mixto':pos.method,pos.arca,'local',pos.lines,{custId:pos.cust,coupon:pos.coupon,stampCode:pos.stamp,recv,pays,det:pg.det,acc:ag.acc,ws:wsOn()?{chan:wsChan()}:null,receptor:pos.arca&&typeof arcaRcpGet==='function'?arcaRcpGet():null});
+  const r=commitSale(pos.mix?'mixto':pos.method,pos.arca,'local',pos.lines,{custId:pos.cust,coupon:pos.coupon,stampCode:pos.stamp,recv,pays,det:pg.det,acc:ag.acc,ws:wsOn()?{chan:wsChan()}:null,receptor:pos.arca&&typeof arcaRcpGet==='function'?arcaRcpGet():null,ck:pos.ck});
   if(r.err){wsCommitErr(r);return false;}
-  const sale=r.sale;pos.lines=[];pos.sel=-1;pos.cust='';pos.chanSet=null;pos.rcp=null;pos.coupon='';pos.stamp='';pos.recv='';pos.mix=false;pos.pays=[];pos.pdet={};pos.acc={};posCart();posGrid();
-  toast('Venta '+sale.n+' registrada'+(r.stamp?' · sello sumado':''));
+  const sale=r.sale;pos.lines=[];pos.sel=-1;pos.cust='';pos.chanSet=null;pos.rcp=null;pos.coupon='';pos.stamp='';pos.recv='';pos.mix=false;pos.pays=[];pos.pdet={};pos.acc={};pos.ck='';posCart();posGrid();
+  toast('Venta '+sale.n+' registrada'+(r.stamp?' · sello sumado':''));if(typeof csPaid==='function')csPaid(sale);
   setTimeout(()=>{if(sale.status==='pendiente')payModal(sale);else if(sale.doc!=='ticket_interno'&&typeof arcaPostSale==='function')arcaPostSale(sale,r.stamp);else receiptModal(sale,r.stamp);},50);}});
  if(typeof pdBind==='function')pdBind(w);
  w.addEventListener('input',e=>{const t=e.target;
-  if(t.id==='rcv'){const v=$('#vuelto',w);if(v)v.innerHTML=vueltoHTML(cents(t.value),posTotal());}
+  if(t.id==='rcv'){const v=$('#vuelto',w);if(v)v.innerHTML=vueltoHTML(cents(t.value),typeof posFinal==='function'?posFinal(pos.method):posTotal());}
   if(t.dataset&&t.dataset.pi!==undefined&&t.dataset.pf!=='m'){pos.pays[+t.dataset.pi][t.dataset.pf]=t.value;const sm=$('#mx-sum',w);if(sm)sm.innerHTML=mixSummaryHTML(posTotal());if(typeof pdRecheck==='function')pdRecheck(w);}
   if(t.id==='cb-q'){const q=t.value.trim().toLowerCase();const res=$('#cb-res',w);if(!q){res.innerHTML='';return;}
    const L=S.customers.filter(c=>c.status!=='baja'&&((c.name+' '+c.last).toLowerCase().includes(q)||c.wa.replace(/\D/g,'').includes(q.replace(/\D/g,'')||'zz')||pad4(c.num)===q||(c.dni&&normDni(q).length>=6&&normDni(c.dni)===normDni(q)))).slice(0,6);
@@ -1588,14 +1608,20 @@ reg('vender','Vender','cart','sell',()=>`<div class="fbar" id="fbar" role="toolb
 function addByCode(code){code=String(code).trim();
  if(typeof wsAddByPack==='function'&&wsAddByPack(code))return true;
  let p=S.products.find(x=>x.active&&x.barcode&&x.barcode===code);if(p){A.padd({dataset:{id:p.id}});return true;}
- if(/^2\d{12}$/.test(code)){const plu=String(+code.slice(1,6));const val=+code.slice(6,11);p=S.products.find(x=>x.active&&x.plu&&String(+x.plu)===plu);
-  if(p){if(p.unit==='u'){toast('Etiqueta de balanza para un producto por unidad: revisá el PLU.',1);return true;}
-   const mode=(S.cfg.scaleMode||'peso');let qty,priceC;
-   if(mode==='peso'){qty=val/1000;if(!(qty>0&&qty<=50)){toast('Peso fuera de rango en la etiqueta.',1);return true;}}
-   else{priceC=val*100;qty=Math.round(priceC/p.price*1000)/1000;if(!(qty>0&&qty<=50)){toast('Importe fuera de rango en la etiqueta.',1);return true;}}
+ {const E=scaleLabelParse(code,typeof scaleLabelsCfg==='function'?scaleLabelsCfg():null,S.cfg.scaleMode||'peso');   /* V26.49: verificador + formato por prefijo (20 = peso, 21 = importe) */
+  if(E&&E.err){toast(E.err,1);return true;}
+  if(E){p=S.products.find(x=>x.active&&x.plu&&String(+x.plu)===E.plu);
+   if(!p){toast('Etiqueta de balanza: no hay ningún producto con PLU '+E.plu+'.',1);return true;}
+   if(p.unit==='u'){toast('Etiqueta de balanza para un producto por unidad: revisá el PLU.',1);return true;}
+   let qty,price=p.price,man;
+   if(E.mode==='peso'){qty=E.kg;if(!(qty>0&&qty<=50)){toast('Peso fuera de rango en la etiqueta.',1);return true;}}
+   else{const q=scaleLabelQty(E.priceC,p.price);if(!q||!(q.qty>0&&q.qty<=50)){toast('Importe fuera de rango en la etiqueta.',1);return true;}qty=q.qty;price=q.price;man=1;
+    if(q.adj&&q.diffPct>1)toast('El precio por kg de la balanza no coincide con el del sistema ('+money(p.price)+'): se cobra el importe de la etiqueta. Actualizá el precio en la balanza.',1);}
+   if(pos.lastLbl===code&&pos.lines.some(l=>l.lbl===code)){const add=()=>{pos.lastLbl='';scanAddLabel(p,qty,price,man,code);};modal('Etiqueta repetida',`<p>Esta misma etiqueta ya se leyó en este ticket. ¿La sumás de nuevo?</p>`,{okText:'Sí, sumar otra vez',onOk:()=>{audit('ETIQUETA_REPETIDA',code);add();}});return true;}
    if(!canOver(p)&&qty>p.stock){toast('Sin stock suficiente de '+p.name,1);return true;}
-   pos.lines.push({pid:p.id,name:pfull(p),rubro:p.rubro,qty,price:p.price,cost:p.cost,unit:p.unit,list:p.price,man:mode==='peso'?undefined:1});pos.sel=pos.lines.length-1;posCart();return true;}}
+   scanAddLabel(p,qty,price,man,code);return true;}}
  return false;}
+function scanAddLabel(p,qty,price,man,code){pos.lines.push({pid:p.id,name:pfull(p),rubro:p.rubro,qty,price,cost:p.cost,unit:p.unit,list:p.price,man,src:'etiqueta',lbl:code});pos.lastLbl=code;pos.sel=pos.lines.length-1;posCart();}
 let scanBuf='',scanLast=0,scanFast=0;
 document.addEventListener('keydown',e=>{if(curScreen!=='vender'||$('#panel').hidden||$('#modal-root .ov'))return;
  const t=e.target;const inField=t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT');
@@ -1612,6 +1638,83 @@ document.addEventListener('keydown',e=>{if(curScreen!=='vender'||$('#panel').hid
  e.preventDefault();
  const k=FKEYS[n-1];const el={dataset:{m:k.m||''}};
  if(A[k.act])A[k.act](el);});
+
+/* ===== V26.49 · 4.33 · Recargo o descuento por medio de pago (administrable por el dueño) =====
+   Cada medio (efectivo, débito, crédito, transferencia, QR, MODO) puede tener un RECARGO o un DESCUENTO,
+   en porcentaje o en monto fijo. Lo edita sólo el administrador (equipo y servidor: documento cfg/payadj).
+   Cálculo (función pura payAdjCalc, la misma en pantalla y al cobrar):
+     base = subtotal − beneficio (cupón/membresía);  cada parte del cobro (simple o mixto) recibe su ajuste;
+     porcentaje en puntos básicos (10 % = 1000) con redondeo al centavo mitad hacia arriba;
+     un descuento nunca deja una parte en negativo; la parte a cuenta corriente no lleva ajuste;
+     si hay cupón/membresía, el DESCUENTO por medio de pago no se suma salvo «acumular» (el recargo sí se aplica).
+   Guardado: pays[] = {m, a: importe final, b: base, adj}; sale.sub, sale.adj[] (foto de la regla) e items[].pa
+   (ajuste repartido por línea con el método del mayor resto) → lineTotal, rubros, arqueo y ARCA cierran al centavo.
+   Aviso legal (no bloquea): Ley 25.065 art. 37 inc. c (diferencias de precio contado / tarjeta) [VERIFICAR con asesor]. */
+const PA_METHODS=['efectivo','debito','credito','transferencia','qr','modo'];
+const PA_LEGAL=['debito','credito','transferencia','qr','modo'];
+function paConf(){const c=(typeof S!=='undefined'&&S&&S.payadj)||null;return c&&typeof c==='object'?c:{on:false,stack:false,rules:{}};}
+function paRuleOk(r){return !!(r&&r.v>0&&Number.isInteger(r.v)&&(r.sign===1||r.sign===-1)&&(r.kind==='pct'||r.kind==='fixed')&&(r.kind!=='pct'||r.v<=5000));}
+function paOn(){const c=paConf();return !!c.on&&Object.values(c.rules||{}).some(paRuleOk);}
+const paRound=(b,v)=>Math.floor((b*v+5000)/10000);           /* b y v enteros ≥ 0: redondeo mitad hacia arriba */
+function paAmt(r,b){if(!paRuleOk(r)||!(b>0))return 0;let a=r.kind==='pct'?paRound(b,r.v):r.v;if(r.sign<0)a=Math.min(a,b);return r.sign*a;}
+function paLabelOf(m,r){const met=(typeof MET!=='undefined'&&MET[m])||m;const v=r.kind==='pct'?String(r.v/100).replace('.',',')+' %':(typeof money==='function'?money(r.v):'$ '+r.v/100);return(r.sign>0?'Recargo ':'Descuento ')+met+' '+v;}
+/* PURA. parts=[{m,b}] (b = base en centavos); rules={medio:{sign,kind,v,ver}}; o={ben,stack,fiado} */
+function payAdjCalc(parts,rules,o){o=o||{};const out={pays:[],adj:[],total:0,skip:[]};
+ for(const p of parts){let r=(rules||{})[p.m];if(!paRuleOk(r)||(p.m==='fiado'&&!o.fiado))r=null;
+  if(r&&r.sign<0&&o.ben&&!o.stack){out.skip.push(p.m);r=null;}
+  const amt=paAmt(r,p.b);out.pays.push({m:p.m,b:p.b,adj:amt,a:p.b+amt});out.total+=p.b+amt;
+  if(amt)out.adj.push({m:p.m,sign:r.sign,kind:r.kind,v:r.v,ver:r.ver||1,base:p.b,amt,label:paLabelOf(p.m,r)});}
+ return out;}
+/* reparte un importe (con signo) entre las líneas en proporción a su importe (mayor resto) */
+function paAlloc(bases,amt){const T=bases.reduce((a,b)=>a+Math.max(0,b),0);if(!amt||!T)return bases.map(()=>0);
+ const sg=Math.sign(amt),A=Math.abs(amt);const raw=bases.map(b=>A*Math.max(0,b)/T);const fl=raw.map(Math.floor);let rest=A-fl.reduce((a,b)=>a+b,0);
+ const ord=raw.map((x,i)=>[x-fl[i],i]).sort((a,b)=>b[0]-a[0]||a[1]-b[1]);for(let k=0;k<rest;k++)fl[ord[k%ord.length][1]]++;return fl.map(x=>sg*x);}
+
+/* ---- ayudas de pantalla (Vender / cobro) ---- */
+function paCalcFor(parts){const c=paConf();if(!paOn())return{pays:parts.map(p=>({m:p.m,b:p.b,adj:0,a:p.b})),adj:[],total:parts.reduce((a,p)=>a+p.b,0),skip:[]};
+ return payAdjCalc(parts,c.rules,{ben:typeof posBen==='function'&&posBen().disc>0,stack:!!c.stack,fiado:!!c.fiado});}
+function posFinal(m){const b=posTotal();return paCalcFor([{m:m||pos.method,b}]).total;}
+function paFinalOf(m,b){return paCalcFor([{m,b}]).pays[0].a;}
+function paChipTag(m){const r=paConf().on?paConf().rules[m]:null;if(!paRuleOk(r))return'';return ' '+(r.sign>0?'+':'−')+(r.kind==='pct'?String(r.v/100).replace('.',',')+'%':money(r.v));}
+function paRowsHTML(R){return R.adj.map(a=>`<div class="row sm" style="color:${a.amt<0?'var(--ok)':'var(--bad,#b42318)'}"><span class="sp">${esc(a.label)}</span><b>${a.amt<0?'− ':'+ '}${money(Math.abs(a.amt))}</b></div>`).join('')+(R.skip.length?`<div class="warnbox sm">El descuento por ${esc(R.skip.map(m=>MET[m]||m).join(', '))} no se suma al cupón o membresía.</div>`:'');}
+
+/* ---- Configuración → Recargos y descuentos por medio de pago (sólo administrador) ---- */
+function paCfgCard(){if(!isAdm())return'';const c=paConf();const R=c.rules||{};
+ const row=m=>{const r=R[m]||{};const t=paRuleOk(r)?(r.sign>0?'rec':'desc'):'no';
+  return `<tr><td><b>${esc(MET[m]||m)}</b></td><td><select id="pa-t-${m}" aria-label="Ajuste para ${esc(MET[m]||m)}"><option value="no" ${t==='no'?'selected':''}>Sin ajuste</option><option value="rec" ${t==='rec'?'selected':''}>Recargo</option><option value="desc" ${t==='desc'?'selected':''}>Descuento</option></select></td>
+  <td><input id="pa-v-${m}" inputmode="decimal" autocomplete="off" style="width:7em" placeholder="0" value="${paRuleOk(r)?esc(r.kind==='pct'?String(r.v/100).replace('.',','):pesosStr(r.v)):''}" aria-label="Valor para ${esc(MET[m]||m)}"></td>
+  <td><select id="pa-k-${m}" aria-label="Porcentaje o monto para ${esc(MET[m]||m)}"><option value="pct" ${r.kind!=='fixed'?'selected':''}>%</option><option value="fixed" ${r.kind==='fixed'?'selected':''}>$ fijo</option></select></td></tr>`;};
+ return `<div class="card" id="pa-cfg" style="margin-top:1rem"><h3 style="margin-top:0">Recargos y descuentos por medio de pago</h3>
+ <p class="sm mut">Se aplican al cobrar, sobre el total después del cupón o la membresía. En un cobro mixto, cada medio lleva su propio ajuste. La parte a cuenta corriente no lleva ajuste. Sólo el administrador los cambia y cada cambio queda en Auditoría.</p>
+ ${typeof CLOUD!=='undefined'&&CLOUD.on?'<div class="warnbox sm"><b>Con la nube:</b> antes de activarlo, corré <code>16-ajustes-medios-pago.sql</code> en Supabase (SQL Editor). Sin esa migración la nube rechaza esta configuración y las otras cajas no reciben las reglas. Si ya lo guardaste antes de correrla, guardalo de nuevo después.</div>':''}
+ <label class="chk"><input type="checkbox" id="pa-on" ${c.on?'checked':''}> Aplicar recargos y descuentos por medio de pago</label>
+ <div class="tw"><table><thead><tr><th>Medio</th><th>Ajuste</th><th>Valor</th><th>Tipo</th></tr></thead><tbody>${PA_METHODS.map(row).join('')}</tbody></table></div>
+ <label class="chk"><input type="checkbox" id="pa-st" ${c.stack?'checked':''}> Sumar el descuento por medio de pago al cupón o membresía (si no, se aplica sólo el beneficio)</label>
+ <div class="warnbox sm"><b>Aviso legal:</b> la Ley 25.065 (art. 37 inc. c) prohíbe cobrar distinto precio por pagar con tarjeta que en efectivo en un solo pago, y la Justicia de Salta la sigue aplicando (2026). Antes de cargar recargos a débito, crédito, QR o transferencia, consultá con tu asesor. [VERIFICAR]</div>
+ ${c.legalAck?`<p class="sm mut">Aviso leído por ${esc(c.legalAck.user)} el ${fmtDT(c.legalAck.ts)}.</p>`:''}
+ <div class="row"><button class="btn gold" data-act="paSave">Guardar</button></div></div>`;}
+A.paSave=()=>{if(!isAdm())return toast('Sólo el administrador cambia los recargos y descuentos.',1);
+ const c=JSON.parse(JSON.stringify(paConf()));c.rules=c.rules||{};const prev=JSON.stringify({on:c.on,stack:c.stack,rules:c.rules});const nr={};let legal=false;
+ for(const m of PA_METHODS){const t=val('pa-t-'+m);if(t==='no')continue;const k=val('pa-k-'+m);const raw=String(val('pa-v-'+m)||'').trim();
+  if(!raw)return toast('Falta el valor de '+(MET[m]||m)+'.',1);
+  let v;if(k==='pct'){const n=parseNum(raw);if(!(n>0)||n>50)return toast('El porcentaje de '+(MET[m]||m)+' tiene que ser mayor a 0 y hasta 50 %.',1);v=Math.round(n*100);}
+  else{v=cents(raw);if(!(v>0))return toast('El monto de '+(MET[m]||m)+' tiene que ser mayor a cero.',1);}
+  const old=c.rules[m];const r={sign:t==='rec'?1:-1,kind:k==='pct'?'pct':'fixed',v};r.ver=old&&old.sign===r.sign&&old.kind===r.kind&&old.v===r.v?(old.ver||1):((old&&old.ver)||0)+1;nr[m]=r;
+  if(r.sign>0&&PA_LEGAL.includes(m))legal=true;}
+ const save2=()=>{c.rules=nr;c.on=$('#pa-on').checked;c.stack=$('#pa-st').checked;c.saved=true;delete c.example;S.payadj=c;
+  audit('CONFIG_RECARGOS',prev+' → '+JSON.stringify({on:c.on,stack:c.stack,rules:c.rules}));save();toast('Recargos y descuentos guardados');rerender();};
+ if(legal&&!c.legalAck){confirmBox('Aviso legal','Cargaste un recargo para débito, crédito, QR o transferencia. La Ley 25.065 (art. 37 inc. c) prohíbe la diferencia de precio entre contado y tarjeta en un solo pago. ¿Confirmás que lo consultaste y querés guardarlo igual?',()=>{c.legalAck={user:user.name,ts:now()};audit('RECARGO_AVISO_LEGAL','aceptado por '+user.name);save2();},'Sí, guardar');return;}
+ save2();};
+
+if(typeof module!=='undefined'&&module.exports)module.exports={payAdjCalc,paAlloc,paAmt,paRuleOk};
+/* demos: reglas de ejemplo cargadas (apagadas: se encienden con un clic en Configuración) */
+function paDemoSeed(d){if(!d.payadj||!Object.keys(d.payadj.rules||{}).length)d.payadj={on:false,stack:false,example:true,rules:{efectivo:{sign:-1,kind:'pct',v:1000,ver:1},transferencia:{sign:-1,kind:'pct',v:500,ver:1}}};}
+function paCartHTML(){if(!paOn()||!pos.lines.length||pos.mix)return'';const R=paCalcFor([{m:pos.method,b:posTotal()}]);if(!R.adj.length)return R.skip.length?paRowsHTML(R):'';
+ return paRowsHTML(R)+`<div class="row" style="margin:.2rem 0 .6rem"><span class="sp mut">Total con ${esc(MET[pos.method]||pos.method)}</span><span class="total">${money(R.total)}</span></div>`;}
+function paCobroTotHTML(tot,gross,ben){const m=pos.mix?'mixto':pos.method;
+ if(!paOn()||m==='mixto')return `<hr><div class="row"><span class="sp">TOTAL${paOn()&&m==='mixto'?' (antes de los ajustes de cada medio)':''}</span><span class="total">${money(tot)}</span></div>`;
+ const R=paCalcFor([{m,b:tot}]);if(!R.adj.length)return `${R.skip.length?paRowsHTML(R):''}<hr><div class="row"><span class="sp">TOTAL</span><span class="total">${money(tot)}</span></div>`;
+ return `${ben&&ben.disc?'':`<div class="row sm"><span class="sp">Subtotal</span><span>${money(tot)}</span></div>`}${paRowsHTML(R)}<hr><div class="row"><span class="sp">TOTAL</span><span class="total">${money(R.total)}</span></div>`;}
 
 /* ===== V26.36 · Vender más rápido: cambiar el precio de un artículo y crear artículos sin salir de Vender =====
    · «✎ $» en cada artículo: cambia el precio de venta (y el costo, si se ven costos) del inventario; queda auditado.
@@ -1780,6 +1883,52 @@ A.cxTab=el=>{cxF.tab=el.dataset.tab==='tr'?'tr':'cajas';rerender();};
 /* aviso de fondos en tránsito para las cajas abiertas de este equipo (arriba de Cajas y sucursales) */
 function xferPendingHome(){const s=openSess();return s?xferPendingCard(s):'';}
 SCREENS.cajasx.show=cashOn;
+
+/* ===== V26.49 · 4.34 H2/H4 · Cortes X y Z, cajón de dinero y corte del papel =====
+   · Corte X: foto guardada (escritura única, colección `cortesx`), numerada por caja y turno (X-<caja>-<n>),
+     imprimible; NO cierra ni reinicia la caja.
+   · Corte Z: el cierre sellado de siempre + número correlativo por caja (Z-<caja>-<n>) dentro del texto sellado.
+   · En ambos, la deuda nueva del turno se separa en Fiado y Cuenta corriente.
+   · Cajón: ESC p (0x1B 0x70 m t1 t2), pin 2 o 5; se abre DESPUÉS de confirmar una venta con efectivo (o siempre, según
+     Configuración) y desde Caja con permiso; toda apertura queda en Auditoría. [VERIFICAR con el cajón real]
+   · Corte del papel: parcial (GS V 66), total (GS V 65) o sin corte. */
+function cortesX(){if(!Array.isArray(S.cortesX))S.cortesX=[];return S.cortesX;}
+function tkCut(){const c=S.cfg.ticket&&S.cfg.ticket.cut;return c==='total'||c==='no'?c:'parcial';}
+function tkDrawer(){const d=(S.cfg.ticket&&S.cfg.ticket.drawer)||{};return{when:d.when==='cash'||d.when==='all'?d.when:'no',pin:d.pin===5?5:2};}
+const drawerBytes=pin=>[0x1b,0x70,pin===5?1:0,0x19,0xfa];
+function cutBytes(){const c=tkCut();return c==='no'?[0x0a,0x0a,0x0a,0x0a]:[0x0a,0x0a,0x0a,0x1d,0x56,c==='total'?0x41:0x42,0x00];}
+function drawerWanted(s){const d=tkDrawer();if(d.when==='no'||!s||s.id==='test'||s.id==='demo')return false;if(d.when==='all')return true;return salePays(s).some(p=>p.m==='efectivo'&&p.a>0);}
+/* texto plano a ESC/POS (para cortes X/Z) */
+function escposText(text){const W=S.cfg.ticket.w===58?32:42;const o=[0x1b,0x40,0x1b,0x74,0x02];
+ String(text).split('\n').forEach(l=>{wrapTxt(l,W).forEach(x=>{encPC850(x).forEach(b=>o.push(b));o.push(0x0a);});});cutBytes().forEach(b=>o.push(b));return new Uint8Array(o);}
+async function printText(title,text){const d=devList().find(x=>x.type==='printer_thermal'&&x.status==='conectado'&&!x.sim);
+ if(d){try{await devSend(d,escposText(text));audit('IMPRESION',title+' · '+d.name);toast('Enviado a '+d.name);}catch(e){toast('No se pudo imprimir: '+(e.message||e),1);}return;}
+ const w=window.open('','_blank','width=420,height=640');if(!w)return toast('El navegador bloqueó la ventana de impresión.',1);
+ w.document.write('<!doctype html><meta charset="utf-8"><title>'+esc(title)+'</title><pre style="font:12px/1.35 monospace;white-space:pre-wrap">'+esc(text)+'</pre><script>print()<\/script>');w.document.close();audit('IMPRESION',title+' · navegador');}
+A.openDrawer=async()=>{if(!can('cash_mov'))return toast('Sin permiso para abrir el cajón.',1);const d=devList().find(x=>x.type==='printer_thermal'&&x.status==='conectado'&&!x.sim);
+ if(!d)return toast('El cajón se abre a través de la impresora térmica conectada (USB, serie o Bluetooth).',1);
+ try{await devSend(d,new Uint8Array([0x1b,0x40].concat(drawerBytes(tkDrawer().pin))));audit('CAJON_ABIERTO','sin venta · '+user.name);toast('Cajón abierto (queda en Auditoría)');}catch(e){toast('No se pudo abrir el cajón: '+(e.message||e),1);}};
+
+/* ---- corte X ---- */
+function corteXText(x){const L=[];const P=s=>L.push(s);
+ P('CORTE X N.º '+x.n+'  (no cierra la caja)');P(fmtDT(x.ts)+' · '+x.user+' · caja '+x.caja);P('');
+ P('Ventas confirmadas: '+x.count+' · '+money(x.total));
+ Object.keys(x.byMethod||{}).forEach(m=>{const b=x.byMethod[m];P('  '+(MET[m]||m)+(m==='fiado'?' (crédito)':'')+': '+b.n+' · '+money(b.gross));});
+ if(x.aCtaCte>0){P('Deuda nueva de clientes (no entró a caja): '+money(x.aCtaCte));if(x.aFiado||x.aCC){P('  Fiado: '+money(x.aFiado));P('  Cuenta corriente: '+money(x.aCC));}}
+ P('Cobrado: '+money(x.cobrado));P('Ingresos de caja: '+money(x.ing)+' · Egresos: '+money(x.egr));P('EFECTIVO ESPERADO EN CAJA: '+money(x.expectedCash));
+ return L.join('\n');}
+A.corteX=()=>{if(!can('close_cash'))return toast('Sin permiso',1);const c=arqCtx();if(!c)return toast('No hay caja abierta.',1);const a=c.a,s=c.s;
+ const caja=s.caja!==undefined?s.caja:S.tenant.caja;const k=cortesX().filter(x=>x.sessId===s.id).length+1;
+ const x={id:uid(),n:'X-'+caja+'-'+k,k,sessId:s.id,caja,ts:now(),user:user.name,total:a.total,count:a.count,cobrado:a.cobrado,aCtaCte:a.aCtaCte||0,aFiado:a.aFiado||0,aCC:a.aCC||0,
+  byMethod:JSON.parse(JSON.stringify(a.byMethod||{})),ing:a.ing||0,egr:a.egr||0,expectedCash:a.expectedCash||0};
+ x.text=corteXText(x);x.hash=sha256(JSON.stringify(x));cortesX().push(x);audit('CORTE_X',x.n+' · ventas '+money(x.total)+' · efectivo esperado '+money(x.expectedCash));save();
+ modal('Corte X '+x.n,`<pre class="rep">${esc(x.text)}</pre><p class="sm mut">Es una foto del turno: la caja sigue abierta. Queda guardado en «Cortes X».${typeof CLOUD!=='undefined'&&CLOUD.on?' Para que también quede en la nube hay que haber corrido <code>17-fiado-cc-cortes.sql</code> en Supabase.':''}</p>`,{okText:'Imprimir',cancelText:'Cerrar',onOk:()=>{printText('Corte X '+x.n,x.text);return false;}});};
+A.corteXVer=el=>{const x=cortesX().find(y=>y.id===el.dataset.id);if(!x)return;modal('Corte X '+x.n,`<pre class="rep">${esc(x.text)}</pre>`,{okText:'Imprimir',cancelText:'Cerrar',onOk:()=>{printText('Corte X '+x.n,x.text);return false;}});};
+function corteXListHTML(sessId){const L=cortesX().filter(x=>!sessId||x.sessId===sessId).slice(-10).reverse();if(!L.length)return'';
+ return `<div class="card" style="margin-top:1rem"><h3 style="margin-top:0">Cortes X de este turno</h3><div class="tw"><table data-nosort><thead><tr><th>N.º</th><th>Hora</th><th>Usuario</th><th class="r">Ventas</th><th class="r">Efectivo esperado</th><th></th></tr></thead><tbody>${L.map(x=>`<tr><td>${esc(x.n)}</td><td>${fmtDT(x.ts)}</td><td>${esc(x.user)}</td><td class="r">${money(x.total)}</td><td class="r">${money(x.expectedCash)}</td><td class="r"><button class="btn sm" data-act="corteXVer" data-id="${x.id}">Ver</button></td></tr>`).join('')}</tbody></table></div></div>`;}
+/* ---- corte Z: número correlativo por caja ---- */
+function zNext(caja){let mx=0;S.closures.forEach(c=>{if(String(c.caja)===String(caja))mx=Math.max(mx,c.zn||0);});const legacy=S.closures.filter(c=>String(c.caja)===String(caja)&&!c.zn).length;return Math.max(mx,legacy)+1;}
+const zLabel=(caja,n)=>'Z-'+caja+'-'+n;
 
 /* ===== V26.9 · 4.23.1–4.23.3 y 4.23.7 Traspasos de fondos controlados =====
    Se EXTIENDE el registro de traspasos de siempre (S.transfers, colección ctransf): no hay un segundo libro.
@@ -2304,8 +2453,8 @@ async function pdApproveModal(o){
 let pdTmp={};                                   /* entradas de los modales «Confirmar cobro del QR» y «Completar detalle» */
 const pdEnts=host=>host&&host.dataset.k==='cobro'?(pos.pdet=pos.pdet||{}):pdTmp;
 function pdCobroMedios(){if(!pdOn())return[];
- if(pos.mix)return mixParsed().filter(p=>PD_COBRO.includes(p.m)).map(p=>({medio:p.m,amt:isNaN(p.a)?0:p.a,opt:!(p.a>0)}));
- return PD_COBRO.includes(pos.method)?[{medio:pos.method,amt:posTotal()}]:[];}
+ if(pos.mix)return mixParsed().filter(p=>PD_COBRO.includes(p.m)).map(p=>({medio:p.m,amt:isNaN(p.a)?0:(typeof paFinalOf==='function'?paFinalOf(p.m,p.a):p.a),opt:!(p.a>0)}));
+ return PD_COBRO.includes(pos.method)?[{medio:pos.method,amt:typeof posFinal==='function'?posFinal(pos.method):posTotal()}]:[];}
 function pdHostMedios(host){const k=host.dataset.k;
  if(k==='cobro')return pdCobroMedios();
  const s=S.sales.find(x=>x.id===host.dataset.sale);if(!s)return[];const i=+host.dataset.idx;const p=salePays(s)[i];return p?[{medio:p.m,amt:p.a,idx:i,sale:s}]:[];}
@@ -2759,6 +2908,7 @@ function buildReportOwner(a,dayKey,who,inp){const L=[];const P=(t,cls)=>L.push({
  Object.keys(a.byMethod).filter(m=>m!=='fiado').forEach(m=>{const x=a.byMethod[m];P((MET[m]||m)+' '+money(x.gross)+(x.n>1?' ('+x.n+')':''));if(x.fee>0)P('  comisión - '+money(x.fee)+' · neto '+money(x.gross-x.fee));});
  P('COBRADO REAL (dinero que entró) : '+money(a.cobrado),'h');
  if(a.aCtaCte>0)P('A CUENTA CORRIENTE (deuda de clientes, NO entró a caja) : '+money(a.aCtaCte),'w');
+ if(a.aCtaCte>0&&a.aFiado>0)P('   de eso: Fiado '+money(a.aFiado)+' · Cuenta corriente '+money(a.aCC||0));
  if(a.vueltoTot>0)P('Vuelto entregado en el turno : '+money(a.vueltoTot)+' (ya descontado del efectivo)');
  if(a.pend.n)P('⚠ Cobros digitales pendientes de confirmar: '+a.pend.n+' · '+money(a.pend.total),'w');
  if(a.detMissing)P('⚠ Cobros digitales sin el detalle del comprobante: '+a.detMissing,'w');
@@ -2772,7 +2922,7 @@ function buildReportOwner(a,dayKey,who,inp){const L=[];const P=(t,cls)=>L.push({
  if(inp.detailAll){ownCats(a).forEach(c=>{P('');P(c.name+' — vendido '+money(c.sold),'h');});}
  return L;}
 function arqOwnerHTML(s){const d=arqDraft(s);
- return`<div class="row"><h1 class="sp">Arqueo y cierre</h1><span class="tag warn">Vista previa · todavía no cierra la caja</span></div>
+ return`<div class="row"><h1 class="sp">Arqueo y cierre</h1><span class="tag warn">Vista previa · todavía no cierra la caja</span><button class="btn" data-act="corteX" title="Guarda e imprime una foto del turno sin cerrar la caja">Corte X</button></div>
  <div class="grid g2" style="align-items:start"><div class="card"><h3>Efectivo contado</h3>
  <p class="sm mut">Negocio de un solo dueño: todo el dinero es del negocio. Los gastos y retiros se cargan como <b>egresos</b> en Caja; el dinero que pasa a la caja principal, con <b>Traspasar fondos</b>.</p>
  <label for="aq-d">Efectivo contado en caja ($)</label><input id="aq-d" data-aq="declared" inputmode="decimal" placeholder="Escribí el número" value="${esc(d.declared||'')}" autocomplete="off">
@@ -2781,7 +2931,7 @@ function arqOwnerHTML(s){const d=arqDraft(s);
  <label for="aq-n">Observaciones del cierre</label><input id="aq-n" data-aq="notes" maxlength="200" value="${esc(d.notes||'')}"></div>
  <div><div class="card" id="arq-tabs"></div><div class="card"><div class="row"><h3 class="sp">Texto para WhatsApp</h3></div><div class="rep" id="arq-prev" aria-live="polite"></div><div id="arq-warn"></div>
  <div class="row" style="margin-top:.8rem"><button class="btn" data-act="arqCopy">Copiar</button><button class="btn" data-act="arqWa">WhatsApp</button><button class="btn" data-act="arqWeb">WhatsApp Web</button><button class="btn" data-act="arqMail">Correo</button></div>
- <button class="btn gold" style="width:100%;margin-top:.8rem;min-height:52px" data-act="arqClose">Confirmar cierre de caja</button></div></div></div>`;}
+ <button class="btn gold" style="width:100%;margin-top:.8rem;min-height:52px" data-act="arqClose">Confirmar cierre de caja</button></div></div></div>${typeof corteXListHTML==='function'&&openSess()?corteXListHTML(openSess().id):''}`;}
 /* ---------- aviso en la demo: qué tipo de negocio se está viendo ---------- */
 function bizDemoBanner(){if(IS_CLIENT||!user||user.role!=='admin')return'';
  if(bizLocked())return`<div class="card" style="margin-bottom:1rem"><span>Demo de evaluación: <b>${typeof isSoloBuild==='function'&&isSoloBuild()?'comercio de un solo dueño':'mayorista de un solo dueño'}</b>. Los datos son de ejemplo; en Configuración → Datos de la demo podés vaciarla y cargar los tuyos.</span></div>`;
@@ -3528,8 +3678,8 @@ const debtOf=cid=>S.sales.filter(s=>s.cust===cid&&s.fiado&&s.status==='ok').redu
    Débito = parte de la venta que quedó a cuenta corriente · Crédito = cobro de deuda. */
 function ccLedger(cid){
  const rows=[];
- S.sales.filter(s=>s.cust===cid&&s.fiado&&s.status==='ok').forEach(s=>rows.push({ts:s.ts,kind:'debito',amount:saleFiadoAmt(s),ref:s.n,total:s.total,state:salePayState(s),concept:'Venta '+s.n+' · total '+money(s.total)+' · '+salePayLabel(s)}));
- S.fiadoPays.filter(p=>p.cust===cid).forEach(p=>rows.push({ts:p.ts,kind:'credito',amount:p.amount,ref:'',concept:'Cobro de deuda · '+(MET[p.method]||p.method)}));
+ S.sales.filter(s=>s.cust===cid&&s.fiado&&s.status==='ok').forEach(s=>rows.push({ts:s.ts,kind:'debito',amount:saleFiadoAmt(s),ref:s.n,total:s.total,state:salePayState(s),concept:(typeof creditSplit==='function'&&creditSplit()?CK_TXT[saleCk(s)]+(s.due?' (vence '+dmy(dkey(s.due))+')':'')+' · ':'')+'Venta '+s.n+' · total '+money(s.total)+' · '+salePayLabel(s)}));
+ S.fiadoPays.filter(p=>p.cust===cid).forEach(p=>rows.push({ts:p.ts,kind:'credito',amount:p.amount,ref:'',concept:'Cobro de deuda · '+(MET[p.method]||p.method)+(p.ck?' · aplicado primero a '+CK_TXT[p.ck]:'')}));
  rows.sort((a,b)=>a.ts-b.ts);let bal=0;rows.forEach(r=>{bal+=r.kind==='debito'?r.amount:-r.amount;r.bal=bal;});return rows;}
 function ccLedgerHTML(cid){const L=ccLedger(cid);if(!L.length)return '<p class="sm mut">Sin movimientos de cuenta corriente.</p>';
  return `<div class="tw"><table><caption class="sr">Movimientos de cuenta corriente</caption><thead><tr><th>Fecha</th><th>Detalle</th><th class="r">Débito</th><th class="r">Crédito</th><th class="r">Saldo</th></tr></thead><tbody>${L.slice(-30).reverse().map(r=>`<tr><td>${fmtDT(r.ts)}</td><td>${esc(r.concept)}${r.kind==='debito'?` <span class="tag ${r.state==='parcial'?'warn':'bad'}">${esc(PSTATE_TXT[r.state])}</span>`:''}</td><td class="r">${r.kind==='debito'?money(r.amount):''}</td><td class="r">${r.kind==='credito'?money(r.amount):''}</td><td class="r"><b>${money(r.bal)}</b></td></tr>`).join('')}</tbody></table></div>`;}
@@ -3538,14 +3688,14 @@ function ccLedgerHTML(cid){const L=ccLedger(cid);if(!L.length)return '<p class="
 function fiadoRubroShares(s){const F=saleFiadoAmt(s);const out={};if(!(F>0))return out;const tots=s.items.map(lineTotal);const T=tots.reduce((a,b)=>a+b,0);if(!(T>0))return out;
  let acc=0;s.items.forEach((it,i)=>{const sh=i===tots.length-1?F-acc:Math.round(F*tots[i]/T);acc+=sh;if(it.rubro)out[it.rubro]=(out[it.rubro]||0)+sh;});return out;}
 /* Cada cobro del cliente se aplica a sus ventas fiadas de la más vieja a la más nueva (FIFO) → {idCobro:{rubro:importe}} */
-function ccPayAlloc(cid){const sales=S.sales.filter(s=>s.cust===cid&&s.status==='ok'&&saleFiadoAmt(s)>0).sort((a,b)=>a.ts-b.ts).map(s=>{const sh=fiadoRubroShares(s);return{left:saleFiadoAmt(s),tot:saleFiadoAmt(s),sh};});
- const pays=S.fiadoPays.filter(p=>p.cust===cid).sort((a,b)=>a.ts-b.ts);const res={};let k=0;
- pays.forEach(p=>{let need=p.amount;const o={};while(need>0&&k<sales.length){const q=sales[k];const take=Math.min(need,q.left);
-   const ids=Object.keys(q.sh);let acc=0;ids.forEach((rid,i)=>{const a=i===ids.length-1?take-acc:Math.round(take*q.sh[rid]/q.tot);acc+=a;if(a)o[rid]=(o[rid]||0)+a;});
-   q.left-=take;need-=take;if(q.left<=0)k++;}res[p.id]=o;});return res;}
-function fiadoPay(cid,amount,method,accId){const c=custById(cid);if(!c)return'Cliente inexistente.';if(!(amount>0))return'El importe debe ser mayor a cero.';if(amount>debtOf(cid))return'Supera la deuda ('+money(debtOf(cid))+').';
+function ccPayAlloc(cid){ /* V26.49: usa la misma aplicación de cobros que los saldos por tipo (ccAlloc); sin cobros marcados = FIFO de siempre */
+ const A0=ccAlloc(cid);const res={};const shc=new Map();
+ for(const [pid,parts] of Object.entries(A0.by)){const o={};for(const [d,take] of parts){let sh=shc.get(d.s);if(!sh){sh=fiadoRubroShares(d.s);shc.set(d.s,sh);}
+   const ids=Object.keys(sh);let acc=0;ids.forEach((rid,i)=>{const a=i===ids.length-1?take-acc:Math.round(take*sh[rid]/d.tot);acc+=a;if(a)o[rid]=(o[rid]||0)+a;});}res[pid]=o;}
+ return res;}
+function fiadoPay(cid,amount,method,accId,ck){const c=custById(cid);if(!c)return'Cliente inexistente.';if(!(amount>0))return'El importe debe ser mayor a cero.';if(amount>debtOf(cid))return'Supera la deuda ('+money(debtOf(cid))+').';
  let mov='';if(method==='efectivo'){const e=addMov('ingreso','cobr','Cobro cuenta corriente · '+custFull(c),amount);if(e)return e;mov=S.movs[S.movs.length-1].id;}
- const ac=accId&&typeof accById==='function'?accById(accId):null;S.fiadoPays.push(Object.assign({id:uid(),cust:cid,ts:now(),amount,method,user:user.name,mov,rubro:'cobr'},ac?{acc:ac.id,accN:ac.name,accR:ac.rubro||''}:{}));audit('COBRO_FIADO',custFull(c)+' · '+money(amount)+' · '+MET[method]);save();return'';}
+ const ac=accId&&typeof accById==='function'?accById(accId):null;S.fiadoPays.push(Object.assign({id:uid(),cust:cid,ts:now(),amount,method,user:user.name,mov,rubro:'cobr'},(ck==='fiado'||ck==='cc')?{ck}:{},ac?{acc:ac.id,accN:ac.name,accR:ac.rubro||''}:{}));audit('COBRO_FIADO',custFull(c)+' · '+money(amount)+' · '+MET[method]);save();return'';}
 
 /* ---------- membresías ---------- */
 function memberActive(c){if(!c)return null;const m=S.members.find(x=>x.cust===c.id&&x.status==='activa'&&x.to>now());if(!m)return null;const p=S.plans.find(x=>x.id===m.plan);return p?{name:p.name,pct:p.pct,until:dmy(dkey(m.to)),m}:null;}
@@ -3662,7 +3812,7 @@ A.cuEdit=el=>{const c=el.dataset.id?custById(el.dataset.id):null;const isAdm=can
  ${!c&&ownerMode()&&typeof wsOn==='function'&&wsOn()?`<div class="card" style="margin:.6rem 0"><h3 style="margin-top:0">Mayorista y crédito</h3><div class="grid g2"><div ${(typeof wsOnly==='function'&&wsOnly())?'hidden':''}><label for="wc-ch">Canal habitual</label><select id="wc-ch"><option value="mayorista" selected>Mayorista</option><option value="minorista">Minorista</option></select></div><div><label for="wc-tx">CUIT ${(typeof wsOnly==='function'&&wsOnly())?'(opcional)':'(obligatorio para vender como mayorista)'}</label><input id="wc-tx" inputmode="numeric" maxlength="13" autocomplete="off" placeholder="20-12345678-6"></div></div><div class="grid g2"><div><label for="wc-tm">Plazo máximo de pago (días)</label><input id="wc-tm" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="Sin plazo"></div><div><label for="cu-lim">Límite de crédito ($)</label>${numIn('cu-lim',0,'0',can('config')||can('void')?'':'disabled')}</div></div><div class="grid g2"><div><label for="wc-zn">Zona de cobranza</label><input id="wc-zn" maxlength="30" autocomplete="off"></div><div><label for="wc-sl">Vendedor asignado</label><input id="wc-sl" maxlength="30" autocomplete="off"></div></div></div>`:''}
  <label class="chk"><input type="checkbox" id="cu-c1" ${c?(c.consent.club?'checked':''):(ownerMode()?'':'checked')} ${sd}> Participa del Club Mi Comercio (tratamiento de datos)</label><label class="chk"><input type="checkbox" id="cu-c2" ${c&&c.consent.comm?'checked':''} ${sd}> Aceptó recibir promociones por WhatsApp</label>
  ${c&&adm?`<label for="cu-proof">Constancia al OTORGAR un consentimiento (cómo y cuándo lo dio el titular; revocar no la necesita)</label><input id="cu-proof" maxlength="140" autocomplete="off" placeholder="Ej.: lo aceptó por escrito en el mostrador el 20/10" value="">${c.consent.proof?`<p class="sm mut">Última constancia: ${esc(c.consent.by||'')} · ${esc(c.consent.proof)}</p>`:''}`:''}
- ${c&&typeof wsCustCard==='function'?wsCustCard(c):''}${c?`<div class="card" style="margin:.6rem 0"><div class="row"><b class="sp">Cuenta corriente</b><span>Debe ${money(debtOf(c.id))}</span></div>${ccLedgerHTML(c.id)}<label for="cu-lim">Límite de crédito ($) — sólo administración</label>${numIn('cu-lim',c.limit||0,'0',can('config')||can('void')?'':'disabled')}<div class="row" style="margin-top:.5rem"><button class="btn sm" data-act="cuPay" data-id="${c.id}">Registrar cobro de deuda</button><button class="btn sm" data-act="cuMember" data-id="${c.id}">Membresía</button><button class="btn sm" data-act="cuRedeem" data-id="${c.id}">Canjear premio (${Math.min(stampsOf(c.id),S.loyalty.goal)}/${S.loyalty.goal})</button></div></div>
+ ${c&&typeof wsCustCard==='function'?wsCustCard(c):''}${c?`<div class="card" style="margin:.6rem 0"><div class="row"><b class="sp">Cuenta corriente</b><span>Debe ${money(debtOf(c.id))}${typeof ccKindsHTML==='function'?ccKindsHTML(c.id):''}</span></div>${ccLedgerHTML(c.id)}<label for="cu-lim">Límite de crédito ($) — sólo administración</label>${numIn('cu-lim',c.limit||0,'0',can('config')||can('void')?'':'disabled')}<div class="row" style="margin-top:.5rem"><button class="btn sm" data-act="cuPay" data-id="${c.id}">Registrar cobro de deuda</button><button class="btn sm" data-act="cuMember" data-id="${c.id}">Membresía</button><button class="btn sm" data-act="cuRedeem" data-id="${c.id}">Canjear premio (${Math.min(stampsOf(c.id),S.loyalty.goal)}/${S.loyalty.goal})</button></div></div>
  <label for="cu-nt">Notas internas</label><input id="cu-nt" maxlength="120" value="${esc(c.notes||'')}"><div class="row" style="margin-top:.6rem">${adm&&c.status!=='baja'&&c.secret?`<button class="btn sm" data-act="cuCardLink" data-id="${c.id}">Enviar tarjeta (enlace y Wallet)</button>`:''}${custDelAdm()&&c.status!=='baja'?`<button class="btn sm red" data-act="cuBaja" data-id="${c.id}">Dar de baja (anonimizar)</button>`:''}${custDelAdm()&&!c.elim?`<button class="btn sm red" data-act="cuDel" data-id="${c.id}">Eliminar socio</button>`:''}${!custDelAdm()&&c.status!=='baja'?'<span class="sm mut">La baja y la eliminación las hace sólo el administrador.</span>':''}</div>`:''}`,
  {wide:true,okText:'Guardar',onOk:w=>{const nm=val('cu-n').trim(),ls=val('cu-l').trim();const OW=ownerMode(),club=$('#cu-c1',w).checked;
   if(OW){if(nm.length<2)return w._err('Escribí el nombre o la razón social.'),false;}else if(nm.length<2||ls.length<2)return w._err('Nombre y apellido son obligatorios.'),false;
@@ -3704,8 +3854,8 @@ A.cuEdit=el=>{const c=el.dataset.id?custById(el.dataset.id):null;const isAdm=can
    audit('ALTA_CLIENTE','mostrador · '+(OW?'cliente':'socio')+' '+pad4(n.num)+(tmp&&tmp.channel==='mayorista'?' · mayorista':''));}
   save();pubRefresh();rerender();toast('Cliente guardado');}});};
 A.cuPay=el=>{const c=custById(el.dataset.id);if(!c)return;if(!openSess()&&true)toast('Sin caja abierta sólo se registra el cobro no efectivo.');
- modal('Cobro de cuenta corriente · '+custFull(c),`<p>Deuda: <b>${money(debtOf(c.id))}</b></p><label for="fp-a">Importe ($)</label>${numIn('fp-a',0,'0')}<label for="fp-m">Medio</label><select id="fp-m"><option value="efectivo">Efectivo (entra a la caja)</option><option value="transferencia">Transferencia</option><option value="debito">Débito</option><option value="qr">QR</option></select><div id="fp-accbox"></div>${ownerMode()?'':'<p class="sm mut">Se clasifica en el rubro "Cobranza de cuenta corriente" (rubro obligatorio en todo movimiento).</p>'}`,
- {onOk:w=>{const m=val('fp-m');const L=typeof accFor==='function'?accFor(m):[];const ac=L.length?val('fp-acc'):'';if(L.length&&!ac)return w._err('Elegí a qué cuenta entró el cobro.'),false;const e=fiadoPay(c.id,cents(val('fp-a')),m,ac);if(e)return w._err(e),false;toast('Cobro registrado');$$('#modal-root .ov').forEach(o=>o!==w&&o.remove());rerender();}});
+ modal('Cobro de cuenta corriente · '+custFull(c),`<p>Deuda: <b>${money(debtOf(c.id))}</b>${typeof ccKindsHTML==='function'?ccKindsHTML(c.id):''}</p>${typeof creditSplit==='function'&&creditSplit()?'<label for="fp-ck">Aplicar el cobro</label><select id="fp-ck"><option value="">A lo más viejo primero</option><option value="fiado">Primero al Fiado</option><option value="cc">Primero a la Cuenta corriente</option></select>':''}<label for="fp-a">Importe ($)</label>${numIn('fp-a',0,'0')}<label for="fp-m">Medio</label><select id="fp-m"><option value="efectivo">Efectivo (entra a la caja)</option><option value="transferencia">Transferencia</option><option value="debito">Débito</option><option value="qr">QR</option></select><div id="fp-accbox"></div>${ownerMode()?'':'<p class="sm mut">Se clasifica en el rubro "Cobranza de cuenta corriente" (rubro obligatorio en todo movimiento).</p>'}`,
+ {onOk:w=>{const m=val('fp-m');const L=typeof accFor==='function'?accFor(m):[];const ac=L.length?val('fp-acc'):'';if(L.length&&!ac)return w._err('Elegí a qué cuenta entró el cobro.'),false;const e=fiadoPay(c.id,cents(val('fp-a')),m,ac,$('#fp-ck',w)?val('fp-ck'):'');if(e)return w._err(e),false;toast('Cobro registrado');$$('#modal-root .ov').forEach(o=>o!==w&&o.remove());rerender();}});
  const fw=$$('#modal-root .ov').pop();const fsync=()=>{const bx=fw&&fw.querySelector('#fp-accbox');if(!bx)return;const L=typeof accFor==='function'?accFor(val('fp-m')):[];bx.innerHTML=L.length?`<label for="fp-acc">¿A qué cuenta entró?</label><select id="fp-acc">${L.length>1?'<option value="">— Elegí la cuenta —</option>':''}${L.map(a=>`<option value="${a.id}">${esc(a.name)} · ${esc(accOwnerName(a))}</option>`).join('')}</select>`:'';};if(fw){fw.addEventListener('change',e=>{if(e.target.id==='fp-m')fsync();});fsync();}};
 A.cuMember=el=>{const c=custById(el.dataset.id);if(!c)return;const mb=memberActive(c);
  modal('Membresía · '+custFull(c),`${mb?`<div class="okbox">Vigente: <b>${esc(mb.name)}</b> hasta ${esc(mb.until)} (${mb.pct} % de descuento)</div>`:'<p class="mut">Sin membresía vigente.</p>'}
@@ -4089,11 +4239,8 @@ const wsNoClub=()=>wsOn()&&wsChan()==='mayorista'&&!wsConf().allowClub;
 
 /* ---- crédito: límite + plazo + mora + excepción autorizada (4.22.2) ---- */
 const wsDue=(s,c)=>s.due||((c&&c.term>0)?s.ts+c.term*WS_DAY:0);
-function wsOpenDocs(cid){const c=custById(cid);
- const d=S.sales.filter(s=>s.cust===cid&&s.fiado&&s.status==='ok').sort((a,b)=>a.ts-b.ts).map(s=>({s,left:saleFiadoAmt(s),due:wsDue(s,c)}));
- let paid=S.fiadoPays.filter(p=>p.cust===cid).reduce((a,p)=>a+p.amount,0);
- for(const x of d){const t=Math.min(x.left,paid);x.left-=t;paid-=t;}
- return d.filter(x=>x.left>0);}
+function wsOpenDocs(cid){const c=custById(cid); /* V26.49: misma aplicación de cobros que los saldos por tipo */
+ return ccAlloc(cid).docs.filter(x=>x.left>0).map(x=>({s:x.s,left:x.left,due:wsDue(x.s,c),ck:x.ck}));}
 function wsOverdue(cid,at){at=at||now();const g=wsConf().grace*WS_DAY;return wsOpenDocs(cid).filter(x=>x.due&&x.due+g<at);}
 function wsAging(cid){const B=[{k:'0–30',a:0,b:30,t:0},{k:'31–60',a:31,b:60,t:0},{k:'61–90',a:61,b:90,t:0},{k:'+90',a:91,b:1e9,t:0}];
  wsOpenDocs(cid).forEach(x=>{const age=Math.floor((now()-x.s.ts)/WS_DAY);const b=B.find(q=>age>=q.a&&age<=q.b)||B[3];b.t+=x.left;});return B;}
@@ -4312,6 +4459,49 @@ A.wsSave=()=>{if(!can('config'))return toast('Sólo el administrador',1);const c
   const L=wsLvRead();if(L.err)return toast(L.err,1);W.levels=L.levels;}
  const apply=()=>{const before=JSON.stringify(S.cfg.wholesale||{});S.cfg.wholesale=W;audit(on!==cur.on?(on?'MAYORISTA_ACTIVAR':'MAYORISTA_APAGAR'):'MAYORISTA_CONFIG','antes '+before.slice(0,160)+' · ahora '+JSON.stringify(W).slice(0,160));save();rerender();toast('Guardado');};
  if(on!==cur.on)confirmBox(on?'Activar canal mayorista':'Apagar canal mayorista',on?'Aparecen los precios por presentación (Unidad, Display, Fardo, Pallet…), los acuerdos por cliente y el crédito con plazo. Las ventas anteriores no cambian.':'Se vende como minorista otra vez. Las presentaciones, acuerdos y precios quedan guardados y las ventas anteriores no cambian.',apply,on?'Activar':'Apagar');else apply();};
+
+/* ===== V26.49 · 4.34 H3 · Fiado y Cuenta corriente: dos tipos de deuda sobre el MISMO libro del cliente =====
+   · Mismo medio de pago (`fiado`), mismo límite, mismos bloqueos. Cada venta con parte a crédito guarda
+     `ck`: 'fiado' (vence a los cfg.credit.fiadoDays días, 7 por defecto) o 'cc' (vence según el plazo del cliente;
+     sin plazo = sin vencimiento fijo, como hasta ahora). Las ventas viejas sin `ck` son cuenta corriente.
+   · Al cobrar, si hay parte a crédito, el cajero TIENE que elegir «Mandar a Fiado» o «Mandar a Cuenta Corriente»
+     (nada viene preseleccionado).
+   · Los saldos por tipo se DERIVAN (nunca se guardan): ccAlloc aplica cada cobro a la venta más vieja (como siempre);
+     si el cobro se marcó para un tipo, primero cancela ese tipo. Sin cobros marcados el resultado es idéntico al de antes. */
+function creditConf(){const c=(S.cfg&&S.cfg.credit)||{};return{split:c.split!==false,fiadoDays:c.fiadoDays>0?Math.round(c.fiadoDays):7};}
+const creditSplit=()=>creditConf().split;
+const saleCk=s=>s&&s.ck==='fiado'?'fiado':'cc';
+const CK_TXT={fiado:'Fiado',cc:'Cuenta corriente'};
+function ccAlloc(cid){
+ const docs=S.sales.filter(s=>s.cust===cid&&s.status==='ok'&&saleFiadoAmt(s)>0).sort((a,b)=>a.ts-b.ts).map(s=>({s,left:saleFiadoAmt(s),tot:saleFiadoAmt(s),ck:saleCk(s)}));
+ const pays=S.fiadoPays.filter(p=>p.cust===cid).sort((a,b)=>a.ts-b.ts);const by={};
+ for(const p of pays){let need=p.amount;const parts=[];
+  const take=pred=>{for(const d of docs){if(need<=0)break;if(d.left<=0||!pred(d))continue;const t=Math.min(need,d.left);d.left-=t;need-=t;parts.push([d,t]);}};
+  if(p.ck==='fiado'||p.ck==='cc')take(d=>d.ck===p.ck);take(()=>true);by[p.id]=parts;}
+ return{docs,by};}
+function ccByKind(cid){const o={fiado:0,cc:0};ccAlloc(cid).docs.forEach(d=>{o[d.ck]+=d.left;});return o;}
+function ccDueFor(ck,ts,cust){if(ck==='fiado')return ts+creditConf().fiadoDays*86400000;return cust&&cust.term>0?ts+cust.term*86400000:0;}
+function ccKindsHTML(cid){if(!creditSplit())return'';const k=ccByKind(cid);if(!(k.fiado||k.cc))return'';
+ return `<span class="sm"> · Fiado <b>${money(k.fiado)}</b> · Cta. cte. <b>${money(k.cc)}</b></span>`;}
+
+/* ---- cobro: selector obligatorio y excluyente ---- */
+function ckNeeded(){if(!creditSplit())return false;return pos.mix?pos.pays.some(p=>p.m==='fiado'&&cents(p.a)>0):pos.method==='fiado';}
+function ckPickHTML(){if(!ckNeeded())return'';const cust=custById(pos.cust);const d=dmy(dkey(ccDueFor('fiado',now(),null)));const cd=ccDueFor('cc',now(),cust);
+ const b=(k,t,sub)=>`<button type="button" class="ckbtn ${pos.ck===k?'selected':''}" data-act="cbck" data-k="${k}" aria-pressed="${pos.ck===k?'true':'false'}"><b>${pos.ck===k?'✔ ':''}${t}</b><small>${sub}</small></button>`;
+ return `<div class="card" id="ckpick" style="margin:.5rem 0"><h3 style="margin:0 0 .4rem">¿Cómo queda la deuda? <span class="tag warn">obligatorio</span></h3><div class="ckrow">
+  ${b('fiado','Mandar a Fiado','Vence el '+d+' ('+creditConf().fiadoDays+' días)')}${b('cc','Mandar a Cuenta Corriente',cd?'Vence el '+dmy(dkey(cd))+' (plazo del cliente: '+cust.term+' días)':'Según el plazo del cliente'+(cust?' (sin plazo cargado)':''))}</div>
+  ${pos.ck?'':'<p class="sm" style="margin:.4rem 0 0;color:var(--bad,#b42318)">Elegí una de las dos opciones para poder cobrar.</p>'}</div>`;}
+A.cbck=el=>{pos.ck=el.dataset.k==='fiado'?'fiado':'cc';cobroRender();};
+
+/* ---- Configuración ---- */
+function creditCfgCard(){if(!can('config'))return'';const c=creditConf();
+ return `<div class="card" id="ck-cfg" style="margin-top:1rem"><h3 style="margin-top:0">Fiado y cuenta corriente</h3>
+ <label class="chk"><input type="checkbox" id="ck-on" ${c.split?'checked':''}> Separar «Fiado» (corto plazo) de «Cuenta corriente» (plazo del cliente)</label>
+ <label for="ck-d">El fiado vence a los (días)</label><input id="ck-d" inputmode="numeric" maxlength="3" style="width:6em" value="${c.fiadoDays}">
+ <p class="sm mut">Las dos deudas usan el mismo límite de crédito del cliente. Al cobrar con parte a crédito el cajero elige una de las dos; nada viene marcado. Las ventas anteriores quedan como cuenta corriente.</p>
+ <button class="btn gold" data-act="ckSave">Guardar</button></div>`;}
+A.ckSave=()=>{if(!can('config'))return toast('Sin permiso',1);const d=Math.round(parseNum(val('ck-d')));if(!(d>=1&&d<=365))return toast('Los días del fiado van de 1 a 365.',1);
+ const prev=JSON.stringify(creditConf());S.cfg.credit={split:$('#ck-on').checked,fiadoDays:d};audit('CONFIG_CREDITO',prev+' → '+JSON.stringify(S.cfg.credit));save();toast('Guardado');rerender();};
 
 /* ===== Personal: fichaje, horas, empleados ===== */
 let perTab='fichaje';
@@ -4537,7 +4727,9 @@ reg('auditoria','Auditoría','shield','audit',()=>{const bad=verifyAudit();retur
 A.audVer=()=>{const b=verifyAudit();toast(b?'Cadena rota en el registro '+b:'Cadena íntegra',!!b);};
 reg('config','Configuración','gear','config',()=>`<h1>Configuración</h1><p class="sm mut">Sistema VB · ${IS_CLIENT?'versión del cliente':'demo de evaluación'} · compilada ${esc(BUILD_VER)}</p>${bizCard()}<div class="grid g2"><div class="card"><h3>Comercio</h3><label for="cf-n">Nombre comercial</label><input id="cf-n" value="${esc(S.tenant.name)}" maxlength="60"><label for="cf-c">Número de caja</label><input id="cf-c" inputmode="numeric" value="${S.tenant.caja}">${ownerMode()?'':`<label class="chk"><input type="checkbox" id="cf-p" ${S.cfg.payFromCash?'checked':''}> Sueldo y gastos manuales se pagan de la caja (valor inicial del arqueo)</label>`}<label class="chk"><input type="checkbox" id="cf-ng" ${negOK()?'checked':''}> Permitir vender sin stock (el stock queda en negativo y se marca en rojo; cada producto puede exigir stock)</label><button class="btn gold" style="margin-top:.6rem" data-act="cfgSave">Guardar</button></div>
  ${ownerMode()?catCardOwner():`<div class="card"><h3>Rubros, responsables y reparto</h3><p class="sm mut">"Reparte" = comparte sueldo del empleado, gastos e impuestos con los otros rubros marcados. Los que no reparten sólo informan ventas y ganancia.</p>${S.rubros.filter(r=>r.kind==='rubro').map(r=>`<div class="rubrow"><div class="rubhead"><b class="sp"><i class="rdot" style="background:${safeColor(r.color)}"></i>${esc(r.name)}</b><button class="btn sm" data-act="rubEdit" data-id="${r.id}" aria-label="Editar rubro ${esc(r.name)}">Editar</button><button class="btn sm red" data-act="rubDel" data-id="${r.id}" aria-label="Eliminar rubro ${esc(r.name)}">Eliminar</button></div><div class="rubbody"><label class="rublbl">Responsable<input data-rown="${r.id}" value="${esc(r.owner)}" maxlength="40" aria-label="Responsable de ${esc(r.name)}"></label><label class="chk rubchk"><input type="checkbox" data-rrep="${r.id}" ${r.reparte?'checked':''}> reparte</label>${r.reparte?`<label class="rublbl">Impuesto diario ($)<input inputmode="decimal" data-rtax="${r.id}" placeholder="0" value="${esc(pesosStr(S.cfg.tax[r.id]||0))}" aria-label="Impuesto diario de ${esc(r.name)}"></label>`:''}</div></div>`).join('')}<button class="btn sm" data-act="rubAdd">+ Rubro</button></div>`}</div>
- ${cashCfgCard()}${typeof accCfgCard==='function'?accCfgCard():''}${typeof facCfgCard==='function'?facCfgCard():''}${typeof payCfgCard==='function'?payCfgCard():''}${typeof wsCfgCard==='function'?wsCfgCard():''}${typeof assistCfgCard==='function'?assistCfgCard():''}
+ ${cashCfgCard()}${typeof accCfgCard==='function'?accCfgCard():''}${typeof facCfgCard==='function'?facCfgCard():''}${typeof paCfgCard==='function'?paCfgCard():''}
+${typeof creditCfgCard==='function'?creditCfgCard():''}
+${typeof payCfgCard==='function'?payCfgCard():''}${typeof wsCfgCard==='function'?wsCfgCard():''}${typeof assistCfgCard==='function'?assistCfgCard():''}
  ${IS_CLIENT?`<div class="card" style="margin-top:1rem"><h3>Respaldo</h3><div class="row"><button class="btn" data-act="backupDl">Descargar respaldo</button></div><p class="sm mut">${CLOUD.on?'Tus datos se guardan en la nube y en este equipo (cifrados). El respaldo es una copia de seguridad que podés guardar aparte.':'Con la nube sin configurar, los datos viven sólo en este equipo: descargá un respaldo seguido.'}</p></div>`:`<div class="card" style="margin-top:1rem"><h3>Datos de la demo</h3><div class="row"><button class="btn gold" data-act="loadEx">Cargar jornada de ejemplo (6/10)</button><button class="btn" data-act="backupDl">Descargar respaldo</button><label class="btn" for="rs-f">Restaurar respaldo</label><input type="file" id="rs-f" accept=".json" hidden><button class="btn" data-act="resetDemo">Volver a los datos de ejemplo</button><button class="btn red" data-act="emptyDemo">Borrar todo y empezar vacío</button></div><p class="sm mut">${ownerMode()?'La jornada de ejemplo abre la caja y carga ventas de ejemplo para ver el arqueo y cierre del dueño.':'La jornada de ejemplo abre la caja y carga ventas de ejemplo con el sueldo del empleado (8 hs) y gastos $4.500, para ver el arqueo completo con el reparto entre rubros.'}</p></div>`}`,
  ()=>{const f=$('#rs-f');f&&f.addEventListener('change',async e=>{try{const j=JSON.parse(await e.target.files[0].text());if(!j.state||!j.state.rubros)throw new Error('formato');S=mergeDefaults(j.state);audit('RESTAURAR_RESPALDO','');save();toast('Respaldo restaurado');rerender();}catch(err){toast('Archivo de respaldo inválido',1);}});},'Sistema');
 document.addEventListener('change',e=>{const t=e.target;if(curScreen!=='config'||!t.dataset)return;if(t.dataset.rown){rub(t.dataset.rown).owner=t.value.trim();audit('RUBRO_RESPONSABLE',t.dataset.rown+' '+t.value);save();}
@@ -5395,6 +5587,102 @@ function chGauge(val,goal,opt={}){const W=300,H=190,cx=150,cy=158,r=118;const ma
   <text x="18" y="${H-6}" font-size="11" fill="var(--mut)">$ 0</text><text x="${W-18}" y="${H-6}" text-anchor="end" font-size="11" fill="var(--mut)">${chE(chShort(max))}</text></svg>
   <p class="sm" style="text-align:center;margin:.2rem 0"><b>${chE(money(val))}</b> de ${chE(money(goal))}${opt.sub?' · '+opt.sub:''}</p>${chTable(['Dato','Valor'],[['Valor',money(val)],['Meta',money(goal)],['Cumplimiento',pc+' %']])}`;}
 
+/* ===== V26.49 · 4.34 H1 · Balanza (Systel / Kretz / genérica) y etiquetas EAN-13 pesables =====
+   Funciones PURAS (sin DOM ni estado global) para poder probarlas solas:
+     scaleFrame(línea)            → {kg, stable, zero} | null      (interpreta una trama de la balanza)
+     scaleStabNew / scaleStabPush → estable cuando el peso no cambia durante ≥ 400 ms (medido con la hora de cada muestra)
+     scaleDupNew / scaleDupCheck / scaleDupMark / scaleDupSeen → guardia anti-duplicado por ticket
+     ean13Ok(código)              → dígito verificador EAN-13 (módulo 10)
+     scaleLabelParse(código, formatos, modoGlobal) → {plu, mode, kg|priceC} | {err}
+     scaleLabelQty(importe, precioKg) → peso (3 decimales) y precio que dan el importe EXACTO de la etiqueta
+   Protocolos (datos públicos de instaladores, [VERIFICAR] con el equipo real):
+     Systel: 9600 8N1, pide el peso con ENQ (0x05); también puede enviar en continuo.
+     Kretz:  9600 8N1, pide con «P»+CR; responde «PE» + peso (estable) o «PI» + peso (moviéndose).
+     Genérico: pide con «W»+CR, o envío continuo. */
+const SCALE_MAX=300;          /* kg: cubre balanzas de mostrador (31 kg) y básculas (300 kg) */
+const SCALE_ZERO=0.005;       /* kg: hasta acá se considera «plato vacío» */
+const SCALE_PROTOS={
+ continuo:{name:'Envío continuo',req:null},
+ systel:{name:'Systel',req:[0x05]},
+ kretz:{name:'Kretz',req:[0x50,0x0d]},
+ generico:{name:'Genérico (pedido W)',req:[0x57,0x0d]}};
+const SCALE_PROBE=['systel','kretz','generico'];
+const SCALE_BAUDS=[9600,4800,19200,2400];
+
+function scaleFrame(line){
+ let s=String(line==null?'':line).replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g,' ').trim();
+ if(!s)return null;
+ /* bandera de estabilidad: Kretz PE/PI; CAS y otras ST/US; «M» o «?» = en movimiento */
+ let stable=true;
+ if(/^PI\b|^PI(?=[\s+\-\d])/i.test(s)||/(^|[\s,])(US|UN|M|\?)(?=[\s,]|$)/i.test(s)||/^\?/.test(s))stable=false;
+ const m=/([-+]?)\s*(\d{1,6}(?:[.,]\d{1,4})?)\s*(kg|g|lb)?\b/i.exec(s.replace(/^P[EI]/i,' '));
+ if(!m)return null;
+ const raw=m[2],neg=m[1]==='-';const u=(m[3]||'').toLowerCase();
+ let v=parseFloat(raw.replace(',','.'));if(!isFinite(v))return null;
+ if(u==='g')v=v/1000;
+ else if(u==='lb')return null;                                   /* libras: no se usan en Argentina */
+ else if(!u&&!/[.,]/.test(raw)&&raw.length>=5)v=v/1000;          /* entero sin unidad de 5+ cifras (01250) = gramos [VERIFICAR] */
+ if(neg)return{kg:0,stable,zero:true,neg:true};
+ if(v>SCALE_MAX)return null;
+ v=Math.round(v*1000)/1000;
+ return{kg:v,stable,zero:v<=SCALE_ZERO};}
+
+function scaleStabNew(o){o=o||{};return{win:o.win>0?o.win:400,tol:o.tol>0?o.tol:0,buf:[]};}
+/* agrega una muestra {kg, stable, t} y devuelve {stable, kg}: estable cuando TODAS las muestras desde hace ≥ win ms
+   están dentro de la tolerancia y la última trama no dice «moviéndose» */
+function scaleStabPush(st,smp){
+ st.buf.push({kg:smp.kg,ok:smp.stable!==false,t:smp.t});
+ const lim=smp.t-st.win-2000;while(st.buf.length>2&&st.buf[0].t<lim)st.buf.shift();
+ const cur=st.buf[st.buf.length-1];let start=cur.t;
+ for(let i=st.buf.length-1;i>=0;i--){const b=st.buf[i];if(Math.abs(b.kg-cur.kg)<=st.tol+1e-9)start=b.t;else break;}
+ const stable=cur.ok&&(cur.t-start)>=st.win;
+ return{stable,kg:cur.kg};}
+
+/* guardia anti-duplicado (por ticket): después de tomar un peso W, el siguiente se toma sin preguntar si
+   (a) el plato pasó por cero, o (b) el peso es distinto de W y pasaron ≥ 3 s. Si no, se pide confirmación
+   (dos productos iguales pueden pesar lo mismo: no se bloquea). */
+function scaleDupNew(){return{lastKg:null,lastT:0,sawZero:true};}
+function scaleDupSeen(g,smp){if(smp&&smp.zero)g.sawZero=true;}
+function scaleDupCheck(g,kg,t){
+ if(g.lastKg===null||g.sawZero)return{ok:true};
+ const same=Math.abs(kg-g.lastKg)<=1e-9;
+ if(!same&&t-g.lastT>=3000)return{ok:true};
+ return{ok:false,same,why:same?'Mismo peso que el anterior ('+kg.toFixed(3).replace('.',',')+' kg) sin que la balanza vuelva a cero. ¿Es otro producto?'
+                             :'La balanza no volvió a cero desde el peso anterior. ¿Es otro producto?'};}
+function scaleDupMark(g,kg,t){g.lastKg=kg;g.lastT=t;g.sawZero=false;}
+
+function ean13Ok(code){const s=String(code||'');if(!/^\d{13}$/.test(s))return false;let t=0;for(let i=0;i<12;i++)t+=(+s[i])*(i%2?3:1);return (10-t%10)%10===+s[12];}
+
+/* formatos de etiqueta por prefijo. Por defecto: 2 cifras de prefijo + 5 de PLU + 5 de valor + verificador.
+   20 = peso (gramos), 21 = importe; el resto de los prefijos 22–29 usa el modo global (Configuración). */
+const SCALE_LABELS_DEF=[{prefix:'20',pluLen:5,mode:'peso',dec:3},{prefix:'21',pluLen:5,mode:'precio',dec:0}];
+function scaleLabelParse(code,layouts,globalMode){
+ const s=String(code||'').trim();if(!/^2\d{12}$/.test(s))return null;           /* no es etiqueta de balanza */
+ if(!ean13Ok(s))return{err:'Etiqueta mal leída (el dígito verificador no coincide). Volvé a pasarla.'};
+ const L=(Array.isArray(layouts)&&layouts.length?layouts:SCALE_LABELS_DEF).slice().sort((a,b)=>String(b.prefix).length-String(a.prefix).length);
+ let f=L.find(x=>s.startsWith(String(x.prefix)));
+ if(!f)f={prefix:s.slice(0,2),pluLen:5,mode:globalMode==='precio'?'precio':'peso',dec:globalMode==='precio'?0:3};
+ const pl=String(f.prefix).length,n=Math.max(3,Math.min(6,+f.pluLen||5));
+ const vlen=12-pl-n;if(vlen<4)return{err:'Formato de etiqueta inválido para el prefijo '+f.prefix+'.'};
+ const plu=String(+s.slice(pl,pl+n));const v=+s.slice(pl+n,12);
+ if(f.mode==='precio'){const dec=+f.dec===2?2:0;const priceC=dec===2?v:v*100;if(!(priceC>0))return{err:'Importe en cero en la etiqueta.'};return{plu,mode:'precio',priceC,prefix:f.prefix};}
+ const dec=f.dec===undefined?3:+f.dec;const kg=Math.round(v/Math.pow(10,dec)*1000)/1000;
+ if(!(kg>0&&kg<=SCALE_MAX))return{err:'Peso fuera de rango en la etiqueta.'};
+ return{plu,mode:'peso',kg,prefix:f.prefix};}
+
+/* peso con 3 decimales y precio por kg cuyo producto redondeado da EXACTO el importe de la etiqueta.
+   1) con el precio del sistema, si algún peso de ±3 g lo logra; 2) si no, se ajusta el precio de la línea
+   (el precio de la balanza no coincide con el del sistema) y se avisa. */
+function scaleLabelQty(priceC,unitC){
+ if(!(priceC>0&&unitC>0))return null;
+ const q0=Math.round(priceC/unitC*1000);
+ for(const d of[0,1,-1,2,-2,3,-3]){const q=(q0+d)/1000;if(q>0&&Math.round(q*unitC)===priceC)return{qty:q,price:unitC,exact:true,adj:false};}
+ const q=Math.max(1,q0)/1000;let p=Math.round(priceC/q);
+ for(const d of[0,1,-1,2,-2]){if(Math.round(q*(p+d))===priceC){p=p+d;break;}}
+ return{qty:q,price:p,exact:Math.round(q*p)===priceC,adj:true,diffPct:Math.abs(p-unitC)/unitC*100};}
+
+if(typeof module!=='undefined'&&module.exports)module.exports={scaleFrame,scaleStabNew,scaleStabPush,scaleDupNew,scaleDupCheck,scaleDupMark,scaleDupSeen,ean13Ok,scaleLabelParse,scaleLabelQty,SCALE_LABELS_DEF,SCALE_PROTOS};
+
 /* ===== Periféricos (HAL / DeviceManager) y ticket del cliente =====
    Hardware real: NO probado en esta demo. Cada modelo debe probarse físicamente [VERIFICAR por marca y modelo].
    WebUSB / Web Serial / Web Bluetooth existen sólo en Chrome/Edge (no en Safari/iPhone). Impresoras de red (TCP 9100), descubrimiento
@@ -5439,11 +5727,12 @@ function ticketModel(sale,W){const T=S.tenant,cfg=S.cfg.ticket;const B=[];const 
  add('sep');
  const gross=sale.items.reduce((a,i)=>a+Math.round(i.qty*i.price),0);
  if(sale.benefit){add('l',{l:'Subtotal',r:money(gross)});add('l',{l:sale.benefit.label,r:'- '+money(sale.benefit.disc).replace(/^- /,'')});}
+ if(sale.adj&&sale.adj.length){if(!sale.benefit)add('l',{l:'Subtotal',r:money(gross)});sale.adj.forEach(a=>add('l',{l:a.label,r:(a.amt<0?'- ':'+ ')+money(Math.abs(a.amt)).replace(/^- /,'')}));} /* V26.49 · recargo/descuento por medio de pago */
  if(cb&&cb.letra==='A'&&cb.neto!=null){add('l',{l:'Neto gravado',r:money(cb.neto)});add('l',{l:'IVA',r:money(cb.iva)});}
  add('l',{l:'TOTAL',r:money(sale.total),b:1,big:1});
  if(cb&&cb.letra==='B'&&cb.iva>0)add('t',{s:'Régimen de Transparencia Fiscal (Ley 27.743) — IVA contenido: '+money(cb.iva)+' [VERIFICAR texto]'});
  {const pl=salePays(sale);const fi=saleFiadoAmt(sale);
-  if(pl.length>1||fi>0){add('t',{s:'Medios de pago:',b:1});pl.forEach(pp=>add('l',{l:'  '+(MET[pp.m]||pp.m)+(pp.m==='fiado'?' (a cta. cte.)':''),r:money(pp.a)}));add('l',{l:'Cobrado',r:money(sale.total-fi)});}
+  if(pl.length>1||fi>0){add('t',{s:'Medios de pago:',b:1});pl.forEach(pp=>add('l',{l:'  '+(MET[pp.m]||pp.m)+(pp.m==='fiado'?(sale.ck==='fiado'?' (fiado'+(sale.due?', vence '+dmy(dkey(sale.due)):'')+')':' (a cta. cte.'+(sale.ck&&sale.due?', vence '+dmy(dkey(sale.due)):'')+')'):''),r:money(pp.a)}));add('l',{l:'Cobrado',r:money(sale.total-fi)});}
   else add('t',{s:'Medio de pago: '+(MET[sale.method]||sale.method)});
   if(sale.recv>0&&(sale.vuelto>0||(sale.method==='efectivo'&&sale.recv>=sale.total))){add('l',{l:'Recibido',r:money(sale.recv)});add('l',{l:'Vuelto',r:money(sale.vuelto!=null&&sale.pays?sale.vuelto:sale.recv-sale.total)});}
   if(fi>0&&sale.cust){add('t',{s:'Estado: '+(salePayState(sale)==='parcial'?'PAGO PARCIAL':'PENDIENTE DE COBRO')+' · saldo de esta venta '+money(fi)});add('t',{s:'Saldo adeudado en cuenta corriente: '+money(debtOf(sale.cust))});}
@@ -5469,8 +5758,9 @@ function ticketHTML(sale){const W=S.cfg.ticket.w===58?32:42;const mm=S.cfg.ticke
 let LOGO_R=null;
 function logoRaster(){if(LOGO_R)return LOGO_R;LOGO_R=new Promise(res=>{try{const im=new Image();im.onload=()=>{try{const w=Math.floor(Math.min(im.width,S.cfg.ticket.w===58?384:384)/8)*8,h=Math.round(im.height*w/im.width);const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,w,h);cx.drawImage(im,0,0,w,h);const d=cx.getImageData(0,0,w,h).data;const bytes=new Uint8Array(w/8*h);
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4;const lum=(d[i]*299+d[i+1]*587+d[i+2]*114)/1000;if(lum<128)bytes[y*(w/8)+(x>>3)]|=0x80>>(x&7);}res({w,h,bytes});}catch(e){res(null);}};im.onerror=()=>res(null);im.src=LOGO_TICKET;}catch(e){res(null);}});return LOGO_R;}
-async function escposTicket(sale){const W=S.cfg.ticket.w===58?32:42;const o=[];const p=a=>a.forEach(x=>o.push(x));
+async function escposTicket(sale,opt){const W=S.cfg.ticket.w===58?32:42;const o=[];const p=a=>a.forEach(x=>o.push(x));
  p([0x1b,0x40,0x1b,0x74,0x02]);                       // init + página de códigos PC850 [VERIFICAR por modelo]
+ if(opt&&opt.drawer&&typeof drawerBytes==='function')p(drawerBytes(tkDrawer().pin));   // V26.49 · apertura del cajón (ESC p) [VERIFICAR pin]
  for(const b of ticketModel(sale,W)){
   if(b.t==='logo'){const r=await logoRaster();if(r){p([0x1b,0x61,1,0x1d,0x76,0x30,0,(r.w/8)&255,(r.w/8)>>8,r.h&255,r.h>>8]);r.bytes.forEach(x=>o.push(x));p([0x0a]);}}
   else if(b.t==='sep'){p(encPC850('-'.repeat(W)));p([0x0a]);}
@@ -5478,7 +5768,7 @@ async function escposTicket(sale){const W=S.cfg.ticket.w===58?32:42;const o=[];c
   else if(b.t==='l'){p([0x1b,0x61,0,0x1b,0x45,b.b?1:0]);p(encPC850(lr(b.l,b.r,W)));p([0x0a,0x1b,0x45,0]);}
   else if(b.t==='t'){p([0x1b,0x61,0]);p(encPC850(b.s));p([0x0a]);}
   else if(b.t==='qr'){const d=encPC850(b.data);const n=d.length+3;p([0x1b,0x61,1,0x1d,0x28,0x6b,4,0,0x31,0x41,0x32,0,0x1d,0x28,0x6b,3,0,0x31,0x43,5,0x1d,0x28,0x6b,3,0,0x31,0x45,0x30,0x1d,0x28,0x6b,n&255,n>>8,0x31,0x50,0x30]);p(d);p([0x1d,0x28,0x6b,3,0,0x31,0x51,0x30,0x0a]);}}
- p([0x0a,0x0a,0x0a,0x1d,0x56,0x42,0x00]);               // avance + corte parcial
+ p(typeof cutBytes==='function'?cutBytes():[0x0a,0x0a,0x0a,0x1d,0x56,0x42,0x00]);   // avance + corte (parcial / total / sin corte)
  return new Uint8Array(o);}
 
 /* ---------- envío a cada tipo de conexión ---------- */
@@ -5490,11 +5780,11 @@ async function devSend(d,bytes){
 /* cola de impresión: reintenta sin duplicar (una orden por venta y copia) */
 const PRQ=[];let prBusy=false;
 function printSale(saleId,opts){opts=opts||{};const s=opts.sale||S.sales.find(x=>x.id===saleId);if(!s)return false;const key='pr_'+s.id+(opts.copy?'_'+opts.copy:'');
- let j=PRQ.find(x=>x.key===key);if(j&&j.status!=='fallido'&&!opts.reprint)return false;if(!j){j={key,sale:s,status:'pendiente',tries:0,ts:now()};PRQ.push(j);}else{j.status='pendiente';j.tries=0;}
+ let j=PRQ.find(x=>x.key===key);if(j&&j.status!=='fallido'&&!opts.reprint)return false;if(!j){j={key,sale:s,status:'pendiente',tries:0,ts:now(),drawer:!opts.reprint&&!opts.copy&&typeof drawerWanted==='function'&&drawerWanted(s)};PRQ.push(j);}else{j.status='pendiente';j.tries=0;}
  if(PRQ.length>40)PRQ.shift();setTimeout(printPump,0);return true;}
 async function printPump(){if(prBusy)return;prBusy=true;try{for(const j of PRQ){if(j.status!=='pendiente')continue;
   try{const kind=printerKind();
-   if(kind==='usb'||kind==='serial'||kind==='ble'){const d=devList().find(x=>x.type==='printer_thermal'&&x.status==='conectado'&&!x.sim);const bytes=await escposTicket(j.sale);await devSend(d,bytes);j.status='ok';j.via=d.name;if(S.sales.includes(j.sale)){j.sale.printedAt=now();}audit('IMPRESION',j.sale.n+' · '+d.name);}
+   if(kind==='usb'||kind==='serial'||kind==='ble'){const d=devList().find(x=>x.type==='printer_thermal'&&x.status==='conectado'&&!x.sim);const bytes=await escposTicket(j.sale,{drawer:j.drawer});await devSend(d,bytes);j.status='ok';j.via=d.name;if(S.sales.includes(j.sale)){j.sale.printedAt=now();}audit('IMPRESION',j.sale.n+' · '+d.name);if(j.drawer){audit('CAJON_ABIERTO','venta '+j.sale.n);j.drawer=false;}}
    else{browserPrint(j.sale);j.status='ok';j.via=kind==='windows'?'Impresora de Windows':'Vista previa / navegador';if(S.sales.includes(j.sale))j.sale.printedAt=now();audit('IMPRESION',j.sale.n+' · '+j.via);}
   }catch(e){j.tries++;j.err=String(e&&e.message||e);if(j.tries>=3){j.status='fallido';toast('No se pudo imprimir '+j.sale.n+': '+j.err,1);audit('IMPRESION_FALLIDA',j.sale.n+' · '+j.err);}else{await new Promise(r=>setTimeout(r,800*j.tries));}}}
  }finally{prBusy=false;}if(PRQ.some(x=>x.status==='pendiente'))setTimeout(printPump,300);}
@@ -5519,7 +5809,7 @@ function devSerialModal(){if(!devHas.serial)return toast('Este navegador no tien
   try{await port.open({baudRate:baud});}catch(e){toast('No se pudo abrir el puerto: '+(e.message||e),1);return;}
   const info=port.getInfo?port.getInfo():{};const id='serial:'+(info.usbVendorId||0).toString(16)+':'+(info.usbProductId||0).toString(16)+':'+Object.keys(DEV.serial).length;DEV.serial[id]={port,baud};
   devAdd({id,type,name:(type==='scale'?'Balanza':type==='scanner'?'Lector':'Impresora')+' (serie '+baud+')',conn:'serial',vid:info.usbVendorId||0,pid:info.usbProductId||0,baud,status:'conectado',lastSeen:now(),sector:'caja'});
-  audit('DISPOSITIVO_ALTA',type+' serie');save();devTag();if(type==='scale')scaleListen(id);toast('Puerto conectado');rerender();}});}
+  audit('DISPOSITIVO_ALTA',type+' serie');save();devTag();if(type==='scale'){scaleListen(id);scaleDetect(DEV.serial[id]).then(p=>{const d=devById(id);if(d){d.proto=p||'continuo';if(p)d.name='Balanza '+SCALE_PROTOS[p].name+' (serie '+baud+')';save();rerender();}toast(p?'Protocolo reconocido: '+SCALE_PROTOS[p].name:'La balanza no respondió todavía: queda en envío continuo',!p);});}toast('Puerto conectado');rerender();}});}
 async function devBle(){if(!devHas.ble)return toast('Este navegador no tiene Web Bluetooth (en iPhone/iPad no existe).',1);
  let dev;try{dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:['000018f0-0000-1000-8000-00805f9b34fb','e7810a71-73ae-499d-8c15-faa9aef0c3f2']});}catch(e){return toast('No se eligió ningún dispositivo.',1);}
  try{const srv=await dev.gatt.connect();let ch=null;for(const s of await srv.getPrimaryServices()){for(const c of await s.getCharacteristics()){if(c.properties.writeWithoutResponse||c.properties.write){ch=c;break;}}if(ch)break;}
@@ -5536,50 +5826,108 @@ async function devTest(id){const d=devById(id);if(!d)return;const sale={id:'test
 /* reconexión automática (al abrir, al enchufar y cada 30 s) + aviso si se desconecta */
 async function devReconnect(){try{
  if(devHas.usb){const gr=await navigator.usb.getDevices();for(const dev of gr){const id='usb:'+dev.vendorId.toString(16)+':'+dev.productId.toString(16);const d=devById(id);if(!d)continue;if(!dev.opened){try{DEV.usb[id]=await usbOpen(dev);devSet(id,'conectado');}catch(e){devSet(id,'desconectado');}}else devSet(id,'conectado');}}
- if(devHas.serial){const ps=await navigator.serial.getPorts();for(const port of ps){const info=port.getInfo?port.getInfo():{};const d=devList().find(x=>x.conn==='serial'&&x.vid===(info.usbVendorId||0)&&x.pid===(info.usbProductId||0)&&!DEV.serial[x.id]);if(d){try{await port.open({baudRate:d.baud||9600});DEV.serial[d.id]={port,baud:d.baud};devSet(d.id,'conectado');if(d.type==='scale')scaleListen(d.id);}catch(e){}}}}
+ if(devHas.serial){const ps=await navigator.serial.getPorts();for(const port of ps){const info=port.getInfo?port.getInfo():{};const d=devList().find(x=>x.conn==='serial'&&x.vid===(info.usbVendorId||0)&&x.pid===(info.usbProductId||0)&&!DEV.serial[x.id]);if(d){try{await port.open({baudRate:d.baud||9600,dataBits:8,stopBits:1,parity:'none'});DEV.serial[d.id]={port,baud:d.baud,proto:d.proto||'continuo'};devSet(d.id,'conectado');if(d.type==='scale')scaleListen(d.id);}catch(e){}}}}
  }catch(e){}}
 function devHeartbeat(){devList().forEach(d=>{if(d.sim||d.conn==='windows'||d.conn==='teclado')return;let ok=false;if(d.conn==='usb')ok=!!(DEV.usb[d.id]&&DEV.usb[d.id].dev.opened);else if(d.conn==='serial')ok=!!DEV.serial[d.id];else if(d.conn==='ble')ok=!!(DEV.ble[d.id]&&DEV.ble[d.id].dev.gatt&&DEV.ble[d.id].dev.gatt.connected);
  if(d.status==='conectado'&&!ok){d.status='desconectado';toast('Se desconectó: '+d.name,1);audit('DISPOSITIVO_DESCONECTADO',d.name);}else if(d.status!=='conectado'&&ok)d.status='conectado';});devTag();devChips();}
 function devBoot(){devTag();devReconnect();clearInterval(DEV.hb);DEV.hb=setInterval(()=>{devReconnect();devHeartbeat();},30000);
- if(devHas.usb){navigator.usb.addEventListener('connect',devReconnect);navigator.usb.addEventListener('disconnect',()=>setTimeout(devHeartbeat,200));}}
+ if(devHas.usb){navigator.usb.addEventListener('connect',devReconnect);navigator.usb.addEventListener('disconnect',()=>setTimeout(devHeartbeat,200));}
+ if(devHas.serial){navigator.serial.addEventListener('connect',()=>setTimeout(devReconnect,300));navigator.serial.addEventListener('disconnect',e=>{for(const[k,h]of Object.entries(DEV.serial))if(h.port===e.target){h.listening=false;clearInterval(h.poll);delete DEV.serial[k];}setTimeout(devHeartbeat,200);});}}
 /* botón único */
 async function devAuto(){if(devHas.usb)return devUsb();if(devHas.serial)return devSerialModal();if(devHas.ble)return devBle();toast('Este navegador no permite conectar dispositivos (WebUSB/Serie/Bluetooth). Usá Chrome o Edge, o la impresora de Windows.',1);}
 
-/* ---------- balanza ---------- */
-function parseScale(line){const s=String(line||'').trim();if(!s)return null;const m=/([-+]?\d{1,3}(?:[.,]\d{1,4})?)\s*(kg|g|KG|G)?/.exec(s);if(!m)return null;let v=parseFloat(m[1].replace(',','.'));if(!isFinite(v))return null;const u=(m[2]||'kg').toLowerCase();if(u==='g')v=v/1000;
- if(!(v>0&&v<=50))return null;return{kg:Math.round(v*1000)/1000,stable:!/^\s*(US|D|\?)/i.test(s)};}
-async function scaleListen(id){const h=DEV.serial[id];if(!h||h.listening)return;h.listening=true;try{const dec=new TextDecoderStream();h.port.readable.pipeTo(dec.writable).catch(()=>{});const rd=dec.readable.getReader();let buf='';
- for(;;){const{value,done}=await rd.read();if(done)break;buf+=value;const ls=buf.split(/[\r\n]+/);buf=ls.pop();ls.forEach(l=>{const p=parseScale(l);if(p){DEV.scale.last=p;DEV.scale.samples.push(p.kg);if(DEV.scale.samples.length>4)DEV.scale.samples.shift();}});}}catch(e){}h.listening=false;}
-function scaleRead(timeout){return new Promise(res=>{const t0=Date.now();const iv=setInterval(()=>{const s=DEV.scale.samples;if(s.length>=3&&s.slice(-3).every(x=>x===s[s.length-1])&&DEV.scale.last&&DEV.scale.last.stable){clearInterval(iv);res(s[s.length-1]);}else if(Date.now()-t0>(timeout||3000)){clearInterval(iv);res(null);}},150);});}
+/* ---------- balanza (V26.49 · 4.34 H1: pedido de peso por marca, reconocimiento automático, estable ≥ 400 ms, anti-duplicado) ---------- */
+/* compatibilidad: parseScale sigue existiendo (balanza simulada y pruebas viejas) y usa la trama nueva */
+function parseScale(line){const p=scaleFrame(line);return p&&!p.zero&&p.kg>0&&p.kg<=50?{kg:p.kg,stable:p.stable}:null;}
+const scaleSleep=ms=>new Promise(r=>setTimeout(r,ms));
+function scaleState(){if(!DEV.scale.stab){DEV.scale.stab=scaleStabNew({tol:+(S.cfg.scaleTol||0)});DEV.scale.raw=[];DEV.scale.frames=0;}return DEV.scale;}
+function scaleFeed(line){const sc=scaleState();const t=Date.now();sc.raw.push({t,s:String(line).slice(0,60)});if(sc.raw.length>20)sc.raw.shift();
+ const p=scaleFrame(line);if(!p)return;sc.frames++;sc.last=p;sc.lastT=t;const r=scaleStabPush(sc.stab,{kg:p.kg,stable:p.stable,t});sc.stableKg=r.stable?r.kg:null;
+ sc.samples=(sc.samples||[]).concat(p.kg).slice(-4);if(typeof pos!=='undefined'){pos.sg=pos.sg||scaleDupNew();scaleDupSeen(pos.sg,p);}}
+async function scaleReq(h){const P=SCALE_PROTOS[h.proto||'continuo'];if(!P||!P.req||!h.port||!h.port.writable||h.wbusy)return;h.wbusy=true;
+ try{const w=h.port.writable.getWriter();try{await w.write(new Uint8Array(P.req));}finally{w.releaseLock();}}catch(e){}h.wbusy=false;}
+async function scaleListen(id){const h=DEV.serial[id];if(!h||h.listening)return;h.listening=true;const d=devById(id);if(!h.proto)h.proto=(d&&d.proto)||'continuo';
+ clearInterval(h.poll);h.poll=setInterval(()=>{if(h.listening&&SCALE_PROTOS[h.proto]&&SCALE_PROTOS[h.proto].req)scaleReq(h);},200);
+ const dec=new TextDecoder('latin1');let buf='';
+ try{const rd=h.port.readable.getReader();h.reader=rd;
+  for(;;){const{value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});const ls=buf.split(/[\r\n\x03]+/);buf=ls.pop();if(buf.length>200)buf=buf.slice(-60);ls.forEach(scaleFeed);}}
+ catch(e){}finally{try{h.reader&&h.reader.releaseLock();}catch(e){}h.reader=null;h.listening=false;clearInterval(h.poll);}}
+async function scaleStop(h){if(!h)return;h.listening=false;clearInterval(h.poll);try{if(h.reader)await h.reader.cancel();}catch(e){}await scaleSleep(30);try{await h.port.close();}catch(e){}}
+/* reconoce el protocolo: primero escucha (envío continuo); si no llega nada, prueba los pedidos de Systel (ENQ), Kretz (P) y genérico (W) */
+async function scaleDetect(h){const sc=scaleState();h.proto='continuo';let f0=sc.frames;await scaleSleep(900);if(sc.frames>=f0+2)return 'continuo';
+ for(const k of SCALE_PROBE){h.proto=k;f0=sc.frames;for(let i=0;i<3;i++){await scaleReq(h);await scaleSleep(260);}if(sc.frames>f0)return k;}
+ h.proto='continuo';return null;}
+/* conexión automática: el navegador pide elegir el puerto UNA vez (seguridad); el resto lo hace el sistema */
+async function devScaleAuto(){if(!devHas.serial)return toast('Este navegador no tiene Web Serial (usá Chrome o Edge en la computadora).',1);
+ let port;try{port=await navigator.serial.requestPort();}catch(e){return toast('No se eligió ningún puerto.',1);}
+ toast('Buscando la balanza… (hasta 15 segundos)');const r=await scaleAutoPort(port);
+ if(!r){toast('El puerto no respondió como balanza. Revisá el cable, que la balanza esté encendida y que su salida a PC esté activa.',1);return;}
+ const info=port.getInfo?port.getInfo():{};const id='serial:'+(info.usbVendorId||0).toString(16)+':'+(info.usbProductId||0).toString(16)+':'+Object.keys(DEV.serial).length;
+ DEV.serial[id]=r.h;const nm='Balanza '+(r.proto==='systel'?'Systel':r.proto==='kretz'?'Kretz':'')+' ('+SCALE_PROTOS[r.proto].name+' · '+r.baud+')';
+ devAdd({id,type:'scale',name:nm.replace('Balanza  (','Balanza ('),conn:'serial',vid:info.usbVendorId||0,pid:info.usbProductId||0,baud:r.baud,proto:r.proto,status:'conectado',lastSeen:now(),sector:'caja'});
+ audit('DISPOSITIVO_ALTA','balanza serie · protocolo '+r.proto+' · '+r.baud+' baudios');save();devTag();toast('Balanza reconocida: '+SCALE_PROTOS[r.proto].name+' a '+r.baud+' baudios');rerender();}
+async function scaleAutoPort(port,bauds){for(const baud of(bauds||SCALE_BAUDS)){try{await port.open({baudRate:baud,dataBits:8,stopBits:1,parity:'none'});}catch(e){continue;}
+  const h={port,baud,proto:'continuo'};const tmp='probe:'+baud;DEV.serial[tmp]=h;scaleListen(tmp);const p=await scaleDetect(h);delete DEV.serial[tmp];
+  if(p){return{h,proto:p,baud};}await scaleStop(h);}
+ return null;}
+/* espera un peso estable (≥ 400 ms sin cambios, sin plato vacío) */
+function scaleRead(timeout){return new Promise(res=>{const t0=Date.now();const iv=setInterval(()=>{const sc=scaleState();
+ if(sc.stableKg!=null&&sc.stableKg>SCALE_ZERO&&Date.now()-(sc.lastT||0)<1000){clearInterval(iv);res(sc.stableKg);}else if(Date.now()-t0>(timeout||3000)){clearInterval(iv);res(null);}},100);});}
+/* toma el peso para una línea pasando por la guardia anti-duplicado */
+function scaleTake(i,kg,devId){pos.sg=pos.sg||scaleDupNew();const t=Date.now();const c=scaleDupCheck(pos.sg,kg,t);
+ const go=()=>{scaleDupMark(pos.sg,kg,Date.now());const L=pos.lines[i];if(L){L.src='balanza';if(devId)L.dev=devId;}lineEdit(i,'qty',String(kg));const L2=pos.lines[i];if(L2){L2.src='balanza';if(devId)L2.dev=devId;}};
+ if(c.ok)return go();
+ modal('Confirmar el peso',`<p>${esc(c.why)}</p><p class="sm mut">Si es el mismo producto pesado dos veces, cancelá. Si son dos productos distintos que pesan lo mismo, confirmá.</p>`,{okText:'Sí, es otro producto',onOk:()=>{audit('BALANZA_CONFIRMADO',(c.same?'peso repetido ':'sin volver a cero ')+numAR(kg,3)+' kg');go();}});}
 A.pesar=async el=>{const i=+el.dataset.i;const L=pos.lines[i];if(!L)return;const d=devList().find(x=>x.type==='scale'&&x.status==='conectado');if(!d)return toast('No hay balanza conectada.',1);
- if(d.sim){modal('Balanza simulada',`<p class="sm mut">Simula el peso estable que informaría la balanza (sólo para evaluar el flujo).</p><label for="bs-w">Peso (kg)</label><input id="bs-w" inputmode="decimal" placeholder="0,000" autocomplete="off">`,{okText:'Usar este peso',onOk:w=>{const p=parseScale(val('bs-w')+' kg');if(!p)return w._err('Peso fuera de rango (0 a 50 kg).'),false;lineEdit(i,'qty',String(p.kg));}});return;}
- const w=await scaleRead(3000);if(!w)return toast('No se obtuvo un peso estable. Reintentá con la balanza quieta.',1);lineEdit(i,'qty',String(w));};
+ if(d.sim){modal('Balanza simulada',`<p class="sm mut">Simula el peso estable que informaría la balanza (sólo para evaluar el flujo). Escribí 0 para simular el plato vacío.</p><label for="bs-w">Peso (kg)</label><input id="bs-w" inputmode="decimal" placeholder="0,000" autocomplete="off">`,{okText:'Usar este peso',onOk:w=>{const p=scaleFrame(val('bs-w')+' kg');if(p&&p.zero){pos.sg=pos.sg||scaleDupNew();scaleDupSeen(pos.sg,p);toast('Plato vacío (0,000 kg)');return;}if(!p||!(p.kg>0&&p.kg<=50))return w._err('Peso fuera de rango (0 a 50 kg).'),false;setTimeout(()=>scaleTake(i,p.kg,d.id),30);}});return;}
+ const w=await scaleRead(3000);if(!w)return toast('No se obtuvo un peso estable. Reintentá con la balanza quieta.',1);scaleTake(i,w,d.id);};
 
 /* ================= PANTALLA: PERIFÉRICOS Y TICKET ================= */
 reg('dispositivos','Periféricos y ticket','plug','devices',()=>{const cfg=S.cfg.ticket;const samp={id:'demo',n:S.tenant.caja+'-15',ts:now(),user:user.name,caja:S.tenant.caja,items:[{name:'Gin Beefeater + Cunnington Tónica (2.25 lt)',qty:1,price:3300000,disc:0},{name:'Pachamama',qty:2,price:700000,disc:70000}],total:4630000,method:'efectivo',recv:5000000,doc:'ticket_interno',cust:'',fiado:false,benefit:{label:'Cupón BIENVENIDA10',disc:70000}};
  const dv=devList();
  return `<div class="row"><h1 class="sp">Periféricos y ticket</h1><button class="btn gold" data-act="devAuto">Conectar y reconocer (automático)</button></div>
  <div class="warnbox sm"><b>Hardware sin probar:</b> esta versión trae los conectores (USB, serie, Bluetooth, impresora de Windows) pero <b>no se probó con equipos reales</b>. Cada impresora, balanza y lector se prueba físicamente antes de comprometerse [VERIFICAR por marca y modelo]. El navegador siempre pide elegir el dispositivo una vez (es una exigencia de seguridad); después se reconecta solo al abrir, al enchufar y cada 30 s. Impresoras de red (TCP 9100), descubrimiento y NFC PC/SC requieren un agente local (etapa futura).</div>
- <div class="grid g2"><div class="card"><h3>Conectar</h3><div class="row"><button class="btn" data-act="devWin">Impresora de Windows (1 clic)</button><button class="btn" data-act="devUsb">Impresora térmica USB</button><button class="btn" data-act="devSerial">Balanza / lector (serie)</button><button class="btn" data-act="devBle">Impresora Bluetooth</button>${IS_CLIENT?'':'<button class="btn" data-act="devSimScale">Balanza simulada (demo)</button>'}</div>
+ <div class="grid g2"><div class="card"><h3>Conectar</h3><div class="row"><button class="btn" data-act="devWin">Impresora de Windows (1 clic)</button><button class="btn" data-act="devUsb">Impresora térmica USB</button><button class="btn" data-act="devScaleAuto">Balanza (reconoce Systel / Kretz)</button><button class="btn" data-act="devSerial">Lector / impresora (serie)</button><button class="btn" data-act="devBle">Impresora Bluetooth</button>${IS_CLIENT?'':'<button class="btn" data-act="devSimScale">Balanza simulada (demo)</button>'}</div>
   <p class="sm mut" style="margin-top:.6rem">Disponible en este navegador: USB ${devHas.usb?'✔':'✘'} · Serie ${devHas.serial?'✔':'✘'} · Bluetooth ${devHas.ble?'✔':'✘'}. iPhone/iPad (Safari): ninguna de las tres; usar impresora por red o Bluetooth LE con agente [VERIFICAR]. Android: USB OTG y Bluetooth con Chrome.</p>
-  <p class="sm"><b>Lector de código de barras:</b> funciona sin configurar (modo teclado): el sistema distingue una lectura rápida de una persona tecleando. Etiquetas EAN-13 de balanza (prefijo 2 + PLU + peso o precio) soportadas [VERIFICAR el formato de cada balanza].</p></div>
+  <p class="sm"><b>Lector de código de barras:</b> funciona sin configurar (modo teclado): el sistema distingue una lectura rápida de una persona tecleando. Etiquetas EAN-13 de balanza: ver «Balanza y etiquetas».</p></div>
  <div class="card"><h3>Dispositivos registrados</h3><div class="tw"><table><thead><tr><th>Dispositivo</th><th>Tipo</th><th>Estado</th><th></th></tr></thead><tbody>
   <tr><td>Lector de código de barras (teclado)</td><td>Lector</td><td><span class="tag ok">listo</span></td><td></td></tr>
   ${dv.map(d=>`<tr><td>${esc(d.name)}${d.sim?' <span class="tag sim">simulado</span>':''}<div class="sm mut">${esc(d.conn)} · sector ${esc(d.sector||'caja')}${d.tested?' · probado':''}</div></td><td>${esc(DEV_TYPES[d.type]||d.type)}</td><td><span class="tag ${d.status==='conectado'?'ok':'bad'}">${esc(d.status)}</span></td><td class="r"><button class="btn sm" data-act="devTestB" data-id="${d.id}">Probar</button> <button class="btn sm red" data-act="devDel" data-id="${d.id}">Quitar</button></td></tr>`).join('')}</tbody></table></div></div></div>
  <div class="grid g2" style="margin-top:1rem"><div class="card"><h3>Ticket del cliente</h3><label for="tk-m">Mensaje al pie</label><input id="tk-m" maxlength="120" value="${esc(cfg.msg)}">
   <div class="grid g2"><div><label for="tk-w">Ancho de papel</label><select id="tk-w"><option value="80" ${cfg.w===80?'selected':''}>80 mm</option><option value="58" ${cfg.w===58?'selected':''}>58 mm</option></select></div><div><label for="tk-cu">CUIT (si ya está definido)</label><input id="tk-cu" maxlength="13" placeholder="sin cargar" value="${esc(S.tenant.cuit)}"></div></div>
   <label for="tk-iv">Condición frente al IVA (texto del ticket)</label><input id="tk-iv" maxlength="60" placeholder="Ej.: Responsable Monotributo [completar]" value="${esc(S.tenant.iva)}"><label for="tk-ph">Teléfono / WhatsApp que se imprime</label><input id="tk-ph" maxlength="30" value="${esc(S.tenant.phone)}">
+  <div class="grid g2"><div><label for="tk-cut">Corte del papel</label><select id="tk-cut"><option value="parcial" ${tkCut()==='parcial'?'selected':''}>Parcial</option><option value="total" ${tkCut()==='total'?'selected':''}>Total</option><option value="no" ${tkCut()==='no'?'selected':''}>Sin corte (impresora sin cuchilla)</option></select></div>
+  <div><label for="tk-dr">Cajón de dinero (conectado a la impresora)</label><select id="tk-dr"><option value="no" ${tkDrawer().when==='no'?'selected':''}>No abrir solo</option><option value="cash" ${tkDrawer().when==='cash'?'selected':''}>Abrir en ventas con efectivo</option><option value="all" ${tkDrawer().when==='all'?'selected':''}>Abrir en todas las ventas</option></select><select id="tk-pin" aria-label="Pin del cajón" style="margin-top:.3rem"><option value="2" ${tkDrawer().pin===2?'selected':''}>Pin 2 (el más común)</option><option value="5" ${tkDrawer().pin===5?'selected':''}>Pin 5</option></select></div></div>
   <label class="chk"><input type="checkbox" id="tk-lo" ${cfg.showLogo?'checked':''}> Imprimir el logo de ${esc(S.tenant.name||'el negocio')}</label><label class="chk"><input type="checkbox" id="tk-lg" ${cfg.legal?'checked':''}> Imprimir leyendas legales (consumidor, +18)</label>
   <div class="row" style="margin-top:.6rem"><button class="btn gold" data-act="tkSave">Guardar</button><button class="btn" data-act="tkTest">Imprimir ticket de prueba</button></div><p class="sm mut">El ticket sin CAE dice "DOCUMENTO NO VÁLIDO COMO FACTURA". CUIT y condición fiscal los completa el dueño; no se inventan.</p></div>
  <div class="card"><h3>Vista previa (${cfg.w} mm)</h3><div style="background:#fff;border:1px dashed #cfc7b9;border-radius:10px;padding:10px;text-align:center"><img src="${LOGO_TICKET}" alt="Logo RAVE" style="width:190px;${cfg.showLogo?'':'display:none'}"></div><pre class="rep" id="tk-pre" style="margin-top:.5rem;font-size:11.5px">${esc(ticketText(samp))}</pre></div></div>
+ ${scaleCardHtml()}
  ${typeof arcaCardHtml==='function'?arcaCardHtml():''}
  <div class="card" style="margin-top:1rem"><h3>Cola de impresión</h3>${PRQ.length?`<div class="tw"><table><tbody>${PRQ.slice().reverse().slice(0,8).map(j=>`<tr><td>${esc(j.sale.n)}</td><td><span class="tag ${j.status==='ok'?'ok':j.status==='fallido'?'bad':'warn'}">${j.status}</span></td><td class="sm">${esc(j.via||j.err||'')}</td><td class="r"><button class="btn sm" data-act="prRe" data-k="${esc(j.key)}">Reimprimir</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="mut sm">Sin impresiones en esta sesión.</p>'}<p class="sm mut">La cola reintenta hasta 3 veces y no duplica el ticket de una misma venta (la reimpresión es manual).</p></div>`;},
  ()=>{devChips();if(typeof arcaCardInit==='function')arcaCardInit();},'Sistema');
-A.devAuto=devAuto;A.devWin=devWin;A.devUsb=devUsb;A.devSerial=devSerialModal;A.devBle=devBle;A.devSimScale=devSimScale;A.devTestB=el=>devTest(el.dataset.id);A.devDel=el=>{devQuitar(el.dataset.id);rerender();};
-A.tkSave=()=>{const c=S.cfg.ticket;c.msg=val('tk-m').trim();c.w=+val('tk-w');c.showLogo=$('#tk-lo').checked;c.legal=$('#tk-lg').checked;S.tenant.cuit=val('tk-cu').trim();S.tenant.iva=val('tk-iv').trim();S.tenant.phone=val('tk-ph').trim();audit('CONFIG_TICKET','guardado');save();toast('Ticket guardado');rerender();};
+A.devAuto=devAuto;A.devScaleAuto=devScaleAuto;A.devWin=devWin;A.devUsb=devUsb;A.devSerial=devSerialModal;A.devBle=devBle;A.devSimScale=devSimScale;A.devTestB=el=>devTest(el.dataset.id);A.devDel=el=>{devQuitar(el.dataset.id);rerender();};
+A.tkSave=()=>{const c=S.cfg.ticket;c.msg=val('tk-m').trim();if($('#tk-cut'))c.cut=val('tk-cut');if($('#tk-dr'))c.drawer={when:val('tk-dr'),pin:+val('tk-pin')===5?5:2};c.w=+val('tk-w');c.showLogo=$('#tk-lo').checked;c.legal=$('#tk-lg').checked;S.tenant.cuit=val('tk-cu').trim();S.tenant.iva=val('tk-iv').trim();S.tenant.phone=val('tk-ph').trim();audit('CONFIG_TICKET','guardado');save();toast('Ticket guardado');rerender();};
 A.tkTest=()=>{const sale={id:'test',n:'PRUEBA',ts:now(),user:user.name,caja:S.tenant.caja,items:[{name:'Producto de prueba',qty:1,price:123450,disc:0}],total:123450,method:'efectivo',recv:150000,doc:'ticket_interno',cust:'',fiado:false,benefit:null};printSale('test',{sale,reprint:true});};
 A.prRe=el=>{const j=PRQ.find(x=>x.key===el.dataset.k);if(j){printSale(j.sale.id,{sale:j.sale,reprint:true});setTimeout(rerender,600);}};
 A.printLast=()=>{const s=S.sales.find(x=>x.id===S.lastSale);if(s)printSale(s.id,{reprint:true});};
+
+/* V26.49 · tarjeta «Balanza y etiquetas» (Periféricos) */
+function scaleLabelsCfg(){return Array.isArray(S.cfg.scaleLabels)&&S.cfg.scaleLabels.length?S.cfg.scaleLabels:SCALE_LABELS_DEF;}
+function scaleCardHtml(){const L=scaleLabelsCfg();const sc=DEV.scale||{};const raw=(sc.raw||[]).slice(-8);const rows=[0,1,2,3].map(i=>{const x=L[i]||{prefix:'',pluLen:5,mode:'peso',dec:3};
+ return `<tr><td><input id="sl-p${i}" inputmode="numeric" maxlength="2" style="width:4.5em" value="${esc(x.prefix||'')}" aria-label="Prefijo fila ${i+1}"></td><td><select id="sl-n${i}" aria-label="Cifras de PLU fila ${i+1}">${[4,5,6].map(n=>`<option ${+x.pluLen===n?'selected':''}>${n}</option>`).join('')}</select></td><td><select id="sl-m${i}" aria-label="Contenido fila ${i+1}"><option value="peso" ${x.mode==='peso'?'selected':''}>Peso (gramos)</option><option value="precio" ${x.mode==='precio'&&+x.dec!==2?'selected':''}>Importe en pesos</option><option value="precio2" ${x.mode==='precio'&&+x.dec===2?'selected':''}>Importe con centavos</option></select></td></tr>`;}).join('');
+ return `<div class="card" style="margin-top:1rem"><h3>Balanza y etiquetas</h3>
+ <p class="sm">«Balanza (reconoce Systel / Kretz)»: elegís el puerto una vez y el sistema prueba solo la velocidad y el protocolo (envío continuo, Systel con pedido ENQ, Kretz con pedido P, genérico). Después se reconecta solo al abrir y al enchufar el cable. El peso se toma cuando queda quieto 400 ms; si se repite sin que el plato vuelva a cero, pide confirmación. <b>[VERIFICAR con el equipo real]</b></p>
+ <div class="grid g2"><div><label for="sl-tol">Tolerancia de estabilidad</label><select id="sl-tol"><option value="0" ${!(+S.cfg.scaleTol>0)?'selected':''}>Idéntico (recomendado)</option><option value="0.002" ${+S.cfg.scaleTol===0.002?'selected':''}>± 2 g</option><option value="0.005" ${+S.cfg.scaleTol===0.005?'selected':''}>± 5 g</option></select></div><div></div></div>
+ <h4 style="margin:.8rem 0 .3rem">Formato de las etiquetas EAN-13 (13 cifras: prefijo + PLU + valor + verificador)</h4>
+ <div class="tw"><table><thead><tr><th>Prefijo</th><th>Cifras del PLU</th><th>El valor es</th></tr></thead><tbody>${rows}</tbody></table></div>
+ <p class="sm mut">Por defecto: 20 = peso, 21 = importe, PLU de 5 cifras. Los prefijos 22 a 29 sin fila se leen como peso con PLU de 5 cifras. El dígito verificador se controla siempre.</p>
+ <div class="row"><button class="btn gold" data-act="slSave">Guardar</button><button class="btn" data-act="slDef">Volver a los valores de fábrica</button></div>
+ <h4 style="margin:.8rem 0 .3rem">Diagnóstico (últimas tramas recibidas)</h4>${raw.length?`<pre class="rep sm">${raw.map(r=>esc(new Date(r.t).toLocaleTimeString('es-AR'))+'  '+esc(JSON.stringify(r.s))).join('\n')}</pre><p class="sm">Último peso: ${sc.last?numAR(sc.last.kg,3)+' kg'+(sc.last.stable?'':' (moviéndose)'):'—'} · estable: ${sc.stableKg!=null?numAR(sc.stableKg,3)+' kg':'no'}</p>`:'<p class="sm mut">Todavía no llegó ninguna trama de una balanza.</p>'}</div>`;}
+A.slSave=()=>{const out=[];for(let i=0;i<4;i++){const p=(val('sl-p'+i)||'').trim();if(!p)continue;if(!/^2\d$/.test(p))return toast('El prefijo de la fila '+(i+1)+' debe ser de 20 a 29.',1);if(out.some(x=>x.prefix===p))return toast('El prefijo '+p+' está repetido.',1);
+  const m=val('sl-m'+i);out.push({prefix:p,pluLen:+val('sl-n'+i),mode:m==='peso'?'peso':'precio',dec:m==='peso'?3:m==='precio2'?2:0});}
+ const prev=JSON.stringify(scaleLabelsCfg());S.cfg.scaleLabels=out.length?out:SCALE_LABELS_DEF.slice();S.cfg.scaleTol=+val('sl-tol')||0;if(DEV.scale)DEV.scale.stab=null;
+ audit('CONFIG_BALANZA','etiquetas '+prev+' → '+JSON.stringify(S.cfg.scaleLabels)+' · tolerancia '+S.cfg.scaleTol);save();toast('Balanza y etiquetas guardadas');rerender();};
+A.slDef=()=>{S.cfg.scaleLabels=SCALE_LABELS_DEF.slice();S.cfg.scaleTol=0;if(DEV.scale)DEV.scale.stab=null;audit('CONFIG_BALANZA','valores de fábrica');save();rerender();};
 
 /* ===== Legal: textos del menú y de la web, y lista de verificación (Argentina / Salta) =====
    Son PLANTILLAS: ninguna cita legal está validada por un abogado. Todo lo marcado [VERIFICAR] se confirma con asesor legal y fuente oficial. */
@@ -5738,6 +6086,7 @@ const COLS=[
  {c:'rubros',key:'rubros',del:1},
  {c:'clientes',key:'customers',pii:['name','last','birth','wa','email','secret','notes','dni','cardSecrets','taxid'],del:1},
  {c:'fiado',key:'fiadoPays',once:1},
+ {c:'cortesx',key:'cortesX',once:1},
  {c:'emp',key:'employees',pii:['pin','dni'],del:1},
  {c:'fich',key:'punches'},
  {c:'puestos',key:'puestos',del:1},
@@ -5760,8 +6109,8 @@ const COLS=[
  {c:'cexcu',key:'creditUse',once:1}];
 const BYC=Object.fromEntries(COLS.map(x=>[x.c,x]));
 const DELC=new Set(COLS.filter(x=>x.del).map(x=>x.c));
-const CFGIDS=['tenant','cfg','menu','loyalty','roles','integ','legal'];
-const ONCEC=new Set(['smov','audit','cierres','cnotas','otp','sellos','cusos','fiado']);
+const CFGIDS=['tenant','cfg','menu','loyalty','roles','integ','legal','payadj'];
+const ONCEC=new Set(['smov','audit','cierres','cnotas','otp','sellos','cusos','fiado','cortesx']);
 const r3=n=>Math.round(n*1000)/1000;
 function stripOf(col,it){const d=JSON.parse(JSON.stringify(it));(col.strip||[]).forEach(k=>delete d[k]);return d;}
 function cfgWire(id){switch(id){
@@ -5771,7 +6120,8 @@ function cfgWire(id){switch(id){
  case'loyalty':return{goal:S.loyalty.goal,reward:S.loyalty.reward};
  case'roles':return JSON.parse(JSON.stringify(S.roles));
  case'integ':{const x=JSON.parse(JSON.stringify(S.integ));return x;}
- case'legal':return JSON.parse(JSON.stringify(S.legal));}return null;}
+ case'legal':return JSON.parse(JSON.stringify(S.legal));
+ case'payadj':return JSON.parse(JSON.stringify(S.payadj||{on:false,stack:false,rules:{}}));}return null;}
 /* todo lo que hoy existe en este equipo, en el formato que viaja */
 function collectAll(){const out=[];
  for(const col of COLS){const arr=S[col.key]||[];for(const it of arr){if(!it)continue;const id=col.synth?col.synth(it):it.id;if(!id||String(id).length>80)continue;const w=stripOf(col,it);if(col.c==='clientes')w.pfp=custPfp(it);out.push({c:col.c,id:String(id),w,col});}}
@@ -5780,7 +6130,7 @@ function collectAll(){const out=[];
  for(const [k,ts] of Object.entries(S.loyalty.usedOtp||{}))if(k.length<=80)out.push({c:'otp',id:k,w:{ts}});
  for(const cp of S.coupons)for(const u of(cp.uses||[]))if(u.sale)out.push({c:'cusos',id:(cp.id+':'+u.sale).slice(0,80),w:{cp:cp.id,ts:u.ts,sale:u.sale,cust:u.cust||''}});
  for(const k of S.closures)for(const n of(k.notes||[]))out.push({c:'cnotas',id:(k.id+':'+cyrb(canon(n))).slice(0,80),w:Object.assign({cl:k.id},n)});
- for(const id of CFGIDS)out.push({c:'cfg',id,w:cfgWire(id)});
+ for(const id of CFGIDS){if(id==='payadj'&&!(S.payadj&&S.payadj.saved))continue; /* V26.49: sólo después de que el administrador la guardó */ out.push({c:'cfg',id,w:cfgWire(id)});}
  if(cl.clubPriv&&cl.clubPriv.new)out.push({c:'cfg',id:'clubkey',w:{pub:cl.clubPriv.pub,priv:cl.clubPriv.priv},raw:1});
  return out;}
 async function sealPii(col,id,w){if(!col||!col.pii||!col.pii.length)return w;const d=Object.assign({},w),p={};let any=false;for(const k of col.pii)if(d[k]!==undefined){p[k]=d[k];delete d[k];any=true;}
@@ -5825,7 +6175,7 @@ async function applyRec(r){const c=r.coleccion,id=r.id,key=c+'|'+id;
   if(id==='clubkey'){if(d&&d.priv&&d.pub&&cl.dek){try{cl.clubPriv={pub:d.pub,priv:d.priv,jwk:await openJ(d.priv,cl.dek,'clubkey|'+cl.comercio.id)};}catch(e){}}return;}
   const h=cyrb(canon(d));const loc=cfgWire(id);if(cl.fp[key]!==undefined&&cyrb(canon(loc))!==cl.fp[key])return; // cambio local sin subir: gana el local
   if(id==='tenant'){const caja=S.tenant.caja,regId=S.tenant.regId;S.tenant=Object.assign({},d,{caja,regId});}
-  else if(id==='cfg')S.cfg=d;else if(id==='menu')S.menu=d;else if(id==='roles')S.roles=rolesMigrate(d);else if(id==='integ')S.integ=d;else if(id==='legal')S.legal=d;
+  else if(id==='cfg')S.cfg=d;else if(id==='menu')S.menu=d;else if(id==='roles')S.roles=rolesMigrate(d);else if(id==='integ')S.integ=d;else if(id==='legal')S.legal=d;else if(id==='payadj')S.payadj=d;
   else if(id==='loyalty'){S.loyalty.goal=d.goal;S.loyalty.reward=d.reward;}
   cl.fp[key]=h;return;}
  const col=BYC[c];if(!col)return;const arr=arrOf(col);
@@ -6889,6 +7239,50 @@ A.shSave=()=>{if(!can('menu_admin'))return toast('No tenés permiso',1);const r=
  S.menu.ship=r.o;audit('MENU_TIPO',(old+' → '+r.o.mode)+' · provincias '+r.o.zones.length+' · retiro '+(r.o.pickup.on?'sí':'no')+' · envío local '+(r.o.local.on?'sí':'no')+' · resto '+(r.o.rest.on?'sí':'no'),{ent:'menu',eid:'ship',old:{mode:old},nw:{mode:r.o.mode}});
  save();rerender();toast('Borrador guardado. Para que lo vea el público, tocá «Publicar».');};
 
+/* ===== V26.49 · 4.34 H5 · Pantalla del cliente (segundo monitor) =====
+   · Ruta `#pantalla-cliente/<caja>` dentro del MISMO index.html (misma marca, CSP y build). Arranca en modo mínimo:
+     NO abre el estado, NO descifra nada, NO pide usuario; sólo escucha.
+   · Canal BroadcastChannel('svb-cs-' + base de la build + '-' + caja): las 4 publicaciones comparten origen en GitHub Pages,
+     así que el nombre de la base separa una demo del sistema real.
+   · Mensajes versionados {v:1,type:'cart'|'paid'|'idle',seq,name,lines,sub,ben,adj,total,cust}. NUNCA viajan costos, márgenes,
+     CUIT, DNI, teléfono ni saldos (los saldos del cliente están APAGADOS por decisión del dueño, 2026-11-04). */
+const CS_V=1;
+const csCh=caja=>'svb-cs-'+((window.RAVE_BUILD&&window.RAVE_BUILD.db)||'rave')+'-'+caja;
+const csIsRoute=()=>/^#pantalla-cliente(\/|$)/.test(location.hash||'');
+let CS_BC=null,CS_SEQ=0,CS_LAST='';
+function csSupported(){return typeof BroadcastChannel!=='undefined';}
+function csOut(){if(!csSupported())return null;const c=csCh(S&&S.tenant?S.tenant.caja:1);if(CS_BC&&CS_BC.name===c)return CS_BC;try{CS_BC&&CS_BC.close();}catch(e){}CS_BC=new BroadcastChannel(c);return CS_BC;}
+function csPayload(type,extra){const first=n=>String(n||'').trim().split(/\s+/)[0]||'';const cust=pos.cust?custById(pos.cust):null;
+ const lines=pos.lines.map(l=>({name:String(l.name).slice(0,80),qty:l.qty,unit:l.unit||'u',amt:typeof lnAmt==='function'?lnAmt(l):Math.round(l.qty*l.price)}));
+ const sub=typeof posGross==='function'?posGross():lines.reduce((a,l)=>a+l.amt,0);const B=typeof posBen==='function'?posBen():{disc:0};
+ let adj=[],total=sub-(B.disc||0);if(typeof paCalcFor==='function'&&!pos.mix){const R=paCalcFor([{m:pos.method,b:total}]);adj=R.adj.map(a=>({label:a.label,amt:a.amt}));total=R.total;}
+ return Object.assign({v:CS_V,type,seq:++CS_SEQ,ts:Date.now(),name:(S.tenant&&S.tenant.name)||'',lines,sub,ben:B.disc?{label:B.label,amt:B.disc}:null,adj,total,method:MET[pos.method]||pos.method,cust:cust?{first:first(cust.name)}:null},extra||{});}
+function csPush(){if(!csSupported()||!S||!S.cfg)return;const ch=csOut();if(!ch)return;const p=csPayload(pos.lines.length?'cart':'idle');const k=JSON.stringify([p.type,p.lines,p.total,p.adj,p.ben,p.cust,p.method]);if(k===CS_LAST)return;CS_LAST=k;try{ch.postMessage(p);}catch(e){}}
+function csPaid(sale){if(!csSupported())return;const ch=csOut();if(!ch)return;CS_LAST='';try{ch.postMessage({v:CS_V,type:'paid',seq:++CS_SEQ,ts:Date.now(),name:(S.tenant&&S.tenant.name)||'',total:sale.total,vuelto:sale.vuelto||0});}catch(e){}}
+A.csOpen=()=>{if(!csSupported())return toast('Este navegador no permite la pantalla del cliente.',1);const u=location.href.split('#')[0]+'#pantalla-cliente/'+encodeURIComponent(S.tenant.caja);
+ const w=window.open(u,'svb-cs-'+S.tenant.caja,'popup,width=1024,height=700');if(!w)return toast('El navegador bloqueó la ventana: permití ventanas emergentes para este sitio.',1);
+ audit('PANTALLA_CLIENTE','abierta · caja '+S.tenant.caja);setTimeout(()=>{CS_LAST='';csPush();},900);toast('Pantalla del cliente abierta: arrastrala al segundo monitor y poné pantalla completa (F11).');};
+
+/* ---------- lado del cliente: modo mínimo ---------- */
+function csBoot(){const caja=decodeURIComponent((location.hash.split('/')[1]||'1'));document.title='Pantalla del cliente';
+ const st=document.createElement('style');st.textContent=`html,body{margin:0;height:100%;background:#111;color:#fff;font:18px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+ #cs{display:grid;grid-template-rows:auto 1fr auto;height:100vh;padding:2vh 3vw;box-sizing:border-box;gap:2vh}#cs h1{margin:0;font-size:4vh}#cs .ln{display:flex;justify-content:space-between;gap:1rem;font-size:3.2vh;padding:.6vh 0;border-bottom:1px solid #333}
+ #cs .list{overflow:auto}#cs .tot{display:flex;justify-content:space-between;font-size:7vh;font-weight:700;border-top:3px solid #c9963e;padding-top:1vh}#cs .sm{font-size:2.6vh;opacity:.85}#cs .adj{color:#7bd88f}#cs .rec{color:#ffb4a8}
+ #cs .idle{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:3vh;text-align:center}#cs .idle img{max-width:50vw;max-height:40vh;border-radius:16px;background:#fff}#cs .thanks{font-size:8vh;font-weight:700}
+ #cs .wait{opacity:.6;font-size:2.4vh}`;document.head.appendChild(st);
+ const app=document.getElementById('app');if(app)app.hidden=true;const root=document.createElement('div');root.id='cs';root.setAttribute('aria-live','polite');document.body.appendChild(root);
+ const M=n=>typeof money==='function'?money(n):'$ '+(n/100).toFixed(2);let lastTs=0,timer=null,name='';
+ const idle=()=>{root.innerHTML=`<div class="idle" style="grid-row:1/4">${typeof LOGO_MENU==='string'&&LOGO_MENU?`<img src="${LOGO_MENU}" alt="">`:''}<h1>${esc(name||'¡Bienvenido!')}</h1><p class="wait">Pantalla del cliente · caja ${esc(caja)}</p></div>`;};
+ const show=m=>{if(!m||m.v!==CS_V||typeof m.ts!=='number'||m.ts<lastTs)return;lastTs=m.ts;name=m.name||name;clearTimeout(timer);
+  if(m.type==='idle'||(m.type==='cart'&&!(m.lines||[]).length))return idle();
+  if(m.type==='paid'){root.innerHTML=`<div class="idle" style="grid-row:1/4"><div class="thanks">¡Gracias por su compra!</div><div style="font-size:6vh">Total ${M(m.total)}</div>${m.vuelto>0?`<div style="font-size:5vh">Su vuelto: ${M(m.vuelto)}</div>`:''}</div>`;timer=setTimeout(idle,60000);return;}
+  root.innerHTML=`<div><h1>${esc(name)}</h1>${m.cust?`<p class="sm">Hola, ${esc(m.cust.first)}</p>`:''}</div>
+   <div class="list">${m.lines.map(l=>`<div class="ln"><span>${esc(l.name)} × ${String(l.qty).replace('.',',')}${l.unit&&l.unit!=='u'?' '+esc(l.unit):''}</span><b>${M(l.amt)}</b></div>`).join('')}</div>
+   <div>${(m.ben||(m.adj&&m.adj.length))?`<div class="ln sm"><span>Subtotal</span><span>${M(m.sub)}</span></div>`:''}${m.ben?`<div class="ln sm adj"><span>${esc(m.ben.label)}</span><span>− ${M(m.ben.amt)}</span></div>`:''}${(m.adj||[]).map(a=>`<div class="ln sm ${a.amt<0?'adj':'rec'}"><span>${esc(a.label)}</span><span>${a.amt<0?'− ':'+ '}${M(Math.abs(a.amt))}</span></div>`).join('')}
+   <div class="tot"><span>TOTAL</span><span>${M(m.total)}</span></div><p class="sm">Medio de pago: ${esc(m.method||'')}</p></div>`;};
+ idle();if(!csSupported()){root.innerHTML='<div class="idle" style="grid-row:1/4"><h1>Este navegador no permite la pantalla del cliente</h1></div>';return;}
+ const bc=new BroadcastChannel(csCh(caja));bc.onmessage=e=>show(e.data);window.__cs={show,caja,channel:csCh(caja)};}
+
 /* ================= MENÚ PÚBLICO (el real del cliente, dentro de un marco aislado) =================
    El menú que ve el público es el mismo archivo que ya está publicado en GitHub (diseño, carrito, buscador, lightbox, mapa, reseñas,
    redes, club). Acá se le conecta el catálogo del inventario, el alta al Club, la tarjeta de fidelización, los cupones y los textos
@@ -6970,8 +7364,9 @@ function pubReload(){const f=document.getElementById('pubframe');if(f)f.srcdoc=b
 /* ================= ARRANQUE ================= */
 window.RAVE={get S(){return S;},set S(v){S=v;},sha256,arqueoCalc,buildReport,reportText,loadExample,parseNum,cents,money,parseCSV,sugPrice,punch,clubJoin,parseBirth,safeUrl,verifyAudit,verifyClosure,webhook,commitSale,addMov,validRubro,get user(){return user;},set user(v){user=v;},showMenu,route,A,pos,
  applyBenefit,allocDisc,verifyStampCode,commitStamp,stampsOf,debtOf,fiadoPay,custById,cardCode,redeemReward,memberActive,pubCatalog,pubCoupons,pubCouponInfo,parseScale,escposTicket,ticketText,printSale,demoExtras,legalDocs,addByCode,posBen,pubCard,pubCardCode,pubCardLogin};
-(async()=>{if(CLOUD.on||(window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente')){S=DEF();S.users=[];if(CLOUD.on){await cloudBoot();}else{route();}return;}const st=await loadState();if(st&&st.v===3){S=mergeDefaults(st);}else{S=DEF();demoExtras();}if(typeof kiniSeedAsync==='function'){try{await kiniSeedAsync();}catch(e){}}route();try{devBoot();}catch(e){console.warn('devBoot',e);}})();
-setTimeout(()=>{try{cardMirrorInit();}catch(e){console.warn('cardMirror',e);}},0);
+(async()=>{if(typeof csIsRoute==='function'&&csIsRoute()){csBoot();return;} /* V26.49 · pantalla del cliente: modo mínimo, sin estado */
+ if(CLOUD.on||(window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente')){S=DEF();S.users=[];if(CLOUD.on){await cloudBoot();}else{route();}return;}const st=await loadState();if(st&&st.v===3){S=mergeDefaults(st);}else{S=DEF();demoExtras();}if(typeof kiniSeedAsync==='function'){try{await kiniSeedAsync();}catch(e){}}route();try{devBoot();}catch(e){console.warn('devBoot',e);}})();
+setTimeout(()=>{if(typeof csIsRoute==='function'&&csIsRoute())return;try{cardMirrorInit();}catch(e){console.warn('cardMirror',e);}},0);
 
 </script>
 </body></html>
