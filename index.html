@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Mi Comercio · Demo de un solo dueño · Sistema VB</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-05 00:34 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-05 01:00 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#1f2a37;--gold:#2e8b74;--gold2:#23695a;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -1354,6 +1354,12 @@ A.clwa=el=>{const c=S.closures.find(x=>x.id===el.dataset.id);c&&openExternal(waL
 /* ===== Venta (POS) · barra de teclas F arriba, cobro con cliente, cupón y fiado ===== */
 const pos={lines:[],method:'efectivo',arca:false,rcp:null,sel:-1,q:'',rub:'',cust:'',coupon:'',stamp:'',recv:'',mix:false,pays:[],ck:''};
 const prod=id=>S.products.find(p=>p.id===id);
+/* V26.50 · después de sumar un artículo el cursor vuelve a «Buscar artículo» con el texto seleccionado
+   (escribir reemplaza la búsqueda; si no, la lista queda igual para seguir sumando). No en celulares/tablets táctiles
+   (abriría el teclado en pantalla tapando el ticket) ni con una ventana abierta. */
+const posTouchOnly=()=>{try{return matchMedia('(hover: none) and (pointer: coarse)').matches&&Math.min(screen.width,screen.height)<768;}catch(e){return false;}};
+function posFocusSearch(){setTimeout(()=>{if(typeof curScreen==='undefined'||curScreen!=='vender'||$('#panel').hidden||$('#modal-root .ov'))return;const s=$('#psearch');if(!s||posTouchOnly())return;
+ try{s.focus({preventScroll:true});s.select();}catch(e){}},0);}
 const pfull=p=>p.name+(p.sub?' ('+p.sub+')':'');
 const qtyIn=pid=>pos.lines.filter(l=>l.pid===pid).reduce((a,l)=>a+l.qty,0);
 const posGross=()=>pos.lines.reduce((a,l)=>a+(typeof lnAmt==='function'?lnAmt(l):Math.round(l.qty*l.price)),0);
@@ -1463,8 +1469,8 @@ function posCart(){const c=$('#pcart');if(!c)return;const sess=openSess();if(typ
  <button class="btn gold" style="width:100%;min-height:56px;font-size:1.1rem" data-act="cobrar" ${pos.lines.length?'':'disabled'}>Cobrar (F12)</button>
  <div class="row" style="margin-top:.6rem"><button class="btn sm sp" data-act="mov" data-type="ingreso">Ingreso de efectivo</button><button class="btn sm sp" data-act="mov" data-type="egreso">Egreso de efectivo</button>${typeof csSupported==='function'&&csSupported()?'<button class="btn sm sp" data-act="csOpen" title="Abre la vista del carrito para el segundo monitor">Pantalla del cliente</button>':''}</div>`;if(typeof csPush==='function')csPush();}
 A.padd=el=>{const p=prod(el.dataset.id);if(!p)return;const cur=qtyIn(p.id);const step=1;if(!canOver(p)&&cur+step>stockOf(p)){toast('Sin stock suficiente de '+p.name+' (este producto exige stock)',1);return;}if(cur+step>stockOf(p))toast('Sin stock: se vende igual y queda en negativo ('+p.name+')');
- const L=pos.lines.find(l=>l.pid===p.id);if(L){L.qty+=step;pos.sel=pos.lines.indexOf(L);}else{pos.lines.push({pid:p.id,name:pfull(p),rubro:p.rubro,qty:1,price:p.price,cost:p.cost,unit:p.unit,list:p.price});pos.sel=pos.lines.length-1;}posCart();};
-A.prm=el=>{pos.lines.splice(+el.dataset.i,1);pos.sel=pos.lines.length-1;posCart();};
+ const L=pos.lines.find(l=>l.pid===p.id);if(L){L.qty+=step;pos.sel=pos.lines.indexOf(L);}else{pos.lines.push({pid:p.id,name:pfull(p),rubro:p.rubro,qty:1,price:p.price,cost:p.cost,unit:p.unit,list:p.price});pos.sel=pos.lines.length-1;}posCart();posFocusSearch();};
+A.prm=el=>{pos.lines.splice(+el.dataset.i,1);pos.sel=pos.lines.length-1;posCart();posFocusSearch();};
 A.prub=el=>{pos.rub=el.dataset.id;$$('[data-act="prub"]').forEach(b=>b.classList.toggle('on',b.dataset.id===pos.rub));posGrid();};
 A.parca=()=>{pos.arca=!pos.arca;audit('ARCA_OPERACION',pos.arca?'Con ARCA':'Sin ARCA');posCart();if(cobroW())cobroRender();};
 A.pclear=()=>{if(!pos.lines.length)return;confirmBox('Borrar la operación','Se descartan todas las líneas del ticket en curso.',()=>{confirmBox('Segunda confirmación','¿Seguro? Esta acción queda en auditoría.',()=>{audit('BORRAR_OPERACION',pos.lines.length+' líneas · '+money(posTotal()));pos.lines=[];pos.sel=-1;pos.cust='';pos.chanSet=null;pos.coupon='';posCart();},'Sí, borrar');},'Continuar');};
@@ -1600,7 +1606,7 @@ A.paysale=el=>{const s=S.sales.find(x=>x.id===el.dataset.id);if(s)payModal(s);};
 
 reg('vender','Vender','cart','sell',()=>`<div class="fbar" id="fbar" role="toolbar" aria-label="Teclas de función"></div><div class="pos"><section><div class="card"><div class="row" style="flex-wrap:wrap"><input id="psearch" class="sp" style="min-width:12rem;flex:1 1 12rem" placeholder="Buscar por nombre, precio o código (F11)" autocomplete="off" aria-label="Buscar producto por nombre, precio o código de barras">${can('edit_products')?'<button class="btn" data-act="posNewItem" title="Agregar un artículo nuevo al inventario y al ticket">+ Artículo</button>':''}<span id="devchips" class="row"></span></div>
  <div class="row" style="margin-top:.6rem"><button class="btn sm on" data-act="prub" data-id="">Todos</button>${S.rubros.filter(r=>r.kind==='rubro').map(r=>`<button class="btn sm" data-act="prub" data-id="${r.id}"><i class="rdot" style="background:${safeColor(r.color)}"></i>${esc(r.name)}</button>`).join('')}</div><div id="pgrid" class="pgrid"></div></div></section>
- <section class="card" id="pcart" aria-label="Ticket"></section></div>`,()=>{pos.rub='';posGrid();posCart();const s=$('#psearch');s.value=pos.q;if(typeof devChips==='function')devChips();
+ <section class="card" id="pcart" aria-label="Ticket"></section></div>`,()=>{pos.rub='';posGrid();posCart();const s=$('#psearch');s.value=pos.q;posFocusSearch();if(typeof devChips==='function')devChips();
  s.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=s.value.trim();if(!q)return;if(addByCode(q)){s.value='';pos.q='';posGrid();return;}
   const L=posFind(q).filter(p=>!pos.rub||p.rubro===pos.rub);if(L.length===1){A.padd({dataset:{id:L[0].id}});s.value='';pos.q='';posGrid();}}});},'Operación');
 
@@ -1621,12 +1627,13 @@ function addByCode(code){code=String(code).trim();
    if(!canOver(p)&&qty>p.stock){toast('Sin stock suficiente de '+p.name,1);return true;}
    scanAddLabel(p,qty,price,man,code);return true;}}
  return false;}
-function scanAddLabel(p,qty,price,man,code){pos.lines.push({pid:p.id,name:pfull(p),rubro:p.rubro,qty,price,cost:p.cost,unit:p.unit,list:p.price,man,src:'etiqueta',lbl:code});pos.lastLbl=code;pos.sel=pos.lines.length-1;posCart();}
+function scanAddLabel(p,qty,price,man,code){pos.lines.push({pid:p.id,name:pfull(p),rubro:p.rubro,qty,price,cost:p.cost,unit:p.unit,list:p.price,man,src:'etiqueta',lbl:code});pos.lastLbl=code;pos.sel=pos.lines.length-1;posCart();posFocusSearch();}
 let scanBuf='',scanLast=0,scanFast=0;
 document.addEventListener('keydown',e=>{if(curScreen!=='vender'||$('#panel').hidden||$('#modal-root .ov'))return;
  const t=e.target;const inField=t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT');
  const n=Date.now();
- if(e.key==='Enter'){if(scanBuf.length>=4&&scanFast>=scanBuf.length-2){const code=scanBuf;scanBuf='';scanFast=0;if(addByCode(code)){e.preventDefault();if(inField&&t.id==='psearch'){t.value='';pos.q='';posGrid();}toast('Lector: código '+code);}}scanBuf='';scanFast=0;return;}
+ if(e.key==='Enter'){if(inField&&t.id==='psearch'){scanBuf='';scanFast=0;return;} /* V26.50: en el buscador el Enter lo procesa el propio buscador (antes el código se sumaba DOS veces) */
+  if(scanBuf.length>=4&&scanFast>=scanBuf.length-2){const code=scanBuf;scanBuf='';scanFast=0;if(addByCode(code)){e.preventDefault();if(inField&&t.id==='psearch'){t.value='';pos.q='';posGrid();}toast('Lector: código '+code);}}scanBuf='';scanFast=0;return;}
  if(e.key.length===1&&/[0-9A-Za-z]/.test(e.key)){if(n-scanLast>80){scanBuf='';scanFast=0;}else scanFast++;scanBuf+=e.key;scanLast=n;}});
 
 /* ---- teclas F (sólo dentro de Vender y del cobro; el navegador no las pisa) ---- */
@@ -1638,6 +1645,10 @@ document.addEventListener('keydown',e=>{if(curScreen!=='vender'||$('#panel').hid
  e.preventDefault();
  const k=FKEYS[n-1];const el={dataset:{m:k.m||''}};
  if(A[k.act])A[k.act](el);});
+
+/* V26.50 · al cerrarse la última ventana (cobro, ticket, confirmación) en Vender, el cursor vuelve al buscador */
+(function(){const mr=document.getElementById('modal-root');if(!mr||typeof MutationObserver==='undefined')return;let had=false;
+ new MutationObserver(()=>{const open=!!mr.querySelector('.ov');if(had&&!open)posFocusSearch();had=open;}).observe(mr,{childList:true});})();
 
 /* ===== V26.49 · 4.33 · Recargo o descuento por medio de pago (administrable por el dueño) =====
    Cada medio (efectivo, débito, crédito, transferencia, QR, MODO) puede tener un RECARGO o un DESCUENTO,
@@ -4295,7 +4306,7 @@ A.wsPack=el=>{const i=+el.dataset.i,L=pos.lines[i];if(!L)return;const p=prod(L.p
 function wsAddPres(p,k){if(!p||!k)return false;const had=pos.lines.some(l=>l.pid===p.id);
  if(!had){A.padd({dataset:{id:p.id}});}
  const i=pos.lines.findIndex(l=>l.pid===p.id);if(i<0)return true;
- const add=had?k.qty:k.qty-1;if(add>0)lineEdit(i,'qty',String(Math.round((pos.lines[i].qty+add)*1000)/1000).replace('.',','));return true;}
+ const add=had?k.qty:k.qty-1;if(add>0)lineEdit(i,'qty',String(Math.round((pos.lines[i].qty+add)*1000)/1000).replace('.',','));if(typeof posFocusSearch==='function')posFocusSearch();return true;}
 A.wsAddPres=el=>{const p=prod(el.dataset.id);if(!p)return;wsAddPres(p,wsPres(p).find(x=>x.lv===el.dataset.lv));};
 function wsAddByPack(code){if(!wsOn()||!code)return false;
  for(const p of S.products){if(!p.active)continue;const k=wsPres(p).find(x=>x.barcode&&x.barcode===code);if(k)return wsAddPres(p,k);}return false;}
