@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Mi Comercio · Demo de un solo dueño · Sistema VB</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-05 20:45 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-07 03:58 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#1f2a37;--gold:#2e8b74;--gold2:#23695a;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -6329,7 +6329,23 @@ A.cloudGo=async el=>{const mode=el.dataset.mode;lerr('');el.disabled=true;
   if(mode==='crear'){const nm=val('cl-nm').trim();if(nm.length<2)return lerr('Escribí el nombre del comercio.');await cloudSignInFlow(email,pass,{newCommerce:{nombre:nm,codigo:code}});}
   else await cloudSignInFlow(email,pass,{inviteCode:code,already:true});
  }catch(e){lerr(errTxt(e));}finally{el.disabled=false;}};
-function askText(title,label,opts={}){return new Promise(res=>{const w=modal(title,`<label for="ask-v">${esc(label)}</label><input id="ask-v" ${opts.secret?'type="password"':''} autocomplete="off" ${opts.num?'inputmode="numeric"':''}>${opts.hint?`<p class="sm mut">${esc(opts.hint)}</p>`:''}`,
+/* V26.47 · número de caja ocupado: explica por qué (cada navegador/equipo reserva su número para que los tickets no se repitan),
+   muestra qué cajas están en uso, por quién y su último ingreso, y propone el primer número libre */
+async function askCajaNro(cur){let L=[];try{L=await sel('cajas?comercio_id=eq.'+cl.comercio.id+'&select=nro,nombre,visto&order=nro')||[];}catch(e){L=[];}
+ const used=new Set(L.map(x=>+x.nro));let free=1;while(used.has(free)&&free<99)free++;
+ const f=t=>{try{return fmtDT(new Date(t).getTime());}catch(e){return'';}};const o=L.find(x=>+x.nro===cur);
+ const pre=`<p class="sm">Este navegador es <b>un equipo nuevo</b> para el sistema (otra computadora u otro celular, otro navegador, o se borraron los datos del navegador). Cada equipo usa su propio número de caja para que los tickets no se repitan.</p>
+  ${o?`<p class="sm">La caja <b>${cur}</b> ya está reservada${o.nombre?' por <b>'+esc(o.nombre)+'</b>':''}${o.visto?' (último ingreso '+esc(f(o.visto))+')':''}.</p>`:''}
+  ${L.length?`<div class="tw" style="max-height:170px;overflow:auto;margin:.4rem 0"><table data-nosort><thead><tr><th>Caja</th><th>Equipo de</th><th>Último ingreso</th></tr></thead><tbody>${L.map(x=>`<tr><td>${+x.nro}</td><td>${esc(x.nombre||'—')}</td><td>${esc(f(x.visto))}</td></tr>`).join('')}</tbody></table></div>`:''}
+  <p class="sm mut">Te proponemos la caja libre <b>${free}</b>. Si un equipo viejo ya no se usa, el administrador puede liberar su número en <b>Nube → Números de caja de los equipos</b>.</p>`;
+ /* V26.53: el administrador puede pasar la caja ocupada a este equipo desde el mismo cartel (antes había que entrar con otro número e ir a Nube) */
+ const take=cl.rol==='admin'&&o?`<div class="card" style="margin:.5rem 0;padding:.7rem;border:1px solid var(--gold)"><p class="sm" style="margin:0 0 .5rem">¿Este equipo <b>es</b> la caja ${cur} (la misma computadora con otro navegador, el programa de Windows o los datos del navegador borrados)? Si el equipo viejo <b>ya no se usa</b>, pasale el número a este:</p><button type="button" class="btn" id="ask-take" style="min-height:48px">Usar la caja ${cur} en este equipo</button><p class="sm mut" style="margin:.4rem 0 0">No se borran ventas, cajas ni cierres. No lo hagas si el otro equipo sigue vendiendo con ese número: los tickets se repetirían.</p></div>`:'';
+ return new Promise(res=>{const w=modal('Número de caja para este equipo',`${pre}${take}<label for="ask-v">${take?'O usá otro número (1 a 99)':'Número de caja (1 a 99)'}</label><input id="ask-v" inputmode="numeric" autocomplete="off" value="${free}">`,
+  {okText:'Usar este número',onOk:w2=>{const v=val('ask-v').trim();if(!/^\d{1,2}$/.test(v)||+v<1||+v>99){w2._err('Escribí un número de 1 a 99.');return false;}res(v);}});
+  w.addEventListener('click',async e=>{if(e.target.closest('[data-m="x"]'))res(null);const t=e.target.closest('#ask-take');if(!t)return;t.disabled=true;t.textContent='Pasando la caja…';
+   try{await rpc('liberar_caja',{p_comercio:cl.comercio.id,p_nro:cur,p_disp:cl.dev});audit('CAJA_LIBERADA','número de caja '+cur+' pasado a este equipo (estaba en '+(o.nombre||'otro equipo')+')');w.remove();res(String(cur));}
+   catch(err){t.disabled=false;t.textContent='Usar la caja '+cur+' en este equipo';const m=errTxt(err);w._err(/liberar_caja|PGRST202|404|Could not find/i.test(m)?'Falta instalar en la nube la función para pasar números de caja (19-liberar-caja.sql). Avisale a Vincular Business; mientras tanto usá otro número.':m);}});});}
+function askText(title,label,opts={}){return new Promise(res=>{const w=modal(title,`${opts.pre||''}<label for="ask-v">${esc(label)}</label><input id="ask-v" ${opts.secret?'type="password"':''} autocomplete="off" ${opts.num?'inputmode="numeric"':''} value="${esc(opts.value||'')}">${opts.hint?`<p class="sm mut">${esc(opts.hint)}</p>`:''}`,
   {okText:opts.ok||'Aceptar',onOk:w2=>{const v=val('ask-v').trim();if(!v){w2._err('Completá este dato.');return false;}res(v);}});
  w.addEventListener('click',e=>{const b=e.target.closest('[data-m="x"]');if(b)res(null);});});}
 function showSecret(title,code,msg,share){return new Promise(res=>{modal(title,`<p>${msg}</p><p style="font:700 1.4rem/1.3 monospace;letter-spacing:.08em;text-align:center;background:#f4efe6;color:#242220;padding:.8rem;border-radius:10px;user-select:all">${esc(code)}</p>${share?`<div class="row" style="flex-wrap:wrap"><button class="btn sm" data-act="secCopy" data-t="${esc(share)}">Copiar mensaje de invitación</button><button class="btn sm" data-act="secWa" data-t="${esc(share)}">Enviar por WhatsApp</button></div>`:''}<label class="chk"><input type="checkbox" id="sec-ok"> Ya lo guardé en un lugar seguro</label>`,
@@ -6383,7 +6399,7 @@ async function cloudSignInFlow(email,pass,opts){
  else{S=st;S.users=[];}
  cl.ready=true;user={id:cl.uid,name:cl.nombre,role:cl.rol};
  if(!offline){let ok=true;for(let i=0;i<5&&ok;i++){try{ok=!(await rpc('registrar_caja',{p_comercio:cl.comercio.id,p_nro:+S.tenant.caja||1,p_disp:cl.dev,p_nombre:cl.nombre}));}catch(e){ok=false;break;}
-   if(ok){const n=await askText('Número de caja','Ese número de caja ya lo usa otro equipo. Escribí otro número (1 a 99) para este equipo.',{num:1});if(!n){break;}S.tenant.caja=Math.min(99,Math.max(1,parseInt(n,10)||1));}}}
+   if(ok){const n=await askCajaNro(+S.tenant.caja||1);if(!n){break;}S.tenant.caja=Math.min(99,Math.max(1,parseInt(n,10)||1));}}}
  await cloudMetaSave();
  audit('LOGIN','ingreso a la nube'+(offline?' (sin conexión)':''));
  startTimers();
@@ -6527,7 +6543,7 @@ function cloudApiWrap(local){if(!CLOUD.on)return local;
   site:pick(local.site,()=>{const c=snapC();return c?c.site:{title:'',sub:{es:'',en:''},pitch:{es:'',en:''},promo:{on:false,es:'',en:''},address:'',social:[],icons:{},footer:{es:'',en:''},wa:'',alcFrom:7,alcTo:24,hideTeamBtn:false,clubOn:false,wifi:{on:false}};}),
   catalog:pick(local.catalog,()=>{const c=snapC();return c?c.catalog:{secciones:[],productos:[]};}),
   clubJoin:pick(local.clubJoin,cloudClubJoin),
-  card:id=>pub()?pubCloudCard(id):(local.card(id)||pubCloudCard(id)),cardCode:id=>pub()?pubCloudCode(id):(local.cardCode(id)||pubCloudCode(id)),cardLogin:pick(local.cardLogin,()=>null),cardPortable:id=>local.cardPortable(id),wallet:(id,k)=>pub()?{mode:'pending'}:local.wallet(id,k),canRecover:()=>!pub(),
+  card:id=>pub()?pubCloudCard(id):(local.card(id)||pubCloudCard(id)),cardCode:id=>pub()?pubCloudCode(id):(local.cardCode(id)||pubCloudCode(id)),cardLogin:pick(local.cardLogin,()=>null),cardPortable:id=>local.cardPortable(id),wallet:(id,k)=>pub()?{mode:'pending'}:local.wallet(id,k),walletMode:()=>pub()?'pending':(local.walletMode?local.walletMode():'pending'),canRecover:()=>!pub(),
   coupons:(id)=>{if(!pub())return local.coupons(id);const c=snapC();const me=id&&id===LS.get('rave.card')?cardEstGet(id):null;let bw=false;try{const inf=JSON.parse(LS.get('rave.cardinfo')||'{}');bw=isBirthWeek({birth:inf.birth});}catch(e){}
    return((c&&c.coupons)||[]).filter(cp=>cpOk(cp)&&((cp.aud||'todos')==='todos'||(cp.aud==='club'&&me&&me.socio)||(cp.aud==='cumple'&&me&&me.socio&&bw))).map(cp=>({code:cp.code,desc:cp.note||(cp.type==='pct'?cp.value+' % de descuento':money(cp.value)+' de descuento'),cond:(cp.min?'Compra mínima '+money(cp.min)+' · ':'')+(cp.aud==='club'?'Sólo socios del Club · ':cp.aud==='cumple'?'Semana del cumpleaños · ':'')+'Excluye tabaco'}));},
   couponInfo:pick(local.couponInfo,(code,total)=>{code=String(code||'').trim().toUpperCase();const c=snapC();const cp=((c&&c.coupons)||[]).find(x=>x.code===code);
@@ -6578,8 +6594,20 @@ reg('nube','Nube','globe','config',()=>{
  ${adm?'<div class="row"><button class="btn" data-act="nbPublish">Publicar ahora</button></div>':'<p class="sm mut">Sólo el administrador publica el menú.</p>'}
  <div class="row" style="margin-top:.4rem"><button class="btn" data-act="nbAltas">Traer altas del Club</button></div>
  <p class="sm mut">Las altas del Club llegan cifradas: sólo este comercio las puede abrir.</p></div></div>
- ${adm?teamCardHtml()+custodiaCardHtml():''}`;},
- ()=>{teamInit();custodiaPaint();},'Sistema');
+ ${adm?cajasCardHtml()+teamCardHtml()+custodiaCardHtml():''}`;},
+ ()=>{teamInit();custodiaPaint();cajasInit();},'Sistema');
+/* V26.47 · números de caja reservados por cada equipo; el administrador libera los de equipos que ya no se usan (19-liberar-caja.sql) */
+function cajasCardHtml(){return`<div class="card" id="cajas-card" style="margin-top:1rem"><h3>Números de caja de los equipos</h3>
+ <p class="sm mut">Cada navegador o equipo reserva su número de caja para que los tickets no se repitan. Si un equipo ya no se usa (otra computadora, otro navegador o datos borrados), liberá su número. Liberarlo no borra ventas ni cierres.</p>
+ <div id="nb-cajas" class="sm mut">Cargando…</div></div>`;}
+async function cajasInit(){const box=document.getElementById('nb-cajas');if(!box||!CLOUD.on||cl.rol!=='admin')return;
+ let L=[];try{L=await sel('cajas?comercio_id=eq.'+cl.comercio.id+'&select=nro,nombre,visto,dispositivo&order=nro')||[];}catch(e){box.textContent='No se pudo leer: '+errTxt(e);return;}
+ if(!L.length){box.textContent='Sin números reservados.';return;}
+ box.className='';box.innerHTML=`<div class="tw"><table data-nosort><thead><tr><th>Caja</th><th>Equipo de</th><th>Último ingreso</th><th></th></tr></thead><tbody>${L.map(x=>{const mine=x.dispositivo===cl.dev;
+  return`<tr><td><b>${+x.nro}</b></td><td>${esc(x.nombre||'—')}${mine?' <span class="tag ok">este equipo</span>':''}</td><td>${x.visto?esc(fmtDT(Date.parse(x.visto))):'—'}</td><td>${mine?'':`<button class="btn sm" data-act="nbCajaLib" data-id="${+x.nro}">Liberar</button>`}</td></tr>`;}).join('')}</tbody></table></div>`;}
+A.nbCajaLib=el=>{const n=+el.dataset.id;if(!(n>=1))return;modal('Liberar la caja '+n,`<p>El número <b>${n}</b> queda libre para otro equipo. Hacelo sólo si el equipo que lo usaba <b>ya no se usa</b>: si dos equipos vendieran con el mismo número, los tickets se repetirían.</p><p class="sm mut">No se borran ventas, cajas ni cierres.</p>`,
+ {okText:'Liberar',onOk:async w=>{try{const ok=await rpc('liberar_caja',{p_comercio:cl.comercio.id,p_nro:n,p_disp:cl.dev});audit('CAJA_LIBERADA','número de caja '+n+(ok?'':' (ya estaba libre)'));toast(ok?'Caja '+n+' liberada':'Ese número ya estaba libre');cajasInit();}
+  catch(e){const m=errTxt(e);toast(/liberar_caja|PGRST202|404|Could not find/i.test(m)?'Falta instalar en la nube la función para liberar números de caja (19-liberar-caja.sql). Avisale a Vincular Business.':m,1);}}});};
 A.nbSync=async()=>{await cloudSync(true);await importAltas().catch(()=>{});toast(cl.lastErr?cl.lastErr:'Sincronizado',!!cl.lastErr);rerender();};
 A.nbPublish=async()=>{try{const r=await cloudPublishMenu(true);audit('MENU_NUBE','publicado v'+(r.version||'?'));toast('Menú publicado v'+r.version);rerender();}catch(e){toast(errTxt(e),1);}};
 A.nbAltas=async()=>{try{const n=await importAltas();toast(n?n+' altas nuevas del Club':'No hay altas nuevas');rerender();}catch(e){toast(errTxt(e),1);}};
