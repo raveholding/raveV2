@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Mi Comercio · Demo de un solo dueño · Sistema VB</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-07 03:58 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-07 04:35 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#1f2a37;--gold:#2e8b74;--gold2:#23695a;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -783,7 +783,7 @@ const vbWa=txt=>'https://wa.me/'+VB.wa+(txt?'?text='+encodeURIComponent(txt):'')
 const vbBanner=(st)=>`<div class="vbb" style="position:relative;max-width:${st||'520px'};margin:0 auto"><img src="${VB_BANNER}" alt="Vincular Business · Digitalización, software de gestión y fidelización para comercios y servicios de Argentina · Único celular ${VB.phone} · ${VB.mail}" loading="lazy" width="1200" height="669" style="display:block;width:100%;height:auto;border-radius:12px"><a class="vbb-a" href="${vbWa('Hola Vincular Business! Quiero consultar por el Sistema VB.')}" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp ${VB.phone}" style="position:absolute;left:5.2%;top:85%;width:24.9%;height:8.5%;border-radius:999px"></a><a class="vbb-a" href="mailto:${VB.mail}" aria-label="Correo ${VB.mail}" style="position:absolute;left:31.8%;top:85%;width:44%;height:8.5%;border-radius:999px"></a></div>`;
 const vbButtons=()=>`<div class="vbbtns" style="display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-top:.6rem"><a class="btn sm" style="background:#0f7a3f;color:#fff;min-height:48px;display:inline-flex;align-items:center;text-decoration:none" href="${vbWa('Hola Vincular Business! Quiero consultar por el Sistema VB.')}" target="_blank" rel="noopener noreferrer">💬 WhatsApp ${VB.phone}</a><a class="btn sm" style="min-height:48px;display:inline-flex;align-items:center;text-decoration:none" href="tel:+${VB.wa}">📞 Llamar</a><a class="btn sm" style="min-height:48px;display:inline-flex;align-items:center;text-decoration:none" href="mailto:${VB.mail}">✉️ Correo</a></div>`;
 const vbFooter=(withBanner)=>`<div class="vbcred" style="margin-top:1rem">${withBanner?vbBanner()+vbButtons():''}<p class="sm mut" style="margin:.5rem 0 0;text-align:center">Desarrollado por <b>${VB.name}</b> · Único celular ${VB.phone} · ${VB.mail}<br><i>“${VB.lema}”</i></p></div>`;
-const MET={efectivo:'Efectivo',fiado:'Cta. cte. / Fiado',mixto:'Pago mixto',debito:'Débito',credito:'Crédito',transferencia:'Transferencia',qr:'QR / Mercado Pago',modo:'MODO',pedidosya:'PedidosYa'};
+const MET={efectivo:'Efectivo',fiado:'Cta. cte. / Fiado',mixto:'Pago mixto',debito:'Débito',credito:'Crédito',transferencia:'Transferencia',qr:'QR / Mercado Pago',modo:'MODO',pedidosya:'PedidosYa',monedero:'Monedero (saldo)',giftcard:'Gift card / voucher'};
 const rubName=id=>(S.rubros.find(r=>r.id===id)||{name:'(sin rubro)'}).name;
 const rub=id=>S.rubros.find(r=>r.id===id);
 const UNITS={u:'und',kg:'kg',l:'lt'};const unitLbl=u=>UNITS[u]||u;
@@ -845,8 +845,8 @@ function route(){const h=location.hash||'#menu';
  else{showMenu();}}
 window.addEventListener('hashchange',route);
 
-const NAV=[['inicio','Resumen'],['vender','Operación'],['pedidos','Operación'],['caja','Operación'],['cajasx','Operación'],['arqueo','Operación'],['cierres','Operación'],['inventario','Operación'],['proveedores','Operación'],
- ['clientes','Clientes y fidelización'],['fidel','Clientes y fidelización'],['cupones','Clientes y fidelización'],
+const NAV=[['inicio','Resumen'],['vender','Operación'],['pedidos','Operación'],['caja','Operación'],['cajasx','Operación'],['arqueo','Operación'],['cierres','Operación'],['inventario','Operación'],['presup','Operación'],['mermas','Operación'],['proveedores','Operación'],
+ ['clientes','Clientes y fidelización'],['fidel','Clientes y fidelización'],['fidplus','Clientes y fidelización'],['monedero','Clientes y fidelización'],['cupones','Clientes y fidelización'],
  ['personal','Equipo'],['tareas','Equipo'],['menuadmin','Menú y web'],['legal','Menú y web'],
  ['nube','Sistema'],['dispositivos','Sistema'],['impex','Sistema'],['integ','Sistema'],['roles','Sistema'],['auditoria','Sistema'],['config','Sistema']];
 function showPanel(id){if(!SCREENS[id]||(SCREENS[id].perm&&!can(SCREENS[id].perm))||(SCREENS[id].show&&!SCREENS[id].show()))id='inicio';curScreen=id;$('#panel').hidden=false;
@@ -964,7 +964,9 @@ function arqueoCalc(sess,inp){
  const byMethod={};let total=0;
  let aCtaCte=0,vueltoTot=0,aFiado=0,aCC=0;
  sales.forEach(s=>{const L=salePays(s);L.forEach(pp=>{const m=byMethod[pp.m]||(byMethod[pp.m]={n:0,gross:0,fee:0});m.n++;m.gross+=pp.a;m.fee+=(L.length>1?(pp.fee||0):(s.fee||0));});total+=s.total;{const fa=saleFiadoAmt(s);aCtaCte+=fa;if(fa){if(typeof saleCk==='function'&&s.ck==='fiado')aFiado+=fa;else aCC+=fa;}}vueltoTot+=s.vuelto||0;});
- const cobrado=total-aCtaCte;
+ /* V26.54: lo pagado con monedero o gift card ya entró cuando se cargó/vendió: no es dinero nuevo del turno */
+ const aPrep=sales.reduce((a,s)=>a+salePays(s).filter(p=>p.m==='monedero'||p.m==='giftcard').reduce((x,p)=>x+p.a,0),0);
+ const cobrado=total-aCtaCte-aPrep;
  const R={};S.rubros.forEach(r=>R[r.id]={sold:0,profit:0,fees:0,mov:0,items:{},cash:0,dig:0,fia:0,ing:0,egr:0,cing:0,cegr:0,adj:0});
  sales.forEach(s=>{const fees=allocFees(s);s.items.forEach((it,i)=>{const q=R[it.rubro];if(!q)return;const t=lineTotal(it);q.sold+=t;q.profit+=t-lineCost(it);q.fees+=fees[i];const e=q.items[it.name]||(q.items[it.name]={qty:0,total:0});e.qty+=it.qty;e.total+=t;});
   {const tots=s.items.map(lineTotal);const T=tots.reduce((a,b)=>a+b,0);
@@ -997,7 +999,7 @@ function arqueoCalc(sess,inp){
  const expectedCash=sess.opening+cashSales+ing-egr-paid+tr.tin-tr.tout;
  const declared=inp.declared;const diff=isNaN(declared)?0:declared-expectedCash;
  const fondo=sess.opening+tr.tin-tr.tout;const fisSum=reparte.concat(otros).reduce((a,r)=>a+r.fis,0);const resto=expectedCash-fondo-fisSum;
- return{owner:ownerMode(),sessId:sess.id,accts:(typeof accArq==='function'?accArq(sess):null),total,cobrado,aCtaCte,aFiado,aCC,vueltoTot,count:sales.length,byMethod,pend:{n:pend.length,total:pend.reduce((a,s)=>a+s.total,0)},rub:R,ing,egr,gAuto,gManual:inp.gastosManual,gastos,sueldo,merienda:mer,
+ return{aPrep,owner:ownerMode(),sessId:sess.id,accts:(typeof accArq==='function'?accArq(sess):null),total,cobrado,aCtaCte,aFiado,aCC,vueltoTot,count:sales.length,byMethod,pend:{n:pend.length,total:pend.reduce((a,s)=>a+s.total,0)},rub:R,ing,egr,gAuto,gManual:inp.gastosManual,gastos,sueldo,merienda:mer,
   detMissing:typeof pdMissingCount==='function'?pdMissingCount(sess):0,empName:inp.emp?inp.emp.name:'',hours:inp.hours,rate:inp.rate,reparte,otros,pool,netSum,fondo,resto,cashSales,paid,opening:sess.opening,tin:tr.tin,tout:tr.tout,transfers:tr.list,expectedCash,declared:isNaN(declared)?null:declared,diff,
   movs:movs.map(m=>({ts:m.ts,type:m.type,rubro:m.rubroName||rubName(m.rubro),concept:m.concept,amount:m.amount,user:m.user}))};}
 function buildReport(a,dayKey,who,inp){if(a.owner&&typeof buildReportOwner==='function')return buildReportOwner(a,dayKey,who,inp);
@@ -1241,9 +1243,9 @@ A.prest=el=>{if(!canDelItems())return toast('Sólo el Administrador',1);const p=
  const dp=p.plu&&S.products.some(x=>x!==p&&!x.archived&&x.plu&&String(+x.plu)===String(+p.plu));if(dp)return toast('No se puede restaurar: otro artículo usa el mismo PLU.',1);
  p.archived=false;p.active=true;delete p.archivedAt;audit('INV_RESTAURAR',p.name);save();rerender();toast('Artículo restaurado');};
 A.padj=el=>{const p=prod(el.dataset.id);if(isKit(p))return toast('Un combo no tiene stock propio: se ajusta el stock de cada artículo ('+kitTxt(p)+').',1);const PR=wsOn()?wsPres(p):[];
- const w=modal('Ajustar stock · '+p.name,`<p>Stock actual: <b class="${p.stock<0?'negs':''}">${esc(stockTxt(p))}</b>${wsStockSub(p)}</p>${PR.length?`<label for="aj-u">Contar en</label><select id="aj-u"><option value="1">Unidad</option>${PR.map(k=>`<option value="${k.qty}">${esc(wsLvName(k.lv))} (${numAR(k.qty,3)} u)</option>`).join('')}</select>`:''}<label for="aj-d">Cantidad a sumar o restar (use - para restar)</label><input id="aj-d" inputmode="decimal" placeholder="0" autocomplete="off"><p class="sm mut" id="aj-eq"></p><label for="aj-m">Motivo</label><input id="aj-m" maxlength="100">`,
- {onOk:w=>{const mul=PR.length?(+val('aj-u')||1):1;const d0=parseNum(val('aj-d'));const d=Math.round(d0*mul*1000)/1000;if(isNaN(d)||d===0)return w._err('Ingresá una cantidad distinta de cero.'),false;if(val('aj-m').trim().length<3)return w._err('El motivo es obligatorio.'),false;if(p.stock+d<0&&!canOver(p))return w._err('El stock no puede quedar negativo (este producto exige stock o la venta sin stock está bloqueada).'),false;
-  stockAdjust(p,d,val('aj-m')+(mul>1?' ('+d0+' × '+numAR(mul,3)+' u)':''));rerender();}});
+ const w=modal('Ajustar stock · '+p.name,`<p>Stock actual: <b class="${p.stock<0?'negs':''}">${esc(stockTxt(p))}</b>${wsStockSub(p)}</p>${PR.length?`<label for="aj-u">Contar en</label><select id="aj-u"><option value="1">Unidad</option>${PR.map(k=>`<option value="${k.qty}">${esc(wsLvName(k.lv))} (${numAR(k.qty,3)} u)</option>`).join('')}</select>`:''}<label for="aj-d">Cantidad a sumar o restar (use - para restar)</label><input id="aj-d" inputmode="decimal" placeholder="0" autocomplete="off"><p class="sm mut" id="aj-eq"></p><label for="aj-t">Tipo de movimiento</label><select id="aj-t">${Object.entries(typeof MERMA_T!=='undefined'?MERMA_T:{ajuste:'Ajuste / recuento'}).map(([k,v])=>`<option value="${k}">${esc(v)}${k==='ajuste'?'':' (resta stock y queda como pérdida)'}</option>`).join('')}</select><label for="aj-m">Motivo</label><input id="aj-m" maxlength="100">`,
+ {onOk:w=>{const tipo=val('aj-t')||'ajuste';const mul=PR.length?(+val('aj-u')||1):1;let d0=parseNum(val('aj-d'));if(tipo!=='ajuste'&&!isNaN(d0))d0=-Math.abs(d0);const d=Math.round(d0*mul*1000)/1000;if(isNaN(d)||d===0)return w._err('Ingresá una cantidad distinta de cero.'),false;if(val('aj-m').trim().length<3)return w._err('El motivo es obligatorio.'),false;if(p.stock+d<0&&!canOver(p))return w._err('El stock no puede quedar negativo (este producto exige stock o la venta sin stock está bloqueada).'),false;
+  const mot=(tipo!=='ajuste'&&typeof MERMA_T!=='undefined'?MERMA_T[tipo]+' · ':'')+val('aj-m')+(mul>1?' ('+d0+' × '+numAR(mul,3)+' u)':'');if(typeof mermaRecord==='function')mermaRecord(p,d,tipo,val('aj-m'));stockAdjust(p,d,mot);rerender();}});
  const eq=()=>{const e=$('#aj-eq',w);if(!e||!PR.length)return;const mul=+val('aj-u')||1,d=parseNum(val('aj-d'));e.textContent=(!isNaN(d)&&d!==0&&mul>1)?'= '+(d>0?'+':'')+numAR(d*mul,3)+' unidades':'';};
  w.addEventListener('input',eq);w.addEventListener('change',eq);};
 /* núcleo único del ajuste de stock (lo usan la pantalla y el asistente) */
@@ -1266,7 +1268,7 @@ reg('caja','Caja','cash','cash_mov',()=>{const s=openSess();
 A.openCaja=()=>{if(openSess())return;const v=cents(val('ap'));if(isNaN(v)||v<0)return toast('Ingresá el efectivo inicial (si es cero, escribí 0).',1);
  const ck=cashOpenCheck();if(ck.err)return toast(ck.err,1);const xo=xfOpenCheck(v,ck.extra);if(xo.err)return toast(xo.err,1);
  const ns=Object.assign({id:uid(),caja:S.tenant.caja,openedBy:user.name,openedAt:now(),opening:v,closedAt:0},ck.extra,xo.extra||{});S.sessions.push(ns);audit('APERTURA_CAJA',money(v)+(ck.extra.regName?' · '+ck.extra.regName:''));if(xo.audit)audit(xo.audit,xo.detail);xfAfterOpen(ns);save();rerender();};
-function voidCore(s,reason){if(s.status==='ok'||s.status==='pendiente'){restock(s);}if(s.coupon){S.coupons.forEach(c=>{c.uses=c.uses.filter(u=>u.sale!==s.id);});}if(s.stamped&&typeof stampReverse==='function')stampReverse(s);s.status='anulada';s.voidReason=reason;audit('ANULAR_VENTA',s.n+' · '+reason);emit('sale.voided',{sale:s.n});save();rerender();}
+function voidCore(s,reason){if(s.status==='ok'||s.status==='pendiente'){restock(s);}if(s.coupon){S.coupons.forEach(c=>{c.uses=c.uses.filter(u=>u.sale!==s.id);});}if(s.stamped&&typeof stampReverse==='function')stampReverse(s);if(typeof fidVoid==='function')fidVoid(s);s.status='anulada';s.voidReason=reason;audit('ANULAR_VENTA',s.n+' · '+reason);emit('sale.voided',{sale:s.n});save();rerender();}
 A.voidsale=el=>{const s=S.sales.find(x=>x.id===el.dataset.id);if(!s)return;modal('Anular venta '+s.n,`<p>Se restituye el stock y la venta deja de sumar. Queda en auditoría.</p><label for="vm">Motivo (obligatorio)</label><input id="vm" maxlength="100">`,{onOk:w=>{if(val('vm').trim().length<3)return w._err('Escribí el motivo.'),false;voidCore(s,val('vm'));}});};
 
 /* ===== Arqueo ===== */
@@ -1388,6 +1390,9 @@ function fbarHTML(){return FKEYS.map(k=>`<button type="button" class="fk ${k.gol
    sale.pays = [{m,a,fee}] en centavos IMPUTADOS a la factura (el vuelto no entra: es plata del cliente que vuelve).
    La parte 'fiado' es deuda en cuenta corriente: no es dinero cobrado ni entra a la caja del turno. */
 const PAY_MIX=['efectivo','debito','credito','transferencia','fiado'];
+/* V26.54: el monedero y la gift card se suman sólo si el comercio los activó (Fidelización) */
+const posMet=()=>POS_METHODS.concat(typeof fidExtraMet==='function'?fidExtraMet():[]);
+const payMix=()=>PAY_MIX.concat(typeof fidExtraMet==='function'?fidExtraMet():[]);
 function salePays(s){return(s.pays&&s.pays.length)?s.pays:[{m:s.method,a:s.total,fee:s.fee||0}];}
 function saleFiadoAmt(s){return s.pays&&s.pays.length?s.pays.filter(p=>p.m==='fiado').reduce((a,p)=>a+p.a,0):(s.fiado?s.total:0);}
 function saleCollected(s){return s.total-saleFiadoAmt(s);}
@@ -1405,6 +1410,7 @@ function payCheck(pays,total,cust,recv){
  if(pays.length>1&&pays.some(p=>p.m==='qr'||p.m==='modo'))return{err:'QR y MODO se cobran solos (quedan pendientes de confirmación): no se pueden combinar con otro medio.'};
  if(sum!==total)return{err:'La suma de los pagos ('+money(sum)+') no coincide con el total ('+money(total)+'): '+(sum<total?'faltan ':'sobran ')+money(Math.abs(total-sum))+'.',diff:total-sum};
  const fi=pays.find(p=>p.m==='fiado');
+ if(pays.some(p=>p.m==='monedero')&&!cust)return{err:'El pago con monedero exige identificar al cliente.'};
  if(fi&&!cust)return{err:'La cuenta corriente exige identificar al cliente (no puede ser consumidor final).'};
  if(fi&&cust&&cust.status==='suspendido')return{err:'El cliente está suspendido: no puede comprar a cuenta corriente.'};
  const ef=pays.find(p=>p.m==='efectivo');let vuelto=0;
@@ -1437,6 +1443,7 @@ function commitSale(method,arca,channel,lines,opts){
   if(PA.adj.length){PA.pays.forEach((q,i)=>{pays[i].a=q.a;if(q.adj){pays[i].b=q.b;pays[i].adj=q.adj;}});if(PA.total<=0)return{err:'El descuento deja la venta en cero: revisá el ajuste del medio de pago.'};total=PA.total;}else PA=null;}
  const pc=payCheck(pays,total,cust,opts.recv||0);if(pc.err)return{err:pc.err};
  {const pe=typeof pdPre==='function'?pdPre(pays,opts):'';if(pe)return{err:pe};}
+ {const fe=typeof fidPre==='function'?fidPre(pays,cust,opts):'';if(fe)return{err:fe};}
  method=pays.length>1?'mixto':pays[0].m;
  let cr={ok:1};if(pc.fiadoAmt>0){cr=wsCreditCheck(cust,pc.fiadoAmt);if(cr.err)return cr;}
  let stampRes=null;if(opts.stampCode){if(!cust)return{err:'El código de sello necesita un cliente.'};stampRes=resolveStamp(opts.stampCode,cust.id);if(!stampRes.ok)return{err:'Sello: '+stampRes.msg};}
@@ -1455,6 +1462,8 @@ function commitSale(method,arca,channel,lines,opts){
  const neg=[];for(const pid in need){const p=prod(pid);p.stock=Math.round((p.stock-need[pid])*1000)/1000;if(p.stock<0)neg.push(p.name+' → '+p.stock);}if(neg.length)audit('VENTA_SIN_STOCK',neg.join(' · '));
  S.sales.push(sale);S.lastSale=sale.id;
  if(typeof pdCommitAll==='function')pdCommitAll(sale,opts.det);
+ if(typeof fidCommit==='function')fidCommit(sale,cust,opts);
+ if(opts.quote&&typeof qtCommit==='function')qtCommit(sale,opts.quote);
  if(cr.ov){(S.creditUse=S.creditUse||[]).push({id:uid(),ov:cr.ov,sale:sale.id,amt:fiadoAmt,ts:now(),user:user?user.name:'sistema'});audit('EXCEPCION_CREDITO_USO',sale.n+' · '+custFull(cust)+' · '+money(fiadoAmt)+' (supera '+cr.probs.join(' ').slice(0,120)+')');}
  if(ben.kind==='coupon'&&ben.couponId){const cp=S.coupons.find(x=>x.id===ben.couponId);if(cp)cp.uses.push({ts:now(),sale:sale.id,cust:cust?cust.id:''});}
  if(opts.receptor&&arca&&typeof arcaRcpStore==='function')arcaRcpStore(sale.id,opts.receptor);
@@ -1478,7 +1487,7 @@ function posCart(){const c=$('#pcart');if(!c)return;const sess=openSess();if(typ
  `${typeof wsCartBar==='function'?wsCartBar():''}<div class="row" style="margin:.7rem 0"><span class="sp mut">Total</span><span class="total">${money(posTotal())}</span></div>${typeof paCartHTML==='function'?paCartHTML():''}
  <p class="sm ${pos.arca?'':'mut'}">${pos.arca?'Documento: Factura electrónica (el CAE se pide a ARCA al cobrar)':'Documento: Ticket interno — DOCUMENTO NO VÁLIDO COMO FACTURA'}</p>
  <p class="sm mut">Medio elegido: <b>${esc(MET[pos.method]||pos.method)}</b></p>
- <button class="btn gold" style="width:100%;min-height:56px;font-size:1.1rem" data-act="cobrar" ${pos.lines.length?'':'disabled'}>Cobrar (F12)</button>
+ <button class="btn gold" style="width:100%;min-height:56px;font-size:1.1rem" data-act="cobrar" ${pos.lines.length?'':'disabled'}>Cobrar (F12)</button>${typeof qtCartBtn==='function'?qtCartBtn():''}
  <div class="row" style="margin-top:.6rem"><button class="btn sm sp" data-act="mov" data-type="ingreso">Ingreso de efectivo</button><button class="btn sm sp" data-act="mov" data-type="egreso">Egreso de efectivo</button>${typeof csSupported==='function'&&csSupported()?'<button class="btn sm sp" data-act="csOpen" title="Abre la vista del carrito para el segundo monitor">Pantalla del cliente</button>':''}</div>`;if(typeof csPush==='function')csPush();}
 A.padd=el=>{const p=prod(el.dataset.id);if(!p)return;const cur=qtyIn(p.id);const step=1;if(!canOver(p)&&cur+step>stockOf(p)){toast('Sin stock suficiente de '+p.name+' (este producto exige stock)',1);return;}if(cur+step>stockOf(p))toast('Sin stock: se vende igual y queda en negativo ('+p.name+')');
  const L=pos.lines.find(l=>l.pid===p.id);if(L){L.qty+=step;pos.sel=pos.lines.indexOf(L);}else{pos.lines.push({pid:p.id,name:pfull(p),rubro:p.rubro,qty:1,price:p.price,cost:p.cost,unit:p.unit,list:p.price});pos.sel=pos.lines.length-1;}posCart();posFocusSearch();};
@@ -1511,7 +1520,7 @@ A.ncgo=el=>{$$('#modal-root .ov').forEach(o=>o.remove());A.voidsale(el);};
 
 /* ---- cobro ---- */
 function cobroW(){const d=$('#modal-root .dlg[aria-label="Confirmar cobro"]');return d?d.closest('.ov'):null;}
-function cobroSync(){const w=cobroW();if(!w)return;const g=id=>w.querySelector('#'+id);if(g('cb-cup'))pos.coupon=g('cb-cup').value.trim().toUpperCase();if(g('cb-code'))pos.stamp=g('cb-code').value.trim();if(g('rcv'))pos.recv=g('rcv').value;if(typeof arcaRcpSync==='function')arcaRcpSync(w);if(typeof pdCobroSync==='function')pdCobroSync(w);}
+function cobroSync(){const w=cobroW();if(!w)return;const g=id=>w.querySelector('#'+id);if(g('cb-cup'))pos.coupon=g('cb-cup').value.trim().toUpperCase();if(g('cb-code'))pos.stamp=g('cb-code').value.trim();if(g('rcv'))pos.recv=g('rcv').value;if(g('cb-gift'))pos.gift=g('cb-gift').value.trim().toUpperCase();if(typeof arcaRcpSync==='function')arcaRcpSync(w);if(typeof pdCobroSync==='function')pdCobroSync(w);}
 function cobroRender(){const w=cobroW();if(!w)return;cobroSync();w.querySelector('.mb').innerHTML=cobroView();if(typeof pdAfterRender==='function')pdAfterRender(w);if(typeof csPush==='function')csPush();}
 function mixParsed(){ /* pagos tal como están cargados en pantalla (centavos); NaN = número inválido */
  return pos.pays.map(p=>({m:p.m,a:p.a===''?0:cents(p.a),r:p.r===''?0:cents(p.r)}));}
@@ -1530,16 +1539,16 @@ function cobroView(){
  if(typeof wsRecalc==='function')wsRecalc();
  const cust=custById(pos.cust);const ben=posBen();const gross=posGross();const tot=gross-ben.disc;const m=pos.mix?'mixto':pos.method;
  const needCust=m==='fiado'||(pos.mix&&pos.pays.some(p=>p.m==='fiado'));
- const chips=POS_METHODS.map((k,i)=>`<button type="button" class="btn sm ${m===k?'on':''}" data-act="cbmet" data-m="${k}">${esc(MET[k]||k)}${typeof paChipTag==='function'?esc(paChipTag(k)):''}${i<4?` (F${i+1})`:''}</button>`).join('')+`<button type="button" class="btn sm ${pos.mix?'on':''}" data-act="cbmix" aria-pressed="${pos.mix?'true':'false'}">Dividir el pago (mixto)</button>`;
+ const chips=posMet().map((k,i)=>`<button type="button" class="btn sm ${m===k?'on':''}" data-act="cbmet" data-m="${k}">${esc(MET[k]||k)}${typeof paChipTag==='function'?esc(paChipTag(k)):''}${i<4?` (F${i+1})`:''}</button>`).join('')+`<button type="button" class="btn sm ${pos.mix?'on':''}" data-act="cbmix" aria-pressed="${pos.mix?'true':'false'}">Dividir el pago (mixto)</button>`;
  const custBox=cust?`<div class="okbox row"><span class="sp"><b>${esc(cust.name+' '+cust.last)}</b> · socio ${esc(pad4(cust.num))}${memberActive(cust)?' · ⭐ '+esc(memberActive(cust).name):''}${needCust?` · debe ${money(debtOf(cust.id))} de ${money(cust.limit||0)}${typeof ccKindsHTML==='function'?ccKindsHTML(cust.id):''}`:''}</span><button class="btn sm" data-act="cbcust" data-id="">Quitar</button></div>`
   :`<label for="cb-q">Cliente ${needCust?'(obligatorio para cuenta corriente)':'(opcional: sellos, cupones, membresía)'}</label><input id="cb-q" placeholder="Buscar por nombre, WhatsApp o DNI" autocomplete="off"><div id="cb-res"></div>`;
  const benTxt=(ben.disc?`<div class="okbox">${esc(ben.label)}: − ${money(ben.disc)}${ben.note?'<br><span class="sm">'+esc(ben.note)+'</span>':''}</div>`:'')+(pos.coupon&&ben.couponErr?`<div class="errbox">Cupón: ${esc(ben.couponErr)}</div>`:'')+(!ben.disc&&ben.note?`<div class="warnbox sm">${esc(ben.note)}</div>`:'');
  const mixHtml=pos.mix?`<div class="card" id="mixbox" style="margin:.5rem 0"><h3 style="margin-top:0">Pagos del cliente</h3><p class="sm mut">Repartí el total entre los medios. La suma debe dar exactamente el total. El efectivo que entrega el cliente va en “Recibe en mano”; si es más que el importe, se calcula el vuelto.</p>
-  ${pos.pays.map((p,i)=>`<div class="mixrow" data-row="${i}"><div><label for="mx-m${i}">Medio</label><select id="mx-m${i}" data-pi="${i}" data-pf="m">${PAY_MIX.map(k=>`<option value="${k}" ${p.m===k?'selected':''}>${esc(MET[k])}</option>`).join('')}</select></div>
+  ${pos.pays.map((p,i)=>`<div class="mixrow" data-row="${i}"><div><label for="mx-m${i}">Medio</label><select id="mx-m${i}" data-pi="${i}" data-pf="m">${payMix().map(k=>`<option value="${k}" ${p.m===k?'selected':''}>${esc(MET[k])}</option>`).join('')}</select></div>
    <div><label for="mx-a${i}">Importe a imputar ($)</label><input id="mx-a${i}" inputmode="decimal" autocomplete="off" placeholder="0" data-pi="${i}" data-pf="a" value="${esc(p.a)}"></div>
    ${p.m==='efectivo'?`<div><label for="mx-r${i}">Recibe en mano ($)</label><input id="mx-r${i}" inputmode="decimal" autocomplete="off" placeholder="Justo: dejalo vacío" data-pi="${i}" data-pf="r" value="${esc(p.r)}"></div>`:'<div></div>'}
    <div class="mixbtns"><button type="button" class="btn sm" data-act="cbrest" data-i="${i}">Resto</button>${pos.pays.length>1?`<button type="button" class="btn sm red" data-act="cbmrm" data-i="${i}" aria-label="Quitar este medio">✕</button>`:''}</div></div>`).join('')}
-  ${pos.pays.length<PAY_MIX.length?'<button type="button" class="btn sm" data-act="cbmadd">+ Agregar medio</button>':''}
+  ${pos.pays.length<payMix().length?'<button type="button" class="btn sm" data-act="cbmadd">+ Agregar medio</button>':''}
   <div id="mx-sum" style="margin-top:.6rem">${mixSummaryHTML(tot)}</div></div>`:'';
  return `<div class="card" style="margin-bottom:.6rem">${pos.lines.map(l=>`<div class="row sm"><span class="sp">${esc(l.name)} × ${numAR(l.qty,3)}${typeof wsLineTag==='function'?wsLineTag(l):''}</span><b>${money(Math.round(l.qty*l.price))}</b></div>`).join('')}${ben.disc?`<div class="row sm"><span class="sp">Subtotal</span><span>${money(gross)}</span></div><div class="row sm" style="color:var(--ok)"><span class="sp">${esc(ben.label)}</span><b>− ${money(ben.disc)}</b></div>`:''}${typeof paCobroTotHTML==='function'?paCobroTotHTML(tot,gross,ben):`<hr><div class="row"><span class="sp">TOTAL</span><span class="total">${money(tot)}</span></div>`}</div>
  ${rcvBoxHTML(m)}
@@ -1547,6 +1556,7 @@ function cobroView(){
  <p class="sm"><b>Documento:</b> ${pos.arca?'Factura electrónica (CAE al cobrar)':'Ticket interno — DOCUMENTO NO VÁLIDO COMO FACTURA'} <button class="btn sm" data-act="parca">${pos.arca?'CON ARCA':'SIN ARCA'} (F8)</button></p>
  ${custBox}
  ${mixHtml}
+ ${typeof fidCobroHTML==='function'?fidCobroHTML(m,cust,tot):''}
  ${typeof ckPickHTML==='function'?ckPickHTML():''}
  ${typeof accPickHTML==='function'?accPickHTML():''}
  ${typeof pdHostHTML==='function'?pdHostHTML():''}
@@ -1585,9 +1595,9 @@ A.cobrar=()=>{if(!pos.lines.length)return;if(!can('sell'))return toast('Sin perm
   const ag=typeof accGate==='function'?accGate():{acc:null};if(ag.err){toast(ag.err,1);return false;}
   if(typeof ckNeeded==='function'&&ckNeeded()&&!pos.ck){toast('Elegí «Mandar a Fiado» o «Mandar a Cuenta Corriente».',1);const k=$('#ckpick');if(k)k.scrollIntoView({block:'center'});return false;}
   if(pos.mix){const L=mixParsed();const ef=L.find(p=>p.m==='efectivo');recv=ef?ef.r:0;}
-  const r=commitSale(pos.mix?'mixto':pos.method,pos.arca,'local',pos.lines,{custId:pos.cust,coupon:pos.coupon,stampCode:pos.stamp,recv,pays,det:pg.det,acc:ag.acc,ws:wsOn()?{chan:wsChan()}:null,receptor:pos.arca&&typeof arcaRcpGet==='function'?arcaRcpGet():null,ck:pos.ck});
+  const r=commitSale(pos.mix?'mixto':pos.method,pos.arca,'local',pos.lines,{custId:pos.cust,coupon:pos.coupon,stampCode:pos.stamp,recv,pays,det:pg.det,acc:ag.acc,ws:wsOn()?{chan:wsChan()}:null,receptor:pos.arca&&typeof arcaRcpGet==='function'?arcaRcpGet():null,ck:pos.ck,gift:pos.gift||'',quote:pos.quote||''});
   if(r.err){wsCommitErr(r);return false;}
-  const sale=r.sale;pos.lines=[];pos.sel=-1;pos.cust='';pos.chanSet=null;pos.rcp=null;pos.coupon='';pos.stamp='';pos.recv='';pos.mix=false;pos.pays=[];pos.pdet={};pos.acc={};pos.ck='';posCart();posGrid();
+  const sale=r.sale;pos.lines=[];pos.sel=-1;pos.cust='';pos.chanSet=null;pos.rcp=null;pos.coupon='';pos.stamp='';pos.recv='';pos.mix=false;pos.pays=[];pos.pdet={};pos.acc={};pos.ck='';pos.gift='';pos.quote='';posCart();posGrid();
   toast('Venta '+sale.n+' registrada'+(r.stamp?' · sello sumado':''));if(typeof csPaid==='function')csPaid(sale);
   setTimeout(()=>{if(sale.status==='pendiente')payModal(sale);else if(sale.doc!=='ticket_interno'&&typeof arcaPostSale==='function')arcaPostSale(sale,r.stamp);else receiptModal(sale,r.stamp);},50);}});
  if(typeof pdBind==='function')pdBind(w);
@@ -1600,8 +1610,8 @@ A.cobrar=()=>{if(!pos.lines.length)return;if(!can('sell'))return toast('Sin perm
    const L=S.customers.filter(c=>c.status!=='baja'&&((c.name+' '+c.last).toLowerCase().includes(q)||c.wa.replace(/\D/g,'').includes(q.replace(/\D/g,'')||'zz')||pad4(c.num)===q||(c.dni&&normDni(q).length>=6&&normDni(c.dni)===normDni(q)))).slice(0,6);
    res.innerHTML=L.map(c=>`<button class="btn sm" style="margin:.2rem .2rem 0 0" data-act="cbcust" data-id="${c.id}">${esc(c.name+' '+c.last)} · ${esc(pad4(c.num))}</button>`).join('')||'<span class="sm mut">Sin resultados</span>';}});
  w.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.pi!==undefined&&t.dataset.pf==='m'){const row=pos.pays[+t.dataset.pi];row.m=t.value;if(row.m!=='efectivo')row.r='';cobroRender();}});};
-A.cbmix=()=>{cobroSync();pos.mix=!pos.mix;if(pos.mix){const first=(PAY_MIX.includes(pos.method)&&pos.method!=='fiado')?pos.method:'efectivo';pos.pays=[{m:first,a:'',r:''},{m:'fiado',a:'',r:''}];}else{pos.pays=[];}cobroRender();};
-A.cbmadd=()=>{const used=pos.pays.map(p=>p.m);const m=PAY_MIX.find(k=>!used.includes(k));if(m){pos.pays.push({m,a:'',r:''});cobroRender();}};
+A.cbmix=()=>{cobroSync();pos.mix=!pos.mix;if(pos.mix){const first=(payMix().includes(pos.method)&&pos.method!=='fiado')?pos.method:'efectivo';pos.pays=[{m:first,a:'',r:''},{m:'fiado',a:'',r:''}];}else{pos.pays=[];}cobroRender();};
+A.cbmadd=()=>{const used=pos.pays.map(p=>p.m);const m=payMix().find(k=>!used.includes(k));if(m){pos.pays.push({m,a:'',r:''});cobroRender();}};
 A.cbmrm=el=>{pos.pays.splice(+el.dataset.i,1);cobroRender();};
 A.cbrest=el=>{const L=mixParsed();const i=+el.dataset.i;const others=L.reduce((a,p,j)=>a+(j===i||isNaN(p.a)?0:p.a),0);const rest=posTotal()-others;if(rest<=0)return toast('No queda resto: los otros medios ya cubren el total.',1);pos.pays[i].a=pesosStr(rest);cobroRender();};
 A.cbmet=el=>{pos.method=el.dataset.m;pos.mix=false;pos.pays=[];cobroRender();posCart();if(pos.method==='efectivo')rcvFocus();};
@@ -1617,6 +1627,7 @@ function saleOkHTML(sale){
  if(sale.vuelto>0)h+=`<div class="vuelto" role="alert"><span>VUELTO A ENTREGAR</span><b>${money(sale.vuelto)}</b><small>Recibido ${money(sale.recv)}</small></div>`;
  else if(!sale.pays&&sale.recv&&sale.method==='efectivo'&&sale.recv>=sale.total)h+=`<div class="vuelto" role="alert"><span>VUELTO A ENTREGAR</span><b>${money(sale.recv-sale.total)}</b></div>`;
  if(f>0&&sale.cust)h+=`<div class="warnbox sm">Cuenta corriente de <b>${esc(sale.custName)}</b>: débito de ${money(f)} generado. Saldo total adeudado: <b>${money(debtOf(sale.cust))}</b>.</div>`;
+ if(typeof fidSaleOkHTML==='function')h+=fidSaleOkHTML(sale);
  return h;}
 function receiptModal(sale,stamp){
  modal('Venta '+sale.n+' registrada',`${saleOkHTML(sale)}${stamp?`<div class="okbox">⭐ Sello sumado a ${esc(stamp.custName)}: ${stamp.stamps}/${S.loyalty.goal}${stamp.reward?' · ¡premio disponible!':''}</div>`:''}<p class="sm mut">¿Querés imprimir el ticket? Si hay impresora térmica conectada se imprime directo; si no, se abre la impresión del navegador.</p>`,
@@ -1686,7 +1697,7 @@ document.addEventListener('keydown',e=>{if(curScreen!=='vender'||$('#panel').hid
    Guardado: pays[] = {m, a: importe final, b: base, adj}; sale.sub, sale.adj[] (foto de la regla) e items[].pa
    (ajuste repartido por línea con el método del mayor resto) → lineTotal, rubros, arqueo y ARCA cierran al centavo.
    Aviso legal (no bloquea): Ley 25.065 art. 37 inc. c (diferencias de precio contado / tarjeta) [VERIFICAR con asesor]. */
-const PA_METHODS=['efectivo','debito','credito','transferencia','qr','modo'];
+const PA_METHODS=['efectivo','debito','credito','transferencia','qr','modo','monedero'];
 const PA_LEGAL=['debito','credito','transferencia','qr','modo'];
 function paConf(){const c=(typeof S!=='undefined'&&S&&S.payadj)||null;return c&&typeof c==='object'?c:{on:false,stack:false,rules:{}};}
 function paRuleOk(r){return !!(r&&r.v>0&&Number.isInteger(r.v)&&(r.sign===1||r.sign===-1)&&(r.kind==='pct'||r.kind==='fixed')&&(r.kind!=='pct'||r.v<=5000));}
@@ -3574,7 +3585,7 @@ function saleDetailHTML(s,o){o=o||{};
  h+=`<h3 style="margin-top:.8rem">Línea de tiempo de auditoría</h3>${au.length?`<ul class="sdtl">${au.map(e=>`<li><span class="sm mut">${fmtDT(e.ts)} · ${esc(e.user)}</span> <b>${esc(e.action)}</b> <span class="sm">${esc(e.detail)}</span></li>`).join('')}</ul>`:'<p class="sm mut">Sin eventos de auditoría para esta operación.</p>'}`;
  return h;}
 function saleDetailOpen(id,opts){opts=opts||{};const s=S.sales.find(x=>x.id===id);if(!s)return toast('La operación ya no está disponible.',1);
- const w=modal('Detalle de la operación '+s.n,`<div id="sd-body">${saleDetailHTML(s)}</div><div class="row noprint" style="margin-top:.6rem"><button class="btn" data-act="saleDetPrint">Imprimir (A4)</button>${typeof expBtn==='function'?expBtn('venta',s.id):''}${opts.ro?'<span class="tag">Sólo lectura</span>':''}</div>`,{wide:true,okText:'Cerrar',noCancel:true});
+ const w=modal('Detalle de la operación '+s.n,`<div id="sd-body">${saleDetailHTML(s)}</div><div class="row noprint" style="margin-top:.6rem"><button class="btn" data-act="saleDetPrint">Imprimir (A4)</button>${typeof expBtn==='function'?expBtn('venta',s.id):''}${opts.ro?'<span class="tag">Sólo lectura</span>':(typeof devBtn==='function'?devBtn(s):'')}</div>`,{wide:true,okText:'Cerrar',noCancel:true});
  w.querySelector('.dlg').classList.add('saledet');return w;}
 A.saleDet=el=>saleDetailOpen(el.dataset.id,{ro:!!el.dataset.ro});
 A.saleDetPrint=()=>{document.body.classList.add('pm');try{window.print();}finally{setTimeout(()=>document.body.classList.remove('pm'),500);}};
@@ -3642,6 +3653,113 @@ document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset
 A.cjfReset=()=>{Object.assign(CJF,{ch:'',st:'',med:'',q:'',vend:'',h1:'',h2:'',n:CJ_PAGE});cjRefresh();};
 A.cjfMore=()=>{CJF.n+=CJ_PAGE;cjRefresh();};
 A.cjfAll=()=>{CJF.n=1e9;cjRefresh();};
+
+/* ===== V26.54 · Operación: presupuestos, devoluciones parciales y mermas =====
+   Revisión del pedido (Sistema VB = Vincular Business, web + Supabase; no WinForms):
+   · Presupuesto: NO mueve stock ni caja ni suma como venta. Se imprime («NO VÁLIDO COMO FACTURA»), vence, y al
+     convertirlo se carga en Vender: recién al cobrar descuenta stock (con las mismas reglas de siempre).
+   · Devolución parcial: de una venta con ticket interno (con factura electrónica corresponde la nota de crédito de F5).
+     Devuelve el stock de lo devuelto y reintegra en efectivo (egreso de caja con el rubro del artículo), al monedero
+     del cliente, o por el mismo medio digital (queda registrado; el reintegro lo hace el banco/tarjeta). No edita la venta:
+     es un registro aparte que se descuenta en Ventas netas y en los niveles del Club.
+   · Merma: rotura, vencimiento, robo/faltante o consumo interno; resta stock y queda VALORIZADA al costo para el reporte.
+   Gastos/caja chica, fondo fijo de apertura, traspasos, alertas por Telegram, auditoría y atajos F1–F12 ya existían. */
+const quotes=()=>S.quotes||(S.quotes=[]);
+const rets=()=>S.returns||(S.returns=[]);
+const mermasL=()=>S.mermas||(S.mermas=[]);
+function qtState(q){if(q.state==='convertido'||q.state==='anulado')return q.state;return q.exp&&now()>q.exp?'vencido':'vigente';}
+const QT_TXT={vigente:'Vigente',vencido:'Vencido',convertido:'Convertido en venta',anulado:'Anulado'};
+const qtTotal=q=>q.lines.reduce((a,l)=>a+Math.round(l.qty*l.price),0);
+function qtCartBtn(){if(!pos.lines.length){pos.quote='';return'';}return pos.lines.length&&!pos.quote?`<button class="btn" style="width:100%;margin-top:.4rem;white-space:normal" data-act="qtSave">Guardar como presupuesto (no descuenta stock)</button>`:(pos.quote?`<p class="sm okbox" style="margin-top:.4rem">Cargado desde el presupuesto <b>${esc((quotes().find(q=>q.id===pos.quote)||{}).n||'')}</b>: al cobrar queda convertido. <button class="btn sm" data-act="qtUnlink">Desvincular</button></p>`:'');}
+function qtCreate(f){if(!f.lines||!f.lines.length)return{err:'El presupuesto está vacío.'};for(const l of f.lines){if(!(l.qty>0)||!(l.price>0))return{err:'Cantidad y precio deben ser mayores a cero.'};if(!prod(l.pid))return{err:'Producto inexistente.'};}
+ const days=Math.max(1,Math.min(90,+f.days||7));const c=S.tenant.caja;S.seqQ=S.seqQ||{};S.seqQ[c]=(S.seqQ[c]||0)+1;const cust=f.cust?custById(f.cust):null;
+ const q={id:uid(),n:'P'+c+'-'+S.seqQ[c],ts:now(),exp:now()+days*86400000,days,user:user?user.name:'sistema',cust:cust?cust.id:'',custName:cust?custFull(cust):String(f.name||'').replace(/[<>]/g,'').slice(0,60),
+  lines:f.lines.map(l=>({pid:l.pid,name:l.name,rubro:l.rubro,qty:l.qty,price:l.price,unit:l.unit,list:l.list,cost:l.cost})),note:String(f.note||'').replace(/[<>]/g,'').slice(0,200),state:'vigente',sale:''};
+ q.total=qtTotal(q);quotes().push(q);audit('PRESUPUESTO',q.n+' · '+money(q.total)+' · vence '+dmy(dkey(q.exp))+(q.custName?' · '+q.custName:''));save();return{q};}
+A.qtSave=()=>{if(!pos.lines.length)return;if(!can('sell'))return toast('Sin permiso',1);const cust=custById(pos.cust);
+ modal('Guardar presupuesto',`<p>Total: <b>${money(posGross())}</b> · ${pos.lines.length} artículo(s). <b>No descuenta stock ni entra a la caja.</b></p>${cust?`<p>Cliente: <b>${esc(custFull(cust))}</b></p>`:`<label for="qt-n">Para (nombre del cliente, opcional)</label><input id="qt-n" maxlength="60">`}
+ <label for="qt-d">Validez (días)</label><input id="qt-d" inputmode="numeric" value="7"><label for="qt-o">Observaciones (opcional)</label><input id="qt-o" maxlength="200">`,
+ {okText:'Guardar presupuesto',onOk:w=>{const d=parseNum(val('qt-d'));if(!(Number.isInteger(d)&&d>=1&&d<=90))return w._err('La validez va de 1 a 90 días.'),false;
+  const r=qtCreate({lines:pos.lines,cust:pos.cust,name:cust?'':val('qt-n'),days:d,note:val('qt-o')});if(r.err)return w._err(r.err),false;
+  pos.lines=[];pos.sel=-1;pos.cust='';posCart();posGrid();toast('Presupuesto '+r.q.n+' guardado');setTimeout(()=>qtPrint(r.q),60);}});};
+A.qtUnlink=()=>{pos.quote='';posCart();};
+function qtCommit(sale,qid){const q=quotes().find(x=>x.id===qid);if(!q||qtState(q)==='convertido'||q.state==='anulado')return;q.state='convertido';q.sale=sale.id;q.saleN=sale.n;q.convAt=now();audit('PRESUPUESTO_CONVERTIDO',q.n+' → venta '+sale.n);}
+A.qtLoad=el=>{const q=quotes().find(x=>x.id===el.dataset.id);if(!q)return;const st=qtState(q);if(st==='convertido'||st==='anulado')return toast('Ese presupuesto ya está '+QT_TXT[st].toLowerCase()+'.',1);
+ if(pos.lines.length)return toast('Terminá o borrá la operación que está en Vender antes de cargar un presupuesto.',1);
+ const go2=fresh=>{const miss=[];pos.lines=q.lines.filter(l=>{const p=prod(l.pid);if(!p||!p.active){miss.push(l.name);return false;}return true;}).map(l=>{const p=prod(l.pid);return Object.assign({},l,{price:fresh?p.price:l.price,list:p.price,cost:p.cost});});
+  pos.cust=q.cust||'';pos.quote=q.id;pos.sel=pos.lines.length-1;audit('PRESUPUESTO_A_VENDER',q.n+(fresh?' (precios actuales)':' (precios del presupuesto)'));go('vender');if(miss.length)toast('No están disponibles: '+miss.join(', '),1);};
+ const changed=q.lines.some(l=>{const p=prod(l.pid);return p&&p.price!==l.price;});
+ if(st==='vencido'||changed)modal('Convertir '+q.n,`<p>${st==='vencido'?'El presupuesto <b>venció</b>.':'Algunos precios <b>cambiaron</b> desde que se hizo.'} ¿Con qué precios lo cargamos en Vender?</p>`,{okText:'Precios actuales',cancelText:st==='vencido'?'Cancelar':'Respetar el presupuesto',onOk:()=>{go2(true);}});
+ else go2(false);
+ if(st!=='vencido'&&changed){const w=$$('#modal-root .ov').pop();const x=w&&w.querySelector('[data-m=x]');if(x)x.addEventListener('click',()=>go2(false),{once:true});}};
+A.qtVoid=el=>{const q=quotes().find(x=>x.id===el.dataset.id);if(!q)return;modal('Anular presupuesto '+q.n,`<label for="qv-m">Motivo</label><input id="qv-m" maxlength="100">`,{onOk:w=>{if(val('qv-m').trim().length<3)return w._err('Escribí el motivo.'),false;q.state='anulado';q.voidReason=val('qv-m').trim();audit('PRESUPUESTO_ANULADO',q.n+' · '+q.voidReason);save();rerender();}});};
+function qtPrint(q){const html=`<!doctype html><meta charset="utf-8"><title>Presupuesto ${esc(q.n)}</title><style>@page{size:A4;margin:14mm}body{font-family:Arial,sans-serif;font-size:11pt}table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #ccc;padding:4px;text-align:left}.r{text-align:right}h1{font:700 18pt Georgia;margin:0}</style>
+ <h1>${esc(S.tenant.name)}</h1><p><b>PRESUPUESTO ${esc(q.n)}</b> · ${esc(fmtDT(q.ts))} · válido hasta <b>${esc(dmy(dkey(q.exp)))}</b>${q.custName?'<br>Cliente: '+esc(q.custName):''}</p>
+ <table><thead><tr><th>Artículo</th><th class="r">Cantidad</th><th class="r">Precio</th><th class="r">Importe</th></tr></thead><tbody>${q.lines.map(l=>`<tr><td>${esc(l.name)}</td><td class="r">${numAR(l.qty,3)}</td><td class="r">${money(l.price)}</td><td class="r">${money(Math.round(l.qty*l.price))}</td></tr>`).join('')}</tbody></table>
+ <p class="r" style="font-size:14pt"><b>Total ${money(q.total)}</b></p>${q.note?'<p>'+esc(q.note)+'</p>':''}<p><b>DOCUMENTO NO VÁLIDO COMO FACTURA.</b> Precios sujetos a disponibilidad de stock. Atendió: ${esc(q.user)}.</p><p style="font-size:8pt;color:#666">Desarrollado por ${esc(VB.name)} · ${esc(VB.phone)} · ${esc(VB.mail)}</p>`;
+ const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(f);f.contentDocument.open();f.contentDocument.write(html);f.contentDocument.close();setTimeout(()=>{try{f.contentWindow.focus();f.contentWindow.print();}catch(e){}setTimeout(()=>f.remove(),4000);},300);}
+A.qtPrint=el=>{const q=quotes().find(x=>x.id===el.dataset.id);if(q)qtPrint(q);};
+let QTF='';
+reg('presup','Presupuestos','file','sell',()=>{const L=quotes().slice().reverse().filter(q=>!QTF||qtState(q)===QTF);const cnt=k=>quotes().filter(q=>qtState(q)===k).length;
+ return `<div class="row"><h1 class="sp">Presupuestos</h1><a class="btn gold" href="#panel/vender">Armar uno en Vender</a></div>
+ <div class="warnbox sm">Un presupuesto <b>no descuenta stock, no entra a la caja y no suma como venta</b>. Se arma en Vender con «Guardar como presupuesto». Al convertirlo vuelve a Vender y recién al cobrar es una venta.</div>
+ <div class="grid g4" style="margin:1rem 0">${['vigente','vencido','convertido','anulado'].map(k=>`<button class="card kpi ${QTF===k?'on':''}" data-act="qtF" data-k="${k}" style="cursor:pointer;text-align:left"><b>${cnt(k)}</b><span>${QT_TXT[k]}</span></button>`).join('')}</div>
+ ${QTF?`<p><button class="btn sm" data-act="qtF" data-k="">Ver todos</button></p>`:''}
+ <div class="card"><div class="tw"><table><thead><tr><th>N.º</th><th>Fecha</th><th>Cliente</th><th class="r">Total</th><th>Vence</th><th>Estado</th><th></th></tr></thead><tbody>${L.map(q=>{const st=qtState(q);return `<tr><td><b>${esc(q.n)}</b>${q.origin==='ejemplo'?' <span class="tag sim">ej.</span>':''}</td><td class="sm">${esc(fmtDT(q.ts))}</td><td>${esc(q.custName||'—')}</td><td class="r" data-sv="${q.total}">${money(q.total)}</td><td class="sm">${esc(dmy(dkey(q.exp)))}</td><td><span class="tag ${st==='vigente'?'ok':st==='convertido'?'':'bad'}">${esc(QT_TXT[st])}</span>${q.saleN?' <span class="sm">venta '+esc(q.saleN)+'</span>':''}</td>
+ <td class="r"><button class="btn sm" data-act="qtPrint" data-id="${q.id}">Imprimir</button>${st==='vigente'||st==='vencido'?` <button class="btn sm gold" data-act="qtLoad" data-id="${q.id}">Convertir en venta</button> <button class="btn sm red" data-act="qtVoid" data-id="${q.id}">Anular</button>`:''}</td></tr>`;}).join('')||'<tr><td colspan="7" class="mut">No hay presupuestos.</td></tr>'}</tbody></table></div></div>`;},null,'Operación');
+A.qtF=el=>{QTF=el.dataset.k||'';rerender();};
+
+/* ---------- devoluciones parciales ---------- */
+const retQty=(sid,i)=>rets().filter(r=>r.sale===sid).reduce((a,r)=>a+r.lines.filter(l=>l.i===i).reduce((x,l)=>x+l.qty,0),0);
+const saleRetTotal=s=>rets().filter(r=>r.sale===s.id).reduce((a,r)=>a+r.total,0);
+function devAllowed(s){if(!s||s.status!=='ok')return'Sólo se devuelve de una venta cobrada (no anulada ni pendiente).';if(s.doc&&s.doc!=='ticket_interno')return'Esta venta tiene factura electrónica: corresponde una nota de crédito (F5).';
+ if(!s.items.some((it,i)=>it.qty-retQty(s.id,i)>1e-9))return'Ya se devolvió todo lo de esta venta.';return'';}
+function devBtn(s){return can('void')&&!devAllowed(s)?`<button class="btn" data-act="devOpen" data-id="${esc(s.id)}">Devolución parcial</button>`:'';}
+function devCommit(s,lines,refund,motivo){const e=devAllowed(s);if(e)return{err:e};if(!lines.length)return{err:'Elegí qué se devuelve.'};if(String(motivo||'').trim().length<3)return{err:'Escribí el motivo de la devolución.'};
+ const out=[];let total=0;
+ for(const l of lines){const it=s.items[l.i];if(!it)return{err:'Línea inexistente.'};const left=Math.round((it.qty-retQty(s.id,l.i))*1000)/1000;if(!(l.qty>0)||l.qty>left+1e-9)return{err:'De «'+it.name+'» se pueden devolver hasta '+numAR(left,3)+'.'};
+  if(it.unit==='u'&&!Number.isInteger(l.qty))return{err:'«'+it.name+'» se devuelve por unidad entera.'};
+  const amt=Math.round(lineTotal(it)*l.qty/it.qty);out.push({i:l.i,pid:it.pid,name:it.name,rubro:it.rubro,qty:l.qty,amount:amt});total+=amt;}
+ if(!(total>0))return{err:'El importe a devolver es cero.'};
+ const cust=s.cust?custById(s.cust):null;if(refund==='monedero'&&(!cust||!fidCfg().wallet.on))return{err:'Para reintegrar al monedero la venta tiene que tener un cliente y el monedero estar activo.'};
+ if(refund==='efectivo'){if(!openSess())return{err:'Abrí la caja para devolver efectivo.'};const byR={};out.forEach(o=>{byR[o.rubro]=(byR[o.rubro]||0)+o.amount;});
+  for(const rid in byR){const ve=validRubro(rid,'egreso');if(ve)return{err:'Rubro de «'+rubName(rid)+'»: '+ve};}
+  for(const rid in byR){addMov('egreso',rid,'Devolución venta '+s.n+' · '+String(motivo).trim().slice(0,60),byR[rid]);}}
+ out.forEach(o=>{const it=s.items[o.i];if(Array.isArray(it.kit)&&it.kit.length)it.kit.forEach(k=>{const c=prod(k.pid);if(c)c.stock=Math.round((c.stock+o.qty*k.qty)*1000)/1000;});else{const p=prod(o.pid);if(p)p.stock=Math.round((p.stock+o.qty)*1000)/1000;}});
+ const r={id:uid(),sale:s.id,saleN:s.n,cust:s.cust||'',ts:now(),lines:out,total,refund,motivo:String(motivo).trim().slice(0,120),user:user?user.name:'sistema',sessId:openSess()?openSess().id:''};rets().push(r);
+ if(refund==='monedero')walPush(cust.id,'devolucion',total,'Devolución venta '+s.n,{sale:s.id,ret:r.id});
+ audit('DEVOLUCION_PARCIAL',s.n+' · '+out.map(o=>o.name+' ×'+numAR(o.qty,3)).join(', ')+' · '+money(total)+' · reintegro '+({efectivo:'efectivo',monedero:'monedero',otro:'mismo medio (fuera del sistema)'}[refund]||refund)+' · '+r.motivo);save();return{r};}
+A.devOpen=el=>{const s=S.sales.find(x=>x.id===el.dataset.id);const e=devAllowed(s);if(e)return toast(e,1);if(!can('void'))return toast('Sin permiso',1);closeAll();
+ const w=modal('Devolución parcial · venta '+s.n,`<p class="sm mut">Elegí cuánto se devuelve de cada artículo. Vuelve al stock y se reintegra el importe proporcional (con su descuento). La venta original no se modifica.</p>
+ <div class="tw"><table><thead><tr><th>Artículo</th><th class="r">Vendido</th><th class="r">Ya devuelto</th><th class="r">Devolver</th></tr></thead><tbody>${s.items.map((it,i)=>{const done=retQty(s.id,i);const left=it.qty-done;return `<tr><td>${esc(it.name)}</td><td class="r">${numAR(it.qty,3)}</td><td class="r">${done?numAR(done,3):'—'}</td><td class="r">${left>1e-9?`<input id="dv-q${i}" inputmode="decimal" placeholder="0" style="max-width:90px" aria-label="Cantidad a devolver de ${esc(it.name)}">`:'<span class="mut">—</span>'}</td></tr>`;}).join('')}</tbody></table></div>
+ <div id="dv-tot" class="okbox" style="margin:.4rem 0">Total a reintegrar: <b>$ 0</b></div>
+ <label for="dv-r">Cómo se reintegra</label><select id="dv-r"><option value="efectivo">Efectivo (sale de la caja abierta)</option>${s.cust&&fidCfg().wallet.on?'<option value="monedero">Al monedero del cliente</option>':''}<option value="otro">Por el mismo medio digital (transferencia/tarjeta, lo hace el banco)</option></select>
+ <label for="dv-m">Motivo (obligatorio)</label><input id="dv-m" maxlength="120">`,
+ {wide:true,okText:'Registrar devolución',onOk:w=>{const L=[];for(let i=0;i<s.items.length;i++){const x=w.querySelector('#dv-q'+i);if(!x||!x.value.trim())continue;const q=parseNum(x.value);if(isNaN(q)||q<=0)return w._err('Revisá la cantidad de «'+s.items[i].name+'».'),false;L.push({i,qty:Math.round(q*1000)/1000});}
+  const r=devCommit(s,L,val('dv-r'),val('dv-m'));if(r.err)return w._err(r.err),false;toast('Devolución registrada: '+money(r.r.total));rerender();}});
+ w.addEventListener('input',()=>{let t=0;s.items.forEach((it,i)=>{const x=w.querySelector('#dv-q'+i);const q=x?parseNum(x.value):NaN;if(q>0)t+=Math.round(lineTotal(it)*Math.min(q,it.qty)/it.qty);});const b=w.querySelector('#dv-tot');if(b)b.innerHTML='Total a reintegrar: <b>'+money(t)+'</b>';});};
+
+/* ---------- mermas valorizadas ---------- */
+const MERMA_T={ajuste:'Ajuste / recuento',merma:'Merma',rotura:'Rotura',vencimiento:'Vencimiento',robo:'Robo / faltante',consumo:'Consumo interno'};
+function mermaRecord(p,d,tipo,motivo){if(tipo==='ajuste'||!MERMA_T[tipo])return;const cost=isKit(p)?kitCost(p):(+p.cost||0);
+ mermasL().push({id:uid(),ts:now(),pid:p.id,name:pfull(p),rubro:p.rubro,qty:d,cost,value:Math.round(Math.abs(d)*cost),tipo,motivo:String(motivo||'').slice(0,100),user:user?user.name:'sistema'});}
+let MMF={d:30};
+reg('mermas','Mermas y devoluciones','box','edit_products',()=>{const from=now()-MMF.d*86400000;const M=mermasL().filter(m=>m.ts>=from).slice().reverse();const R=rets().filter(r=>r.ts>=from).slice().reverse();const vc=can('view_cost');
+ const byT={};M.forEach(m=>{const o=byT[m.tipo]||(byT[m.tipo]={n:0,v:0});o.n++;o.v+=m.value;});const totV=M.reduce((a,m)=>a+m.value,0);
+ return `<div class="row"><h1 class="sp">Mermas y devoluciones</h1><label for="mm-d" class="sm mut" style="margin:0">Período</label><select id="mm-d" style="max-width:150px">${[[7,'7 días'],[30,'30 días'],[90,'90 días'],[365,'1 año']].map(([k,v])=>`<option value="${k}" ${MMF.d===k?'selected':''}>${v}</option>`).join('')}</select></div>
+ <p class="sm mut">Las mermas se cargan en Inventario → «Ajustar stock» eligiendo el tipo (rotura, vencimiento, robo/faltante, consumo interno). Quedan valorizadas al costo del momento. Las devoluciones parciales se hacen desde el detalle de la venta.</p>
+ <div class="grid g4" style="margin:1rem 0">${vc?`<div class="card kpi"><b>${money(totV)}</b><span>Pérdida por mermas (al costo)</span></div>`:''}${Object.keys(MERMA_T).filter(k=>k!=='ajuste').map(k=>`<div class="card kpi"><b>${(byT[k]||{n:0}).n}</b><span>${esc(MERMA_T[k])}${vc&&byT[k]?' · '+money(byT[k].v):''}</span></div>`).join('')}<div class="card kpi"><b>${money(R.reduce((a,r)=>a+r.total,0))}</b><span>Devuelto a clientes (${R.length})</span></div></div>
+ <div class="card"><h3>Mermas</h3><div class="tw"><table><thead><tr><th>Fecha</th><th>Artículo</th><th>Tipo</th><th class="r">Cantidad</th>${vc?'<th class="r">Costo unit.</th><th class="r">Pérdida</th>':''}<th>Motivo</th><th>Usuario</th></tr></thead><tbody>${M.map(m=>`<tr><td class="sm">${esc(fmtDT(m.ts))}</td><td>${esc(m.name)}${m.origin==='ejemplo'?' <span class="tag sim">ej.</span>':''}</td><td>${esc(MERMA_T[m.tipo]||m.tipo)}</td><td class="r">${numAR(m.qty,3)}</td>${vc?`<td class="r">${money(m.cost)}</td><td class="r" data-sv="${m.value}"><b>${money(m.value)}</b></td>`:''}<td class="sm">${esc(m.motivo)}</td><td class="sm">${esc(m.user)}</td></tr>`).join('')||`<tr><td colspan="${vc?8:6}" class="mut">Sin mermas en el período.</td></tr>`}</tbody></table></div></div>
+ <div class="card" style="margin-top:1rem"><h3>Devoluciones parciales</h3><div class="tw"><table><thead><tr><th>Fecha</th><th>Venta</th><th>Qué se devolvió</th><th class="r">Importe</th><th>Reintegro</th><th>Motivo</th><th>Usuario</th></tr></thead><tbody>${R.map(r=>`<tr><td class="sm">${esc(fmtDT(r.ts))}</td><td>${esc(r.saleN)}</td><td class="sm">${r.lines.map(l=>esc(l.name)+' ×'+numAR(l.qty,3)).join('<br>')}</td><td class="r" data-sv="${r.total}">${money(r.total)}</td><td>${esc({efectivo:'Efectivo',monedero:'Monedero',otro:'Mismo medio'}[r.refund]||r.refund)}</td><td class="sm">${esc(r.motivo)}</td><td class="sm">${esc(r.user)}</td></tr>`).join('')||'<tr><td colspan="7" class="mut">Sin devoluciones en el período.</td></tr>'}</tbody></table></div></div>`;},
+ ()=>{const d=$('#mm-d');if(d)d.addEventListener('change',()=>{MMF.d=+d.value;rerender();});},'Operación');
+
+function operDemoSeed(){if(IS_CLIENT||S.operDemo)return;const P=S.products.filter(p=>p.active&&!isKit(p)&&p.unit==='u'&&p.price>0).slice(0,4);if(P.length<2)return;S.operDemo=1;const t0=now()-3*86400000;
+ const ln=(p,q)=>({pid:p.id,name:pfull(p),rubro:p.rubro,qty:q,price:p.price,unit:p.unit,list:p.price,cost:p.cost});
+ const q1={id:uid(),n:'P'+S.tenant.caja+'-1',ts:t0,exp:t0+10*86400000,days:10,user:'ejemplo',cust:'',custName:'Evento de ejemplo',lines:[ln(P[0],6),ln(P[1],12)],note:'Presupuesto de ejemplo para un evento',state:'vigente',sale:'',origin:'ejemplo'};q1.total=qtTotal(q1);
+ const q2={id:uid(),n:'P'+S.tenant.caja+'-2',ts:t0-20*86400000,exp:t0-13*86400000,days:7,user:'ejemplo',cust:'',custName:'Cliente de ejemplo',lines:[ln(P[1],3)],note:'',state:'vigente',sale:'',origin:'ejemplo'};q2.total=qtTotal(q2);
+ quotes().push(q2,q1);S.seqQ=S.seqQ||{};S.seqQ[S.tenant.caja]=2;
+ mermasL().push({id:uid(),ts:t0,pid:P[0].id,name:pfull(P[0]),rubro:P[0].rubro,qty:-1,cost:+P[0].cost||0,value:+P[0].cost||0,tipo:'rotura',motivo:'Botella rota al reponer (ejemplo)',user:'ejemplo',origin:'ejemplo'},
+  {id:uid(),ts:t0+86400e3,pid:P[1].id,name:pfull(P[1]),rubro:P[1].rubro,qty:-2,cost:+P[1].cost||0,value:2*(+P[1].cost||0),tipo:'vencimiento',motivo:'Vencido (ejemplo)',user:'ejemplo',origin:'ejemplo'});}
 
 /* ===== Clientes, Club Mi Comercio, fidelización, cupones, membresías y cuenta corriente ===== */
 const pad4=n=>String(n).padStart(4,'0');
@@ -3753,6 +3871,8 @@ function applyBenefit(lines,custId,code){const cust=custById(custId);let base=0;
  if(code){const cp=S.coupons.find(x=>x.code===code);if(!cp)out.couponErr='Cupón inexistente.';else{const e=couponCheck(cp,cust,base);if(e)out.couponErr=e;else cand={kind:'coupon',disc:cpDisc(cp,base),label:'Cupón '+cp.code,code:cp.code,couponId:cp.id};}}
  const mb=memberActive(cust);let mc=null;if(mb&&mb.pct>0)mc={kind:'member',disc:Math.round(base*mb.pct/100),label:'Membresía '+mb.name+' ('+mb.pct+' %)'};
  let best=cand;if(mc&&(!best||mc.disc>best.disc)){best=mc;if(cand)out.note='Se aplicó la membresía (mayor beneficio): no se acumula con el cupón.';}
+ /* V26.54: nivel del Club (Bronce/Plata/Oro) y beneficio de cumpleaños compiten con el resto: gana el mayor, nunca se acumulan */
+ if(typeof fidCands==='function')for(const x of fidCands(cust,base)){if(x.disc>0&&(!best||x.disc>best.disc)){if(best)out.note='Se aplicó '+x.label+' (mayor beneficio): no se acumula con '+best.label+'.';best=x;}}
  if(best){out.disc=Math.min(best.disc,base);out.kind=best.kind;out.label=best.label;out.code=best.code||'';out.couponId=best.couponId||'';if(best.kind!=='coupon')out.couponErr=cand?'':out.couponErr;}
  if(base===0&&(code||mb)&&!out.couponErr)out.note='Los productos de tabaco no participan de promociones ni descuentos.';
  return out;}
@@ -3832,12 +3952,12 @@ let custStatsMemo=null;function custStats(){const k=(S.sales||[]).length+'|'+((S
  const m={};(S.sales||[]).forEach(s=>{if(!s.cust||s.status!=='ok')return;const o=m[s.cust]||(m[s.cust]={n:0,tot:0,last:0});o.n++;o.tot+=+s.total||0;if(s.ts>o.last)o.last=s.ts;});custStatsMemo={k,m};return m;}
 function custSince(c){return +c.ts||+(c.consent&&c.consent.ts)||0;}
 function custRow(c){const st=stampsOf(c.id),mb=memberActive(c),dt=debtOf(c.id);const cs=custStats()[c.id]||{n:0,tot:0,last:0};const al=custSince(c);const ds=cs.last?Math.floor((now()-cs.last)/864e5):null;
- return `<tr><td>${pad4(c.num)}</td><td><b>${esc(custFull(c))}</b>${c.status==='baja'?' <span class="tag bad">baja</span>':''}${c.origin==='ejemplo'?' <span class="tag sim">ej.</span>':''}${ownerMode()&&!(typeof wsOnly==='function'&&wsOnly())?(c.channel==='mayorista'?' <span class="tag ok">mayorista</span>':' <span class="tag">minorista</span>'):''}</td><td>${esc(c.wa)}</td><td>${esc(birthTxt(c.birth))}</td><td class="sm" ${al?`data-sv="${al}"`:''}>${al?esc(fmtDT(al)):'—'}</td><td class="sm" ${cs.last?`data-sv="${cs.last}"`:''}>${cs.last?esc(fmtDT(cs.last))+'<br><span class="mut">'+(ds===0?'hoy':'hace '+ds+' día'+(ds===1?'':'s'))+'</span>':'<span class="mut" title="Sin compras registradas">—</span>'}</td><td class="sm r" ${cs.n?`data-sv="${cs.tot}"`:''}>${cs.n?cs.n+' · '+money(cs.tot):'—'}</td><td class="sm">${esc(c.origin)}<br>${c.consent.comm?'<span class="tag ok">promos sí</span>':'<span class="tag">promos no</span>'}</td><td>${Math.min(st,S.loyalty.goal)}/${S.loyalty.goal}${st>=S.loyalty.goal?' 🎁':''}</td><td class="sm">${mb?'⭐ '+esc(mb.name)+'<br>hasta '+esc(mb.until):'—'}</td><td class="r">${c.limit?`${money(dt)}<br><span class="sm mut">de ${money(c.limit)}</span>`:'<span class="mut sm">sin crédito</span>'}</td><td class="r"><button class="btn sm" data-act="cuEdit" data-id="${c.id}">Ficha</button></td></tr>`;}
+ return `<tr><td>${pad4(c.num)}</td><td><b>${esc(custFull(c))}</b>${c.status==='baja'?' <span class="tag bad">baja</span>':''}${c.origin==='ejemplo'?' <span class="tag sim">ej.</span>':''}${ownerMode()&&!(typeof wsOnly==='function'&&wsOnly())?(c.channel==='mayorista'?' <span class="tag ok">mayorista</span>':' <span class="tag">minorista</span>'):''}</td><td>${esc(c.wa)}</td><td>${esc(birthTxt(c.birth))}</td><td class="sm" ${al?`data-sv="${al}"`:''}>${al?esc(fmtDT(al)):'—'}</td><td class="sm" ${cs.last?`data-sv="${cs.last}"`:''}>${cs.last?esc(fmtDT(cs.last))+'<br><span class="mut">'+(ds===0?'hoy':'hace '+ds+' día'+(ds===1?'':'s'))+'</span>':'<span class="mut" title="Sin compras registradas">—</span>'}</td><td class="sm r" ${cs.n?`data-sv="${cs.tot}"`:''}>${cs.n?cs.n+' · '+money(cs.tot):'—'}</td><td class="sm">${esc(c.origin)}<br>${c.consent.comm?'<span class="tag ok">promos sí</span>':'<span class="tag">promos no</span>'}</td><td>${Math.min(st,S.loyalty.goal)}/${S.loyalty.goal}${st>=S.loyalty.goal?' 🎁':''}</td><td class="sm">${mb?'⭐ '+esc(mb.name)+'<br>hasta '+esc(mb.until):'—'}</td>${typeof fidCustCells==='function'?fidCustCells(c):''}<td class="r">${c.limit?`${money(dt)}<br><span class="sm mut">de ${money(c.limit)}</span>`:'<span class="mut sm">sin crédito</span>'}</td><td class="r"><button class="btn sm" data-act="cuEdit" data-id="${c.id}">Ficha</button></td></tr>`;}
 reg('clientes','Clientes','users','customers',()=>{const q=cuF.q.toLowerCase();const L=S.customers.filter(c=>!c.elim).filter(c=>!q||custFull(c).toLowerCase().includes(q)||c.wa.includes(q.replace(/\D/g,'')||'zzz')||pad4(c.num)===q||(c.dni&&normDni(q).length>=6&&normDni(c.dni)===normDni(q)));
  const sub=S.customers.filter(hasComm).length;const deuda=S.customers.reduce((a,c)=>a+Math.max(0,debtOf(c.id)),0);
  return `<div class="row"><h1 class="sp">${ownerMode()?'Clientes':'Clientes del Club Mi Comercio'}</h1>${expBar('clientes')}<button class="btn" data-act="cuCamp">Campaña WhatsApp</button><button class="btn gold" data-act="cuEdit" data-id="">+ Cliente</button></div>
  <div class="grid g4"><div class="card kpi"><b>${S.customers.filter(c=>c.status!=='baja').length}</b><span>${ownerMode()?((typeof wsOnly==='function'&&wsOnly())?'Clientes activos':'Clientes activos ('+S.customers.filter(c=>c.status!=='baja'&&c.channel==='mayorista').length+' mayoristas)'):'Socios activos'}</span></div><div class="card kpi"><b>${sub}</b><span>Aceptaron promociones (se les puede escribir)</span></div><div class="card kpi"><b>${S.members.filter(m=>m.status==='activa'&&m.to>now()).length}</b><span>Membresías vigentes</span></div><div class="card kpi"><b>${money(deuda)}</b><span>Deuda total en cuenta corriente</span></div></div>
- <div class="card" style="margin-top:1rem"><input id="cuq" placeholder="Buscar por nombre, WhatsApp, DNI o N.º de socio…" value="${esc(cuF.q)}" style="max-width:360px"><div class="tw"><table><thead><tr><th>N.º</th><th>Cliente</th><th>WhatsApp</th><th>Cumple</th><th>Alta (registro)</th><th>Última compra</th><th class="r">Compras</th><th>Origen · consentimiento</th><th>Sellos</th><th>Membresía</th><th class="r">Cta. cte.</th><th></th></tr></thead><tbody>${L.map(custRow).join('')||'<tr><td colspan="12" class="mut">Sin clientes.</td></tr>'}</tbody></table></div>
+ <div class="card" style="margin-top:1rem"><input id="cuq" placeholder="Buscar por nombre, WhatsApp, DNI o N.º de socio…" value="${esc(cuF.q)}" style="max-width:360px"><div class="tw"><table><thead><tr><th>N.º</th><th>Cliente</th><th>WhatsApp</th><th>Cumple</th><th>Alta (registro)</th><th>Última compra</th><th class="r">Compras</th><th>Origen · consentimiento</th><th>Sellos</th><th>Membresía</th>${typeof fidCustHeads==='function'?fidCustHeads():''}<th class="r">Cta. cte.</th><th></th></tr></thead><tbody>${L.map(custRow).join('')||'<tr><td colspan="12" class="mut">Sin clientes.</td></tr>'}</tbody></table></div>
  <p class="sm mut">Datos personales (Ley 25.326 [VERIFICAR]): sin consentimiento de promociones el cliente queda excluido de campañas. La baja anonimiza los datos y conserva el historial contable.</p></div>`;},
  ()=>{const i=$('#cuq');if(i)i.addEventListener('input',e=>{cuF.q=e.target.value;const p=e.target.selectionStart;rerender();const n=$('#cuq');n.focus();n.setSelectionRange(p,p);});});
 A.cuEdit=el=>{const c=el.dataset.id?custById(el.dataset.id):null;const isAdm=can('config');const adm=custAdm(),sd=(c&&!adm)?'disabled':'';
@@ -3848,7 +3968,7 @@ A.cuEdit=el=>{const c=el.dataset.id?custById(el.dataset.id):null;const isAdm=can
  ${!c&&ownerMode()&&typeof wsOn==='function'&&wsOn()?`<div class="card" style="margin:.6rem 0"><h3 style="margin-top:0">Mayorista y crédito</h3><div class="grid g2"><div ${(typeof wsOnly==='function'&&wsOnly())?'hidden':''}><label for="wc-ch">Canal habitual</label><select id="wc-ch"><option value="mayorista" selected>Mayorista</option><option value="minorista">Minorista</option></select></div><div><label for="wc-tx">CUIT ${(typeof wsOnly==='function'&&wsOnly())?'(opcional)':'(obligatorio para vender como mayorista)'}</label><input id="wc-tx" inputmode="numeric" maxlength="13" autocomplete="off" placeholder="20-12345678-6"></div></div><div class="grid g2"><div><label for="wc-tm">Plazo máximo de pago (días)</label><input id="wc-tm" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="Sin plazo"></div><div><label for="cu-lim">Límite de crédito ($)</label>${numIn('cu-lim',0,'0',can('config')||can('void')?'':'disabled')}</div></div><div class="grid g2"><div><label for="wc-zn">Zona de cobranza</label><input id="wc-zn" maxlength="30" autocomplete="off"></div><div><label for="wc-sl">Vendedor asignado</label><input id="wc-sl" maxlength="30" autocomplete="off"></div></div></div>`:''}
  <label class="chk"><input type="checkbox" id="cu-c1" ${c?(c.consent.club?'checked':''):(ownerMode()?'':'checked')} ${sd}> Participa del Club Mi Comercio (tratamiento de datos)</label><label class="chk"><input type="checkbox" id="cu-c2" ${c&&c.consent.comm?'checked':''} ${sd}> Aceptó recibir promociones por WhatsApp</label>
  ${c&&adm?`<label for="cu-proof">Constancia al OTORGAR un consentimiento (cómo y cuándo lo dio el titular; revocar no la necesita)</label><input id="cu-proof" maxlength="140" autocomplete="off" placeholder="Ej.: lo aceptó por escrito en el mostrador el 20/10" value="">${c.consent.proof?`<p class="sm mut">Última constancia: ${esc(c.consent.by||'')} · ${esc(c.consent.proof)}</p>`:''}`:''}
- ${c&&typeof wsCustCard==='function'?wsCustCard(c):''}${c?`<div class="card" style="margin:.6rem 0"><div class="row"><b class="sp">Cuenta corriente</b><span>Debe ${money(debtOf(c.id))}${typeof ccKindsHTML==='function'?ccKindsHTML(c.id):''}</span></div>${ccLedgerHTML(c.id)}<label for="cu-lim">Límite de crédito ($) — sólo administración</label>${numIn('cu-lim',c.limit||0,'0',can('config')||can('void')?'':'disabled')}<div class="row" style="margin-top:.5rem"><button class="btn sm" data-act="cuPay" data-id="${c.id}">Registrar cobro de deuda</button><button class="btn sm" data-act="cuWa" data-id="${c.id}" ${typeof waOk==='function'&&waOk(c)?'':'disabled title="Sin WhatsApp cargado"'}>WhatsApp${debtOf(c.id)>0?' (avisar saldo)':''}</button><button class="btn sm" data-act="cuMember" data-id="${c.id}">Membresía</button><button class="btn sm" data-act="cuRedeem" data-id="${c.id}">Canjear premio (${Math.min(stampsOf(c.id),S.loyalty.goal)}/${S.loyalty.goal})</button></div></div>
+ ${c&&typeof wsCustCard==='function'?wsCustCard(c):''}${c&&typeof fidCustCard==='function'?fidCustCard(c):''}${c?`<div class="card" style="margin:.6rem 0"><div class="row"><b class="sp">Cuenta corriente</b><span>Debe ${money(debtOf(c.id))}${typeof ccKindsHTML==='function'?ccKindsHTML(c.id):''}</span></div>${ccLedgerHTML(c.id)}<label for="cu-lim">Límite de crédito ($) — sólo administración</label>${numIn('cu-lim',c.limit||0,'0',can('config')||can('void')?'':'disabled')}<div class="row" style="margin-top:.5rem"><button class="btn sm" data-act="cuPay" data-id="${c.id}">Registrar cobro de deuda</button><button class="btn sm" data-act="cuWa" data-id="${c.id}" ${typeof waOk==='function'&&waOk(c)?'':'disabled title="Sin WhatsApp cargado"'}>WhatsApp${debtOf(c.id)>0?' (avisar saldo)':''}</button><button class="btn sm" data-act="cuMember" data-id="${c.id}">Membresía</button><button class="btn sm" data-act="cuRedeem" data-id="${c.id}">Canjear premio (${Math.min(stampsOf(c.id),S.loyalty.goal)}/${S.loyalty.goal})</button></div></div>
  <label for="cu-nt">Notas internas</label><input id="cu-nt" maxlength="120" value="${esc(c.notes||'')}"><div class="row" style="margin-top:.6rem">${adm&&c.status!=='baja'&&c.secret?`<button class="btn sm" data-act="cuCardLink" data-id="${c.id}">Enviar tarjeta (enlace y Wallet)</button>`:''}${custDelAdm()&&c.status!=='baja'?`<button class="btn sm red" data-act="cuBaja" data-id="${c.id}">Dar de baja (anonimizar)</button>`:''}${custDelAdm()&&!c.elim?`<button class="btn sm red" data-act="cuDel" data-id="${c.id}">Eliminar socio</button>`:''}${!custDelAdm()&&c.status!=='baja'?'<span class="sm mut">La baja y la eliminación las hace sólo el administrador.</span>':''}</div>`:''}`,
  {wide:true,okText:'Guardar',onOk:w=>{const nm=val('cu-n').trim(),ls=val('cu-l').trim();const OW=ownerMode(),club=$('#cu-c1',w).checked;
   if(OW){if(nm.length<2)return w._err('Escribí el nombre o la razón social.'),false;}else if(nm.length<2||ls.length<2)return w._err('Nombre y apellido son obligatorios.'),false;
@@ -4571,6 +4691,267 @@ A.cuWa=el=>{const c=custById(el.dataset.id);if(!c)return;
   $('#wa-t',w).value=kind==='saldo'?waDebtText(c):waFreeText(c);const ta=$('#wa-t',w);ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);});
  setTimeout(()=>{const ta=$('#wa-t',w);if(ta){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);}},60);};
 
+/* ===== V26.54 · Fidelización ampliada: niveles del Club, cumpleaños, monedero digital, gift cards / vouchers,
+   Día de Cuenta Comercio (cashback), ruleta y trivia con premios, y cola sin conexión =====
+   Revisión del pedido (los prompts hablaban de Visual Basic/WinForms; esto es Sistema VB = Vincular Business, web + Supabase):
+   · Todo vive en «Clientes y fidelización» y reutiliza Clientes, el libro de sellos, cupones y auditoría (no hay una base paralela).
+   · Saldos SIEMPRE derivados de un libro que no se edita (monedero: S.fidmov · gift card: S.giftmov). Corrección = movimiento compensatorio.
+   · Un beneficio por compra (regla de oro 4.3): nivel, cumpleaños, cupón y membresía compiten y gana el mayor.
+   · El monedero y la gift card NO son dinero nuevo del turno: la plata entró al cargar/vender (en efectivo va a la caja con su rubro).
+   · Con la nube configurada y sin conexión NO se gasta saldo (otro equipo podría haberlo usado): se cobra con otro medio.
+     Las cargas, los sellos y las jugadas sí quedan en la cola y suben al volver internet.
+   · Ruleta/trivia: azar del navegador (crypto), una jugada por venta, auditada; premio de sellos, saldo o cupón.
+     Sorteos y promociones con premio pueden requerir autorización/bases legales [VERIFICAR con asesor y normativa provincial]. */
+const FID_DEF={
+ tiers:{on:false,days:180,list:[{k:'bronce',name:'Bronce',min:0,pct:0},{k:'plata',name:'Plata',min:5000000,pct:3},{k:'oro',name:'Oro',min:15000000,pct:7}]},
+ bday:{on:false,pct:10},
+ wallet:{on:!IS_CLIENT,rubro:'cobr'},   /* en el sistema del cliente lo enciende el administrador, después de pegar 20-fidelizacion-operacion.sql */
+ gift:{on:!IS_CLIENT,months:6},
+ cb:{on:false,dows:[3],pct:5},
+ game:{on:false,mode:'ruleta',min:500000,
+  prizes:[{id:'pz1',label:'+1 sello',kind:'stamps',v:1,w:30},{id:'pz2',label:'$ 500 al monedero',kind:'wallet',v:50000,w:15},{id:'pz3',label:'10 % en tu próxima compra',kind:'coupon',v:10,w:15},{id:'pz4',label:'+2 sellos',kind:'stamps',v:2,w:10},{id:'pz5',label:'Seguí participando',kind:'none',v:0,w:30}],
+  trivia:[{q:'¿Cuántos sellos necesitás para tu premio?',o:['5','La meta del Club','Ninguno'],ok:1},{q:'¿Con qué podés pagar en el local además de efectivo?',o:['Sólo efectivo','Con el saldo de tu monedero','Con fichas'],ok:1}]}};
+const fidCfg=()=>{const c=(S.cfg&&S.cfg.fid)||{};const o={};for(const k in FID_DEF)o[k]=Object.assign({},FID_DEF[k],c[k]||{});return o;};
+function fidSet(k,v){S.cfg.fid=S.cfg.fid||{};S.cfg.fid[k]=Object.assign({},(S.cfg.fid[k]||{}),v);}
+const fidSqlNote=()=>typeof CLOUD!=='undefined'&&CLOUD.on?'<div class="warnbox sm">Con la nube: estas funciones necesitan que el administrador haya pegado una vez <b>20-fidelizacion-operacion.sql</b> en Supabase (si no, el servidor rechaza los movimientos y lo vas a ver en Nube → rechazos).</div>':'';
+const fidOff=()=>typeof CLOUD!=='undefined'&&CLOUD.on&&typeof cl!=='undefined'&&!(cl.ready&&cl.online);
+const fidMov=()=>S.fidmov||(S.fidmov=[]);
+const giftL=()=>S.gifts||(S.gifts=[]);
+const giftM=()=>S.giftmov||(S.giftmov=[]);
+const gameL=()=>S.games||(S.games=[]);
+function fidRand(n){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n;}
+
+/* ---------- monedero digital (saldo del cliente) ---------- */
+const walBal=cid=>fidMov().filter(e=>e.cust===cid).reduce((a,e)=>a+(+e.amount||0),0);
+function walPush(cid,kind,amount,ref,extra){const e=Object.assign({id:uid(),cust:cid,ts:now(),kind,amount,ref:String(ref||'').slice(0,120),user:user?user.name:'sistema'},extra||{});fidMov().push(e);return e;}
+function walLoad(cid,amount,method,rubro){const c=custById(cid);if(!c||c.status==='baja')return'Cliente inexistente.';if(!fidCfg().wallet.on)return'El monedero está apagado (Fidelización → Monedero).';
+ if(!Number.isInteger(amount)||amount<=0)return'El importe debe ser mayor a cero.';if(amount>100000000)return'Importe demasiado alto para una carga (máximo $ 1.000.000).';
+ if(!MET[method]||['fiado','mixto','monedero','giftcard','pedidosya'].includes(method))return'Medio de carga inválido.';
+ let mov='';if(method==='efectivo'){const e=addMov('ingreso',rubro||fidCfg().wallet.rubro||'cobr','Carga de monedero · '+custFull(c),amount);if(e)return e;mov=S.movs[S.movs.length-1].id;}
+ walPush(cid,'carga',amount,'Carga · '+(MET[method]||method),{method,mov});audit('MONEDERO_CARGA',custFull(c)+' · '+money(amount)+' · '+MET[method]);save();return'';}
+
+/* ---------- gift cards / vouchers ---------- */
+const GC_ABC='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function giftCode(){let s='';for(let i=0;i<8;i++)s+=GC_ABC[fidRand(GC_ABC.length)];const c='GC-'+s.slice(0,4)+'-'+s.slice(4);return giftL().some(g=>g.code===c)?giftCode():c;}
+const giftBal=g=>giftM().filter(m=>m.gift===g.id).reduce((a,m)=>a+(+m.amount||0),0);
+const giftByCode=code=>{const k=String(code||'').trim().toUpperCase().replace(/\s+/g,'');return giftL().find(g=>g.code===k||g.code.replace(/-/g,'')===k.replace(/-/g,''))||null;};
+function giftState(g){if(g.status==='anulada')return'anulada';if(g.exp&&now()>g.exp)return'vencida';return giftBal(g)<=0?'agotada':'activa';}
+const GIFT_TXT={activa:'Activa',agotada:'Usada por completo',vencida:'Vencida',anulada:'Anulada'};
+function giftSell(f){if(!fidCfg().gift.on)return{err:'Las gift cards están apagadas (Fidelización → Gift cards).'};
+ const amount=f.amount;if(!Number.isInteger(amount)||amount<=0)return{err:'El valor de la gift card debe ser mayor a cero.'};if(amount>50000000)return{err:'Valor demasiado alto (máximo $ 500.000).'};
+ if(!MET[f.method]||['fiado','mixto','monedero','giftcard','pedidosya'].includes(f.method))return{err:'Medio de cobro inválido.'};
+ const cust=f.cust?custById(f.cust):null;if(f.cust&&!cust)return{err:'Cliente inexistente.'};
+ const months=Math.max(1,Math.min(36,+f.months||fidCfg().gift.months||6));const code=giftCode();
+ let mov='';if(f.method==='efectivo'){const e=addMov('ingreso',f.rubro||fidCfg().wallet.rubro||'cobr','Venta de gift card '+code,amount);if(e)return{err:e};mov=S.movs[S.movs.length-1].id;}
+ const g={id:uid(),code,ts:now(),exp:now()+months*30*86400000,cust:cust?cust.id:'',holder:String(f.holder||'').replace(/[<>]/g,'').slice(0,60),buyer:String(f.buyer||'').replace(/[<>]/g,'').slice(0,60),amount,method:f.method,mov,status:'activa',user:user?user.name:'sistema',msg:String(f.msg||'').replace(/[<>]/g,'').slice(0,120)};
+ giftL().push(g);giftM().push({id:uid(),gift:g.id,ts:now(),amount,kind:'emision',ref:'Emisión · '+(MET[f.method]||f.method),user:g.user});
+ audit('GIFT_EMITIR',code+' · '+money(amount)+' · '+(cust?'nominativa '+custFull(cust):'al portador')+' · '+MET[f.method]);save();return{g};}
+function giftVoid(g,motivo){if(g.status==='anulada')return'Ya está anulada.';const b=giftBal(g);if(b!==g.amount)return'Ya tiene canjes: no se puede anular (sólo vencer o agotar).';
+ g.status='anulada';g.voidReason=motivo;giftM().push({id:uid(),gift:g.id,ts:now(),amount:-b,kind:'anulacion',ref:'Anulación · '+motivo,user:user?user.name:'sistema'});
+ if(g.mov){const m=S.movs.find(x=>x.id===g.mov);if(m&&openSess()&&m.sessId===openSess().id){addMov('egreso',m.rubro,'Anulación gift card '+g.code,b);}}
+ audit('GIFT_ANULAR',g.code+' · '+motivo);save();return'';}
+
+/* ---------- niveles del Club (Bronce / Plata / Oro) por consumo ---------- */
+function custSpend(cid,days){const from=now()-days*86400000;let t=0;S.sales.forEach(s=>{if(s.cust===cid&&s.status==='ok'&&s.ts>=from)t+=+s.total||0;});
+ (S.returns||[]).forEach(r=>{if(r.cust===cid&&r.ts>=from)t-=+r.total||0;});return Math.max(0,t);}
+function custTier(c){const T=fidCfg().tiers;if(!c||!T.on)return null;const sp=custSpend(c.id,T.days);const L=T.list.slice().sort((a,b)=>a.min-b.min);
+ let cur=L[0],next=null;for(const t of L){if(sp>=t.min)cur=t;else{next=t;break;}}return{t:cur,spend:sp,next,missing:next?next.min-sp:0};}
+const TIER_ICO={bronce:'🥉',plata:'🥈',oro:'🥇'};
+function tierBadge(c){const r=custTier(c);if(!r)return'';return `<span class="tag ${r.t.k==='oro'?'ok':r.t.k==='plata'?'':'warn'}" title="Consumo últimos ${fidCfg().tiers.days} días: ${money(r.spend)}">${TIER_ICO[r.t.k]||'⭐'} ${esc(r.t.name)}</span>`;}
+
+/* ---------- cumpleaños: un beneficio por año ---------- */
+function bdayUsed(cid){const y=new Date(now()).getUTCFullYear();return S.sales.some(s=>s.cust===cid&&s.status==='ok'&&s.benefit&&s.benefit.kind==='cumple'&&new Date(s.ts).getUTCFullYear()===y);}
+function bdayEligible(c){const B=fidCfg().bday;return !!(c&&B.on&&B.pct>0&&c.status!=='baja'&&isBirthWeek(c)&&!bdayUsed(c.id));}
+
+/* candidatos de beneficio que compiten en applyBenefit (gana el mayor) */
+function fidCands(cust,base){const out=[];if(!cust||!(base>0))return out;
+ const tr=custTier(cust);if(tr&&tr.t.pct>0)out.push({kind:'tier',disc:Math.round(base*tr.t.pct/100),label:'Nivel '+tr.t.name+' ('+tr.t.pct+' %)'});
+ if(bdayEligible(cust)){const p=fidCfg().bday.pct;out.push({kind:'cumple',disc:Math.round(base*p/100),label:'Regalo de cumpleaños ('+p+' %)'});}
+ return out;}
+
+/* ---------- POS: medios nuevos, validación previa y registro ---------- */
+function fidExtraMet(){const C=fidCfg();const o=[];if(C.wallet.on)o.push('monedero');if(C.gift.on)o.push('giftcard');return o;}
+function fidPre(pays,cust,opts){
+ const w=pays.find(p=>p.m==='monedero'),g=pays.find(p=>p.m==='giftcard');if(!w&&!g)return'';
+ if(fidOff())return'Sin conexión con la nube: no se puede gastar saldo de monedero ni de gift card (otro equipo podría haberlo usado). Cobrá con otro medio o esperá a que vuelva internet.';
+ if(w){if(!cust)return'El pago con monedero exige identificar al cliente.';const b=walBal(cust.id);if(w.a>b)return'Saldo de monedero insuficiente: tiene '+money(b)+' y se quieren usar '+money(w.a)+'.';}
+ if(g){const gc=giftByCode(opts.gift);if(!gc)return'Escribí el código de la gift card (GC-XXXX-XXXX).';const st=giftState(gc);if(st!=='activa')return'Gift card '+gc.code+': '+GIFT_TXT[st].toLowerCase()+'.';
+  if(gc.cust&&(!cust||cust.id!==gc.cust))return'La gift card '+gc.code+' es nominativa: identificá a su titular ('+custFull(custById(gc.cust))+').';
+  const b=giftBal(gc);if(g.a>b)return'Saldo de la gift card insuficiente: tiene '+money(b)+'.';opts._gift=gc;}
+ return'';}
+function cbToday(){const C=fidCfg().cb;return !!(C.on&&C.pct>0&&(C.dows||[]).includes(new Date(now()).getDay()));}
+function fidCommit(sale,cust,opts){const L=salePays(sale);const w=L.find(p=>p.m==='monedero'),g=L.find(p=>p.m==='giftcard');
+ if(w&&cust){walPush(cust.id,'pago',-w.a,'Pago venta '+sale.n,{sale:sale.id});audit('MONEDERO_PAGO',custFull(cust)+' · '+money(w.a)+' · venta '+sale.n);}
+ if(g&&opts._gift){giftM().push({id:uid(),gift:opts._gift.id,ts:now(),amount:-g.a,kind:'canje',sale:sale.id,ref:'Canje venta '+sale.n,user:user?user.name:'sistema'});sale.gift=opts._gift.code;audit('GIFT_CANJE',opts._gift.code+' · '+money(g.a)+' · venta '+sale.n+' · queda '+money(giftBal(opts._gift)));}
+ /* Día de Cuenta Comercio: venta pagada TODA con saldo de monedero → cashback al monedero */
+ if(w&&cust&&w.a===sale.total&&cbToday()){const a=Math.round(sale.total*fidCfg().cb.pct/100);if(a>0){walPush(cust.id,'cashback',a,'Día de Cuenta Comercio · venta '+sale.n,{sale:sale.id});sale.cashback=a;audit('MONEDERO_CASHBACK',custFull(cust)+' · '+money(a)+' · venta '+sale.n);}}}
+function fidVoid(s){fidMov().filter(e=>e.sale===s.id&&e.kind!=='reverso').forEach(e=>{if(!fidMov().some(x=>x.rev===e.id))walPush(e.cust,'reverso',-e.amount,'Reversión por anulación '+s.n,{sale:s.id,rev:e.id});});
+ giftM().filter(m=>m.sale===s.id&&m.kind==='canje').forEach(m=>{if(!giftM().some(x=>x.rev===m.id))giftM().push({id:uid(),gift:m.gift,ts:now(),amount:-m.amount,kind:'reverso',sale:s.id,rev:m.id,ref:'Reversión por anulación '+s.n,user:user?user.name:'sistema'});});
+ gameL().filter(p=>p.sale===s.id&&!p.rev).forEach(p=>{p.rev=now();if(p.kind==='stamps'&&p.v>0)S.loyalty.ledger.push({id:uid(),cust:p.cust,ts:now(),kind:'adjust',n:-p.v,ref:'reversión premio ruleta '+s.n,user:user?user.name:'sistema'});
+  if(p.kind==='coupon'&&p.coupon){const cp=S.coupons.find(x=>x.id===p.coupon);if(cp&&!cp.uses.length)cp.active=false;}});}
+function fidCobroHTML(m,cust,tot){const C=fidCfg();const usesW=m==='monedero'||(pos.mix&&pos.pays.some(p=>p.m==='monedero'));const usesG=m==='giftcard'||(pos.mix&&pos.pays.some(p=>p.m==='giftcard'));let h='';
+ if(cust&&C.wallet.on){const b=walBal(cust.id);if(b||usesW)h+=`<div class="${usesW&&b<tot&&!pos.mix?'errbox':'okbox'} sm">👛 Monedero de ${esc(cust.name)}: <b>${money(b)}</b>${usesW&&!pos.mix&&b<tot?' · no alcanza: usá «Dividir el pago» y completá con otro medio':''}${cbToday()?' · <b>Hoy es Día de Cuenta Comercio</b>: pagando todo con el monedero recibe '+C.cb.pct+' % de vuelta':''}</div>`;}
+ if(usesW&&!cust)h+='<div class="warnbox sm">Para pagar con el monedero identificá al cliente (por nombre, DNI o el QR de su tarjeta).</div>';
+ if(usesG){const gc=giftByCode(pos.gift);const st=gc?giftState(gc):'';h+=`<div class="card sm" style="margin:.4rem 0"><label for="cb-gift"><b>Código de la gift card / voucher</b></label><div class="row"><input id="cb-gift" class="sp" maxlength="16" placeholder="GC-XXXX-XXXX" autocomplete="off" style="text-transform:uppercase" value="${esc(pos.gift||'')}"><button type="button" class="btn sm" data-act="cbGift">Consultar</button></div>${pos.gift?(gc?`<div class="${st==='activa'?'okbox':'errbox'}" style="margin-top:.3rem">${esc(gc.code)} · ${esc(GIFT_TXT[st])} · saldo <b>${money(giftBal(gc))}</b>${gc.cust?' · nominativa de '+esc(custFull(custById(gc.cust))):' · al portador'}${gc.exp?' · vence '+esc(dmy(dkey(gc.exp))):''}</div>`:'<div class="errbox" style="margin-top:.3rem">No existe una gift card con ese código.</div>'):''}</div>`;}
+ if(fidOff()&&(usesW||usesG))h+='<div class="errbox sm">Sin conexión con la nube: el saldo no se puede usar hasta que vuelva internet.</div>';
+ return h;}
+A.cbGift=()=>{cobroRender();};
+
+/* ---------- ruleta / trivia después de la venta ---------- */
+const closeAll=()=>{const r=$('#modal-root');if(r)r.innerHTML='';};
+function gameEligible(sale){const G=fidCfg().game;return !!(G.on&&sale&&sale.cust&&sale.status==='ok'&&sale.total>=(G.min||0)&&!gameL().some(p=>p.sale===sale.id)&&(G.prizes||[]).some(p=>p.w>0));}
+function fidSaleOkHTML(sale){let h='';if(sale.cashback)h+=`<div class="okbox sm">💸 Día de Cuenta Comercio: <b>${money(sale.cashback)}</b> de vuelta al monedero de ${esc(sale.custName)}.</div>`;
+ const pw=salePays(sale).find(p=>p.m==='monedero');if(pw&&sale.cust)h+=`<div class="card sm" style="margin:.4rem 0">👛 Pagado con monedero: ${money(pw.a)} · saldo que queda: <b>${money(walBal(sale.cust))}</b></div>`;
+ if(sale.gift){const g=giftByCode(sale.gift);if(g)h+=`<div class="card sm" style="margin:.4rem 0">🎁 Gift card ${esc(g.code)} · saldo que queda: <b>${money(giftBal(g))}</b></div>`;}
+ if(gameEligible(sale)){const G=fidCfg().game;h+=`<div class="card" style="margin:.5rem 0;text-align:center"><b>🎡 ${esc(sale.custName)} ganó una jugada</b><p class="sm mut">${G.mode==='trivia'?'Respondé una pregunta y, si acertás, girás la ruleta.':'Girá la ruleta y llevate un premio del Club.'}</p><button class="btn gold" data-act="gamePlay" data-id="${esc(sale.id)}">${G.mode==='trivia'?'Jugar trivia':'Girar la ruleta'}</button></div>`;}
+ return h;}
+function gameDraw(){const P=fidCfg().game.prizes.filter(p=>p.w>0);const T=P.reduce((a,p)=>a+p.w,0);let r=fidRand(T);for(const p of P){if(r<p.w)return p;r-=p.w;}return P[P.length-1];}
+function gameApply(sale,pz,via){const c=custById(sale.cust);const rec={id:uid(),sale:sale.id,cust:sale.cust,ts:now(),prize:pz?pz.id:'',label:pz?pz.label:'Sin premio',kind:pz?pz.kind:'none',v:pz?pz.v:0,via,user:user?user.name:'sistema'};
+ if(pz&&pz.kind==='stamps'&&pz.v>0){S.loyalty.ledger.push({id:uid(),cust:c.id,ts:now(),kind:'adjust',n:pz.v,ref:'premio '+via+' · venta '+sale.n,user:rec.user});}
+ else if(pz&&pz.kind==='wallet'&&pz.v>0){walPush(c.id,'premio',pz.v,'Premio '+via+' · venta '+sale.n,{sale:sale.id});}
+ else if(pz&&pz.kind==='coupon'&&pz.v>0){let code;do{code='PREMIO'+String(fidRand(900000)+100000);}while(S.coupons.some(x=>x.code===code));
+  const cp={id:uid(),code,type:'pct',value:Math.min(90,pz.v),min:0,from:'',to:dkey(now()+30*86400000),maxUses:1,perCust:1,aud:'club',active:true,public:false,note:'Premio '+via+' para '+custFull(c),uses:[],owner:c.id};
+  S.coupons.push(cp);rec.coupon=cp.id;rec.code=code;}
+ gameL().push(rec);audit('JUEGO_PREMIO',custFull(c)+' · '+rec.label+(rec.code?' · cupón '+rec.code:'')+' · venta '+sale.n+' · '+via);save();if(typeof pubRefresh==='function')pubRefresh();return rec;}
+function wheelSVG(P){const n=P.length,R=120,cx=130,cy=130;const cols=['#c9a227','#2f6f5e','#a3402e','#3b5ba5','#7a4fa0','#4a7d2c','#b0662b','#2c7f91'];
+ return `<svg viewBox="0 0 260 260" width="260" height="260" role="img" aria-label="Ruleta de premios"><g id="wheel-g" style="transform-origin:130px 130px;transition:transform 3.2s cubic-bezier(.17,.67,.21,1)">${P.map((p,i)=>{const a0=2*Math.PI*i/n-Math.PI/2,a1=2*Math.PI*(i+1)/n-Math.PI/2,am=(a0+a1)/2;
+  const x0=cx+R*Math.cos(a0),y0=cy+R*Math.sin(a0),x1=cx+R*Math.cos(a1),y1=cy+R*Math.sin(a1);const tx=cx+R*.62*Math.cos(am),ty=cy+R*.62*Math.sin(am);
+  return `<path d="M${cx},${cy} L${x0.toFixed(1)},${y0.toFixed(1)} A${R},${R} 0 ${n<=2?1:0} 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z" fill="${cols[i%cols.length]}" stroke="#fff" stroke-width="2"/><text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" fill="#fff" font-size="10" font-weight="700" text-anchor="middle" dominant-baseline="middle" transform="rotate(${(am*180/Math.PI+90).toFixed(1)} ${tx.toFixed(1)} ${ty.toFixed(1)})">${esc(p.label.length>16?p.label.slice(0,15)+'…':p.label)}</text>`;}).join('')}</g><circle cx="130" cy="130" r="16" fill="#111" stroke="#fff" stroke-width="3"/><path d="M130,2 L120,22 L140,22 Z" fill="#111" stroke="#fff" stroke-width="2"/></svg>`;}
+function gameSpin(sale,via){const P=fidCfg().game.prizes.filter(p=>p.w>0);const pz=gameDraw();const idx=P.indexOf(pz);const rec=gameApply(sale,pz.kind==='none'?null:pz,via);
+ const w=modal('🎡 Ruleta del Club',`<div style="text-align:center">${wheelSVG(P)}<div id="wheel-res" aria-live="polite" style="min-height:3rem;margin-top:.6rem"></div></div>`,{okText:'Listo',noCancel:true});
+ const deg=360*5+(360-(idx+0.5)*360/P.length);const g=w.querySelector('#wheel-g');const red=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const show=()=>{const b=w.querySelector('#wheel-res');if(b)b.innerHTML=rec.kind==='none'?'<div class="warnbox">Esta vez no hubo premio. ¡Gracias por participar!</div>':`<div class="okbox"><b>¡Ganó: ${esc(rec.label)}!</b>${rec.code?'<br>Cupón de un solo uso para su próxima compra: <b>'+esc(rec.code)+'</b> (vence en 30 días)':''}</div>`;};
+ if(g&&!red){requestAnimationFrame(()=>{g.style.transform='rotate('+deg+'deg)';});setTimeout(show,3300);}else{if(g)g.style.transform='rotate('+deg+'deg)';show();}}
+A.gamePlay=el=>{const sale=S.sales.find(s=>s.id===el.dataset.id);if(!sale||!gameEligible(sale))return toast('Esta venta ya jugó o no participa.',1);closeAll();
+ const G=fidCfg().game;if(G.mode!=='trivia'||!(G.trivia||[]).length)return gameSpin(sale,'ruleta');
+ const T=G.trivia[fidRand(G.trivia.length)];
+ modal('❓ Trivia del Club',`<p><b>${esc(T.q)}</b></p>${T.o.map((o,i)=>`<label class="chk"><input type="radio" name="tv" value="${i}"> ${esc(o)}</label>`).join('')}`,{okText:'Responder',onOk:w=>{const r=w.querySelector('input[name=tv]:checked');if(!r)return w._err('Elegí una respuesta.'),false;
+  if(+r.value===T.ok){setTimeout(()=>gameSpin(sale,'trivia'),60);}else{gameApply(sale,null,'trivia (respuesta incorrecta)');toast('Respuesta incorrecta: esta vez sin premio.');}}});};
+
+/* ---------- ficha y lista de clientes ---------- */
+function fidCustHeads(){const C=fidCfg();return (C.tiers.on?'<th>Nivel</th>':'')+(C.wallet.on?'<th class="r">Monedero</th>':'');}
+function fidCustCells(c){const C=fidCfg();return (C.tiers.on?`<td>${tierBadge(c)||'—'}</td>`:'')+(C.wallet.on?`<td class="r" data-sv="${walBal(c.id)}">${walBal(c.id)?money(walBal(c.id)):'<span class="mut">—</span>'}</td>`:'');}
+function fidCustCard(c){const C=fidCfg();const tr=custTier(c);const b=walBal(c.id);const gs=giftL().filter(g=>g.cust===c.id);const pl=gameL().filter(p=>p.cust===c.id);
+ return `<div class="card" style="margin:.6rem 0"><h3 style="margin-top:0">Club: nivel, monedero y premios</h3>
+ ${tr?`<p>${tierBadge(c)} · consumo de los últimos ${C.tiers.days} días: <b>${money(tr.spend)}</b>${tr.t.pct?' · '+tr.t.pct+' % de beneficio':''}${tr.next?` · le faltan <b>${money(tr.missing)}</b> para ${esc(tr.next.name)}`:' · nivel máximo'}</p>`:'<p class="sm mut">Niveles del Club apagados (Fidelización → Niveles).</p>'}
+ ${C.bday.on&&isBirthWeek(c)?`<div class="${bdayUsed(c.id)?'warnbox':'okbox'} sm">🎂 Semana de cumpleaños · ${bdayUsed(c.id)?'ya usó su regalo este año':'tiene '+C.bday.pct+' % de regalo en su próxima compra'}</div>`:''}
+ ${C.wallet.on?`<div class="row"><span class="sp">👛 Monedero: <b>${money(b)}</b></span><button class="btn sm gold" type="button" data-act="walLoad" data-id="${c.id}">Cargar saldo</button><button class="btn sm" type="button" data-act="walHist" data-id="${c.id}">Movimientos</button></div>`:''}
+ ${gs.length?`<p class="sm">🎁 Gift cards a su nombre: ${gs.map(g=>esc(g.code)+' ('+money(giftBal(g))+')').join(' · ')}</p>`:''}
+ ${pl.length?`<p class="sm mut">🎡 Jugadas: ${pl.length} · último premio: ${esc(pl[pl.length-1].label)}</p>`:''}</div>`;}
+function rubIngOpts(sel){return (S.rubros||[]).filter(r=>r.kind!=='msec'&&r.kind!=='shared'&&r.active!==false).map(r=>`<option value="${esc(r.id)}" ${r.id===sel?'selected':''}>${esc(r.name)}</option>`).join('');}
+const LOAD_MET=['efectivo','debito','credito','transferencia','qr','modo'];
+A.walLoad=el=>{const c=custById(el.dataset.id);if(!c)return;if(!can('customers'))return toast('Sin permiso',1);
+ modal('Cargar monedero · '+custFull(c),`<p>Saldo actual: <b>${money(walBal(c.id))}</b></p><label for="wl-a">Importe a cargar ($)</label>${numIn('wl-a',0,'0')}
+ <label for="wl-m">Cómo paga la carga</label><select id="wl-m">${LOAD_MET.map(k=>`<option value="${k}">${esc(MET[k])}</option>`).join('')}</select>
+ <label for="wl-r">Rubro del ingreso (si es en efectivo, entra a la caja)</label><select id="wl-r">${rubIngOpts(fidCfg().wallet.rubro||'cobr')}</select>
+ <p class="sm mut">El saldo no es una venta: la venta ocurre cuando el cliente lo gasta. En efectivo la plata entra hoy a la caja con este rubro; con otro medio queda registrada en el libro del monedero.</p>`,
+ {okText:'Cargar',onOk:w=>{const a=cents(val('wl-a'));const e=walLoad(c.id,a,val('wl-m'),val('wl-r'));if(e)return w._err(e),false;toast('Monedero cargado: '+money(a)+' · saldo '+money(walBal(c.id)));rerender();}});};
+A.walHist=el=>{const c=custById(el.dataset.id);if(!c)return;const L=fidMov().filter(e=>e.cust===c.id);let bal=0;const rows=L.map(e=>{bal+=e.amount;return{e,bal};}).reverse();
+ modal('Monedero · '+custFull(c),`<div class="tw"><table><thead><tr><th>Fecha</th><th>Movimiento</th><th class="r">Importe</th><th class="r">Saldo</th><th>Usuario</th></tr></thead><tbody>${rows.map(({e,bal})=>`<tr><td>${fmtDT(e.ts)}</td><td>${esc(WAL_TXT[e.kind]||e.kind)} · <span class="sm">${esc(e.ref||'')}</span></td><td class="r ${e.amount<0?'neg':''}">${money(e.amount)}</td><td class="r"><b>${money(bal)}</b></td><td class="sm">${esc(e.user||'')}</td></tr>`).join('')||'<tr><td colspan="5" class="mut">Sin movimientos.</td></tr>'}</tbody></table></div>
+ ${can('config')?'<button class="btn sm" data-act="walAdj" data-id="'+c.id+'">Ajuste compensatorio (administrador)</button>':''}`,{wide:true,okText:'Cerrar',noCancel:true});};
+const WAL_TXT={carga:'Carga',pago:'Pago',cashback:'Cashback',premio:'Premio',ajuste:'Ajuste',reverso:'Reversión',devolucion:'Devolución'};
+A.walAdj=el=>{const c=custById(el.dataset.id);if(!c||!can('config'))return;closeAll();
+ modal('Ajuste de monedero · '+custFull(c),`<p class="sm mut">El libro no se edita: el ajuste suma o resta con un movimiento nuevo y queda en auditoría.</p><label for="wa-a">Importe (use - para restar)</label><input id="wa-a" inputmode="decimal" autocomplete="off" placeholder="-500"><label for="wa-m">Motivo (obligatorio)</label><input id="wa-m" maxlength="100">`,
+ {onOk:w=>{const raw=val('wa-a').trim();const neg=raw.startsWith('-');const a=cents(raw.replace(/^-/,''));if(!(a>0))return w._err('Ingresá un importe distinto de cero.'),false;if(val('wa-m').trim().length<3)return w._err('Escribí el motivo.'),false;
+  const amt=neg?-a:a;if(walBal(c.id)+amt<0)return w._err('El saldo no puede quedar negativo.'),false;walPush(c.id,'ajuste',amt,val('wa-m'));audit('MONEDERO_AJUSTE',custFull(c)+' · '+money(amt)+' · '+val('wa-m'));save();rerender();}});};
+
+/* ---------- pantalla: Monedero y gift cards ---------- */
+reg('monedero','Monedero y gift cards','cash','customers',()=>{const C=fidCfg();const soc=S.customers.filter(c=>c.status!=='baja');const withBal=soc.map(c=>({c,b:walBal(c.id)})).filter(x=>x.b!==0).sort((a,b)=>b.b-a.b);
+ const tot=withBal.reduce((a,x)=>a+x.b,0);const G=giftL().slice().reverse();const gAct=giftL().filter(g=>giftState(g)==='activa');const gTot=gAct.reduce((a,g)=>a+giftBal(g),0);
+ const loadsBy={};fidMov().filter(e=>e.kind==='carga').forEach(e=>{loadsBy[e.method]=(loadsBy[e.method]||0)+e.amount;});
+ return `<div class="row"><h1 class="sp">Monedero digital y gift cards</h1>${C.gift.on?'<button class="btn gold" data-act="gcNew">+ Vender gift card / voucher</button>':''}</div>
+ ${fidSqlNote()}<div class="warnbox sm">El saldo del monedero y de las gift cards es <b>plata que el cliente ya pagó</b> (un pasivo del comercio): no es venta hasta que se usa. Se gasta en Vender con los medios <b>Monedero</b> y <b>Gift card</b>. Sin conexión con la nube no se puede gastar saldo.</div>
+ <div class="grid g4" style="margin:1rem 0"><div class="card kpi"><b>${money(tot)}</b><span>Saldo en monederos (${withBal.length} clientes)</span></div><div class="card kpi"><b>${money(gTot)}</b><span>Saldo en gift cards activas (${gAct.length})</span></div><div class="card kpi"><b>${money(fidMov().filter(e=>e.kind==='cashback').reduce((a,e)=>a+e.amount,0))}</b><span>Cashback entregado</span></div><div class="card kpi"><b>${money(Object.values(loadsBy).reduce((a,b)=>a+b,0))}</b><span>Cargas totales</span></div></div>
+ <div class="grid g2"><div class="card"><h3>Monedero</h3><label class="chk"><input type="checkbox" id="fw-on" ${C.wallet.on?'checked':''}> Activar el monedero (medio de pago «Monedero» en Vender)</label>
+  <label for="fw-r">Rubro de las cargas en efectivo</label><select id="fw-r">${rubIngOpts(C.wallet.rubro||'cobr')}</select>
+  <label for="fw-q" style="margin-top:.6rem">Cargar a un cliente</label><div class="row"><input id="fw-q" class="sp" placeholder="Nombre, WhatsApp, DNI o N.º" autocomplete="off"></div><div id="fw-res"></div>
+  <p class="sm mut">Cargas por medio: ${Object.keys(loadsBy).map(k=>esc(MET[k]||k)+' '+money(loadsBy[k])).join(' · ')||'todavía ninguna'}.</p></div>
+ <div class="card"><h3>Día de Cuenta Comercio</h3><label class="chk"><input type="checkbox" id="fc-on" ${C.cb.on?'checked':''}> <span>Activar: pagando <b>toda</b> la compra con el monedero, el cliente recibe un porcentaje de vuelta en su monedero</span></label>
+  <div class="grid g2"><div><label for="fc-p">Cashback (%)</label><input id="fc-p" inputmode="numeric" value="${C.cb.pct}"></div><div><label>Días</label><div class="row" style="gap:.3rem">${['Do','Lu','Ma','Mi','Ju','Vi','Sá'].map((d,i)=>`<label class="chk" style="margin:0"><input type="checkbox" class="fc-d" value="${i}" ${(C.cb.dows||[]).includes(i)?'checked':''}> ${d}</label>`).join('')}</div></div></div>
+  <p class="sm mut">¿Preferís un <b>descuento</b> en el momento en vez de cashback? Configuralo en Configuración → «Recargo o descuento por medio de pago» para el medio Monedero.</p></div></div>
+ <div class="row" style="margin-top:.6rem"><button class="btn" data-act="fwSave" style="white-space:normal">Guardar monedero y Día de Cuenta Comercio</button></div>
+ ${withBal.length?`<div class="card" style="margin-top:1rem"><h3>Clientes con saldo</h3><div class="tw"><table><thead><tr><th>N.º</th><th>Cliente</th><th class="r">Saldo</th><th></th></tr></thead><tbody>${withBal.map(({c,b})=>`<tr><td>${pad4(c.num)}</td><td>${esc(custFull(c))}</td><td class="r" data-sv="${b}"><b>${money(b)}</b></td><td class="r"><button class="btn sm gold" data-act="walLoad" data-id="${c.id}">Cargar</button> <button class="btn sm" data-act="walHist" data-id="${c.id}">Movimientos</button></td></tr>`).join('')}</tbody></table></div></div>`:''}
+ <div class="card" style="margin-top:1rem"><div class="row"><h3 class="sp">Gift cards y vouchers</h3><label class="chk" style="margin:0"><input type="checkbox" id="fg-on" ${C.gift.on?'checked':''}> Activar</label><label for="fg-m" class="sm mut" style="margin:0">Vigencia (meses)</label><input id="fg-m" inputmode="numeric" value="${C.gift.months}" style="max-width:70px"><button class="btn sm" data-act="fgSave">Guardar</button></div>
+ <div class="tw"><table><thead><tr><th>Código</th><th>Para</th><th class="r">Valor</th><th class="r">Saldo</th><th>Vence</th><th>Estado</th><th></th></tr></thead><tbody>${G.map(g=>{const st=giftState(g);return `<tr><td><b>${esc(g.code)}</b>${g.origin==='ejemplo'?' <span class="tag sim">ej.</span>':''}</td><td class="sm">${g.cust?'Nominativa · '+esc(custFull(custById(g.cust))):'Al portador'}${g.holder?'<br>'+esc(g.holder):''}</td><td class="r">${money(g.amount)}</td><td class="r" data-sv="${giftBal(g)}"><b>${money(giftBal(g))}</b></td><td class="sm">${g.exp?esc(dmy(dkey(g.exp))):'—'}</td><td><span class="tag ${st==='activa'?'ok':st==='agotada'?'':'bad'}">${esc(GIFT_TXT[st])}</span></td>
+  <td class="r"><button class="btn sm" data-act="gcPrint" data-id="${g.id}">Imprimir</button> <button class="btn sm" data-act="gcHist" data-id="${g.id}">Movimientos</button>${can('void')&&st==='activa'&&giftBal(g)===g.amount?` <button class="btn sm red" data-act="gcVoid" data-id="${g.id}">Anular</button>`:''}</td></tr>`;}).join('')||'<tr><td colspan="7" class="mut">Todavía no se vendió ninguna gift card.</td></tr>'}</tbody></table></div>
+ <p class="sm mut">Al portador: la usa quien tenga el código. Nominativa: sólo su titular (hay que identificarlo en el cobro). Se puede usar en partes hasta agotar el saldo; lo que sobra queda para la próxima compra hasta el vencimiento [VERIFICAR plazos de vigencia con la normativa de defensa del consumidor].</p></div>`;},
+ ()=>{const q=$('#fw-q');if(q)q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();const res=$('#fw-res');if(!v){res.innerHTML='';return;}
+  const L=S.customers.filter(c=>c.status!=='baja'&&(custFull(c).toLowerCase().includes(v)||(c.wa||'').replace(/\D/g,'').includes(v.replace(/\D/g,'')||'zz')||pad4(c.num)===v||(c.dni&&normDni(v).length>=6&&normDni(c.dni)===normDni(v)))).slice(0,6);
+  res.innerHTML=L.map(c=>`<button class="btn sm" style="margin:.2rem .2rem 0 0" data-act="walLoad" data-id="${c.id}">${esc(custFull(c))} · ${pad4(c.num)} · ${money(walBal(c.id))}</button>`).join('')||'<span class="sm mut">Sin resultados</span>';});},'Clientes');
+A.fwSave=()=>{if(!can('config'))return toast('Sólo el administrador cambia estas reglas.',1);const p=parseNum(val('fc-p'));if(!(p>=0&&p<=50))return toast('El cashback va de 0 a 50 %.',1);
+ const dows=$$('.fc-d').filter(x=>x.checked).map(x=>+x.value);if($('#fc-on').checked&&!dows.length)return toast('Elegí al menos un día para el Día de Cuenta Comercio.',1);
+ fidSet('wallet',{on:$('#fw-on').checked,rubro:val('fw-r')});fidSet('cb',{on:$('#fc-on').checked,pct:p,dows});audit('CONFIG_MONEDERO',(fidCfg().wallet.on?'monedero on':'monedero off')+' · cashback '+(fidCfg().cb.on?p+' % días '+dows.join(','):'off'));save();toast('Guardado');rerender();};
+A.fgSave=()=>{if(!can('config'))return toast('Sólo el administrador cambia estas reglas.',1);const m=parseNum(val('fg-m'));if(!(m>=1&&m<=36&&Number.isInteger(m)))return toast('La vigencia va de 1 a 36 meses.',1);
+ fidSet('gift',{on:$('#fg-on').checked,months:m});audit('CONFIG_GIFT',(fidCfg().gift.on?'on':'off')+' · '+m+' meses');save();toast('Guardado');rerender();};
+A.gcNew=()=>{if(!can('customers'))return toast('Sin permiso',1);const C=fidCfg();
+ modal('Vender gift card / voucher',`<div class="grid g2"><div><label for="gc-a">Valor ($)</label>${numIn('gc-a',0,'0')}</div><div><label for="gc-me">Cómo la paga</label><select id="gc-me">${LOAD_MET.map(k=>`<option value="${k}">${esc(MET[k])}</option>`).join('')}</select></div></div>
+ <label for="gc-t">Tipo</label><select id="gc-t"><option value="portador">Al portador (la usa quien tenga el código)</option><option value="nom">Nominativa (sólo un cliente del Club)</option></select>
+ <div id="gc-cbox" hidden><label for="gc-q">Cliente titular</label><input id="gc-q" placeholder="Nombre, WhatsApp o N.º" autocomplete="off"><div id="gc-res"></div><input type="hidden" id="gc-c"></div>
+ <div class="grid g2"><div><label for="gc-h">Para (nombre que va impreso, opcional)</label><input id="gc-h" maxlength="60"></div><div><label for="gc-b">De parte de (opcional)</label><input id="gc-b" maxlength="60"></div></div>
+ <label for="gc-ms">Mensaje (opcional)</label><input id="gc-ms" maxlength="120"><div class="grid g2"><div><label for="gc-v">Vigencia (meses)</label><input id="gc-v" inputmode="numeric" value="${C.gift.months}"></div><div><label for="gc-r">Rubro (si es en efectivo)</label><select id="gc-r">${rubIngOpts(C.wallet.rubro||'cobr')}</select></div></div>`,
+ {okText:'Emitir',onOk:w=>{const nom=val('gc-t')==='nom';if(nom&&!val('gc-c'))return w._err('Elegí el cliente titular.'),false;
+  const r=giftSell({amount:cents(val('gc-a')),method:val('gc-me'),cust:nom?val('gc-c'):'',holder:val('gc-h'),buyer:val('gc-b'),msg:val('gc-ms'),months:parseNum(val('gc-v')),rubro:val('gc-r')});if(r.err)return w._err(r.err),false;
+  toast('Gift card '+r.g.code+' emitida por '+money(r.g.amount));setTimeout(()=>{gcPrint(r.g);rerender();},60);}});
+ const t=$('#gc-t');if(t)t.addEventListener('change',()=>{$('#gc-cbox').hidden=t.value!=='nom';});
+ const q=$('#gc-q');if(q)q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();const res=$('#gc-res');if(!v){res.innerHTML='';return;}const L=S.customers.filter(c=>c.status!=='baja'&&(custFull(c).toLowerCase().includes(v)||pad4(c.num)===v||(c.wa||'').replace(/\D/g,'').includes(v.replace(/\D/g,'')||'zz'))).slice(0,6);
+  res.innerHTML=L.map(c=>`<button type="button" class="btn sm" style="margin:.2rem .2rem 0 0" data-act="gcPick" data-id="${c.id}">${esc(custFull(c))} · ${pad4(c.num)}</button>`).join('')||'<span class="sm mut">Sin resultados</span>';});};
+A.gcPick=el=>{const c=custById(el.dataset.id);if(!c)return;$('#gc-c').value=c.id;$('#gc-q').value=custFull(c);$('#gc-res').innerHTML='<span class="tag ok">Titular: '+esc(custFull(c))+'</span>';if(!val('gc-h'))$('#gc-h').value=custFull(c);};
+function gcPrint(g){const st=giftState(g);const html=`<!doctype html><meta charset="utf-8"><title>Gift card ${esc(g.code)}</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;margin:0}.gc{width:85.6mm;height:54mm;border:1px dashed #999;border-radius:4mm;padding:4mm;box-sizing:border-box;display:flex;gap:3mm;background:linear-gradient(135deg,#111,#3a3020);color:#fff}.gc b{color:#e8c35a}.qr{background:#fff;padding:1mm;border-radius:2mm;width:24mm;height:24mm;flex:none}.qr svg{width:100%;height:100%}small{font-size:7pt;opacity:.85}</style>
+ <div class="gc"><div style="flex:1;display:flex;flex-direction:column;justify-content:space-between"><div><div style="font:700 10pt Georgia">${esc(S.tenant.name)}</div><div style="font-size:8pt">GIFT CARD${g.cust?' · nominativa':' · al portador'}</div></div><div style="font:700 18pt Georgia"><b>${money(g.amount)}</b></div><div style="font:700 11pt monospace;letter-spacing:.5px">${esc(g.code)}</div><small>${g.holder?'Para: '+esc(g.holder)+' · ':''}${g.buyer?'De: '+esc(g.buyer)+' · ':''}Vence ${esc(dmy(dkey(g.exp)))}${g.msg?'<br>'+esc(g.msg):''}${st!=='activa'?' · '+esc(GIFT_TXT[st]):''}</small></div><div class="qr">${QR.svg(g.code,3,1)}</div></div>
+ <p style="font-size:8pt;color:#555;max-width:86mm">Se usa en el local presentando el código. Se puede usar en partes hasta agotar el saldo. No se canjea por dinero. Desarrollado por ${esc(VB.name)} · ${esc(VB.phone)}.</p>`;
+ const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(f);f.contentDocument.open();f.contentDocument.write(html);f.contentDocument.close();
+ audit('GIFT_IMPRIMIR',g.code);setTimeout(()=>{try{f.contentWindow.focus();f.contentWindow.print();}catch(e){}setTimeout(()=>f.remove(),4000);},300);}
+A.gcPrint=el=>{const g=giftL().find(x=>x.id===el.dataset.id);if(g)gcPrint(g);};
+A.gcHist=el=>{const g=giftL().find(x=>x.id===el.dataset.id);if(!g)return;let bal=0;const rows=giftM().filter(m=>m.gift===g.id).map(m=>{bal+=m.amount;return{m,bal};}).reverse();
+ modal('Gift card '+g.code,`<p>${g.cust?'Nominativa de <b>'+esc(custFull(custById(g.cust)))+'</b>':'Al portador'} · emitida ${esc(fmtDT(g.ts))} por ${esc(g.user)} · vence ${esc(dmy(dkey(g.exp)))} · <b>${esc(GIFT_TXT[giftState(g)])}</b></p><div class="tw"><table><thead><tr><th>Fecha</th><th>Movimiento</th><th class="r">Importe</th><th class="r">Saldo</th></tr></thead><tbody>${rows.map(({m,bal})=>`<tr><td>${fmtDT(m.ts)}</td><td>${esc(m.ref||m.kind)}</td><td class="r ${m.amount<0?'neg':''}">${money(m.amount)}</td><td class="r"><b>${money(bal)}</b></td></tr>`).join('')}</tbody></table></div>`,{wide:true,okText:'Cerrar',noCancel:true});};
+A.gcVoid=el=>{const g=giftL().find(x=>x.id===el.dataset.id);if(!g||!can('void'))return;modal('Anular gift card '+g.code,`<p>Sólo se anula si no tiene canjes. Si se vendió en efectivo en este turno, se registra el egreso de la devolución.</p><label for="gv-m">Motivo (obligatorio)</label><input id="gv-m" maxlength="100">`,
+ {onOk:w=>{if(val('gv-m').trim().length<3)return w._err('Escribí el motivo.'),false;const e=giftVoid(g,val('gv-m').trim());if(e)return w._err(e),false;toast('Gift card anulada');rerender();}});};
+
+/* ---------- pantalla: niveles, cumpleaños y juegos ---------- */
+reg('fidplus','Niveles, cumpleaños y juegos','check','customers',()=>{const C=fidCfg();const soc=S.customers.filter(c=>c.status!=='baja'&&c.consent&&c.consent.club!==false);
+ const byT={};if(C.tiers.on)soc.forEach(c=>{const t=custTier(c);if(t)byT[t.t.k]=(byT[t.t.k]||0)+1;});
+ const bd=soc.filter(c=>isBirthWeek(c));const plays=gameL().slice().reverse().slice(0,30);const adm=can('config');const dis=adm?'':'disabled';
+ return `<div class="row"><h1 class="sp">Niveles, cumpleaños y juegos del Club</h1></div>
+ ${fidSqlNote()}${adm?'':'<div class="warnbox sm">Sólo el administrador cambia estas reglas; acá podés consultarlas.</div>'}
+ <div class="card"><div class="row"><h3 class="sp">Niveles por consumo</h3><label class="chk" style="margin:0"><input type="checkbox" id="ft-on" ${C.tiers.on?'checked':''} ${dis}> Activar</label></div>
+ <p class="sm mut">El nivel se calcula solo con lo que el cliente compró en los últimos días (ventas cobradas menos devoluciones). El porcentaje es un beneficio más: compite con cupón, membresía y cumpleaños, y <b>se aplica el mayor</b> (no se acumulan). El tabaco queda afuera.</p>
+ <div class="grid g4"><div><label for="ft-d">Período (días)</label><input id="ft-d" inputmode="numeric" value="${C.tiers.days}" ${dis}></div>${C.tiers.list.map((t,i)=>`<div><label for="ft-m${i}">${TIER_ICO[t.k]||''} ${esc(t.name)} desde ($)</label><input id="ft-m${i}" inputmode="decimal" value="${i===0?'0':esc(pesosStr(t.min))}" ${dis||i===0?'disabled':''}><label for="ft-p${i}">Beneficio (%)</label><input id="ft-p${i}" inputmode="numeric" value="${t.pct}" ${dis}></div>`).join('')}</div>
+ ${C.tiers.on?`<p class="sm">Socios por nivel: ${C.tiers.list.map(t=>(TIER_ICO[t.k]||'')+' '+esc(t.name)+' <b>'+(byT[t.k]||0)+'</b>').join(' · ')}</p>`:''}</div>
+ <div class="card" style="margin-top:1rem"><div class="row"><h3 class="sp">Cumpleaños automático</h3><label class="chk" style="margin:0"><input type="checkbox" id="fb-on" ${C.bday.on?'checked':''} ${dis}> Activar</label><label for="fb-p" class="sm mut" style="margin:0">Regalo (%)</label><input id="fb-p" inputmode="numeric" value="${C.bday.pct}" style="max-width:70px" ${dis}></div>
+ <p class="sm mut">La semana del cumpleaños (±3 días) el sistema aplica solo el regalo en el cobro, <b>una vez por año</b>. Los socios que aceptaron promociones pueden recibir el saludo por WhatsApp (se abre WhatsApp con el mensaje listo: no es un envío automático).</p>
+ ${bd.length?`<div class="tw"><table><thead><tr><th>Socio</th><th>Cumple</th><th>Regalo</th><th></th></tr></thead><tbody>${bd.map(c=>`<tr><td>${esc(custFull(c))}</td><td>${esc(birthTxt(c.birth))}</td><td>${bdayUsed(c.id)?'<span class="tag">ya usado</span>':'<span class="tag ok">disponible</span>'}</td><td class="r">${hasComm(c)?`<a class="btn sm" target="_blank" rel="noopener noreferrer" href="https://wa.me/${esc((c.wa||'').replace(/\D/g,''))}?text=${encodeURIComponent('¡Feliz cumpleaños, '+c.name+'! 🎂 Esta semana tenés '+C.bday.pct+' % de regalo en '+S.tenant.name+'. ¡Te esperamos!')}">Saludar por WhatsApp</a>`:'<span class="sm mut">sin permiso de promociones</span>'}</td></tr>`).join('')}</tbody></table></div>`:'<p class="sm mut">Nadie cumple años esta semana.</p>'}</div>
+ <div class="card" style="margin-top:1rem"><div class="row"><h3 class="sp">Ruleta y trivia</h3><label class="chk" style="margin:0"><input type="checkbox" id="fg2-on" ${C.game.on?'checked':''} ${dis}> Activar</label></div>
+ <p class="sm mut">Después de cobrar a un socio identificado (desde la compra mínima), aparece «Girar la ruleta». Una jugada por venta; el premio se acredita en el acto (sellos, saldo del monedero o un cupón de un solo uso) y se revierte si se anula la venta. Promociones con premio: [VERIFICAR bases y condiciones y normativa provincial de sorteos].</p>
+ <div class="grid g3"><div><label for="fg2-m">Modo</label><select id="fg2-m" ${dis}><option value="ruleta" ${C.game.mode==='ruleta'?'selected':''}>Ruleta</option><option value="trivia" ${C.game.mode==='trivia'?'selected':''}>Trivia + ruleta</option></select></div><div><label for="fg2-min">Compra mínima ($)</label><input id="fg2-min" inputmode="decimal" value="${esc(pesosStr(C.game.min||0))}" ${dis}></div><div><label>Probabilidad</label><p class="sm" style="margin:.4rem 0">Peso de cada premio sobre el total (${C.game.prizes.reduce((a,p)=>a+(+p.w||0),0)}).</p></div></div>
+ <div class="tw"><table><thead><tr><th>Premio (texto)</th><th>Tipo</th><th>Valor</th><th class="r">Peso</th></tr></thead><tbody>${C.game.prizes.map((p,i)=>`<tr><td><input id="pz-l${i}" maxlength="40" value="${esc(p.label)}" aria-label="Texto del premio ${i+1}" ${dis}></td><td><select id="pz-k${i}" aria-label="Tipo del premio ${i+1}" ${dis}>${[['stamps','Sellos'],['wallet','Saldo al monedero ($)'],['coupon','Cupón % próxima compra'],['none','Sin premio']].map(([k,v])=>`<option value="${k}" ${p.kind===k?'selected':''}>${v}</option>`).join('')}</select></td><td><input id="pz-v${i}" inputmode="decimal" value="${esc(p.kind==='wallet'?pesosStr(p.v):String(p.v))}" aria-label="Valor del premio ${i+1}" style="max-width:110px" ${dis}></td><td class="r"><input id="pz-w${i}" inputmode="numeric" value="${p.w}" aria-label="Peso del premio ${i+1}" style="max-width:70px" ${dis}></td></tr>`).join('')}</tbody></table></div>
+ <h4>Preguntas de la trivia</h4><p class="sm mut">Marcá con el círculo la respuesta correcta.</p>${C.game.trivia.map((t,i)=>`<div class="card sm" style="margin:.3rem 0"><input id="tq${i}" maxlength="120" value="${esc(t.q)}" aria-label="Pregunta ${i+1}" ${dis}><div class="grid g3">${t.o.map((o,j)=>`<div style="display:flex;align-items:center;gap:.4rem"><input type="radio" name="tok${i}" value="${j}" ${t.ok===j?'checked':''} ${dis} aria-label="Opción ${j+1} es la correcta" style="width:22px;height:22px;flex:none;min-height:0"><input id="to${i}_${j}" maxlength="60" value="${esc(o)}" aria-label="Opción ${j+1} de la pregunta ${i+1}" ${dis} style="flex:1;min-width:0"></div>`).join('')}</div></div>`).join('')}
+ ${adm?'<button class="btn sm" data-act="fqAdd">+ Pregunta</button>':''}</div>
+ ${adm?'<div class="row" style="margin-top:.6rem"><button class="btn gold" data-act="fpSave" style="white-space:normal">Guardar niveles, cumpleaños y juegos</button></div>':''}
+ <div class="card" style="margin-top:1rem"><h3>Últimas jugadas</h3><div class="tw"><table><thead><tr><th>Fecha</th><th>Socio</th><th>Por</th><th>Premio</th><th>Venta</th></tr></thead><tbody>${plays.map(p=>{const s=S.sales.find(x=>x.id===p.sale);return `<tr><td>${fmtDT(p.ts)}</td><td>${esc(custLabel(p.cust))}</td><td class="sm">${esc(p.via)}</td><td>${esc(p.label)}${p.code?' · <b>'+esc(p.code)+'</b>':''}${p.rev?' <span class="tag bad">revertido</span>':''}</td><td class="sm">${s?esc(s.n):'—'}</td></tr>`;}).join('')||'<tr><td colspan="5" class="mut">Todavía no hubo jugadas.</td></tr>'}</tbody></table></div></div>`;},null,'Clientes');
+A.fqAdd=()=>{const C=fidCfg();fidSet('game',{trivia:C.game.trivia.concat([{q:'Nueva pregunta',o:['Opción A','Opción B','Opción C'],ok:0}])});rerender();};
+A.fpSave=()=>{if(!can('config'))return;const C=fidCfg();const days=parseNum(val('ft-d'));if(!(days>=7&&days<=730&&Number.isInteger(days)))return toast('El período de los niveles va de 7 a 730 días.',1);
+ const list=C.tiers.list.map((t,i)=>({k:t.k,name:t.name,min:i===0?0:cents(val('ft-m'+i)),pct:parseNum(val('ft-p'+i))}));
+ for(let i=0;i<list.length;i++){const t=list[i];if(isNaN(t.min)||t.min<0)return toast('Revisá el monto del nivel '+t.name+'.',1);if(!(t.pct>=0&&t.pct<=50))return toast('El beneficio de '+t.name+' va de 0 a 50 %.',1);if(i&&t.min<=list[i-1].min)return toast('Cada nivel tiene que pedir más consumo que el anterior.',1);}
+ const bp=parseNum(val('fb-p'));if(!(bp>=0&&bp<=50))return toast('El regalo de cumpleaños va de 0 a 50 %.',1);
+ const min=cents(val('fg2-min')||'0');if(isNaN(min)||min<0)return toast('Revisá la compra mínima de la ruleta.',1);
+ const prizes=C.game.prizes.map((p,i)=>{const kind=val('pz-k'+i);const raw=val('pz-v'+i);return{id:p.id,label:val('pz-l'+i).trim().replace(/[<>]/g,'').slice(0,40)||'Premio',kind,v:kind==='wallet'?cents(raw):kind==='none'?0:parseNum(raw),w:parseNum(val('pz-w'+i))};});
+ for(const p of prizes){if(!(Number.isInteger(p.w)&&p.w>=0&&p.w<=1000))return toast('El peso de cada premio es un entero de 0 a 1000.',1);if(p.kind==='stamps'&&!(Number.isInteger(p.v)&&p.v>=1&&p.v<=5))return toast('Un premio de sellos da de 1 a 5 sellos.',1);
+  if(p.kind==='wallet'&&!(p.v>0&&p.v<=10000000))return toast('Un premio de saldo va de $ 0,01 a $ 100.000.',1);if(p.kind==='coupon'&&!(p.v>=1&&p.v<=50))return toast('Un premio de cupón va de 1 a 50 %.',1);}
+ if($('#fg2-on').checked&&!prizes.some(p=>p.w>0))return toast('Al menos un premio tiene que tener peso.',1);
+ const trivia=C.game.trivia.map((t,i)=>({q:val('tq'+i).trim().replace(/[<>]/g,'').slice(0,120),o:t.o.map((o,j)=>val('to'+i+'_'+j).trim().replace(/[<>]/g,'').slice(0,60)),ok:+(($$('input[name=tok'+i+']').find(x=>x.checked)||{}).value||0)})).filter(t=>t.q.length>=3&&t.o.every(o=>o));
+ if(val('fg2-m')==='trivia'&&!trivia.length)return toast('La trivia necesita al menos una pregunta completa.',1);
+ fidSet('tiers',{on:$('#ft-on').checked,days,list});fidSet('bday',{on:$('#fb-on').checked,pct:bp});fidSet('game',{on:$('#fg2-on').checked,mode:val('fg2-m'),min,prizes,trivia});
+ audit('CONFIG_CLUB_PLUS','niveles '+(fidCfg().tiers.on?'on':'off')+' · cumpleaños '+(fidCfg().bday.on?bp+' %':'off')+' · juego '+(fidCfg().game.on?fidCfg().game.mode:'off'));save();toast('Guardado');rerender();};
+
+/* ---------- datos de ejemplo (sólo demos) ---------- */
+function fidDemoSeed(){if(IS_CLIENT||S.fidDemo)return;const L=S.customers.filter(c=>c.status!=='baja');if(L.length<2)return;S.fidDemo=1;
+ S.cfg.fid=Object.assign({},S.cfg.fid||{},{tiers:Object.assign({},FID_DEF.tiers,{on:true}),bday:{on:true,pct:10},wallet:{on:true,rubro:'cobr'},gift:{on:true,months:6},cb:{on:true,dows:[3,6],pct:5},game:Object.assign({},FID_DEF.game,{on:true,min:300000})});
+ const t0=now()-5*86400000;const u='ejemplo';
+ fidMov().push({id:uid(),cust:L[0].id,ts:t0,kind:'carga',amount:2000000,method:'transferencia',ref:'Carga · Transferencia (ejemplo)',user:u},{id:uid(),cust:L[1].id,ts:t0+3600e3,kind:'carga',amount:500000,method:'debito',ref:'Carga · Débito (ejemplo)',user:u},{id:uid(),cust:L[0].id,ts:t0+86400e3,kind:'cashback',amount:25000,ref:'Día de Cuenta Comercio (ejemplo)',user:u});
+ const mk=(code,amount,cust,holder,used)=>{const g={id:uid(),code,ts:t0,exp:now()+150*86400000,cust:cust||'',holder,buyer:'',amount,method:'efectivo',mov:'',status:'activa',user:u,origin:'ejemplo',msg:'¡Que lo disfrutes! (ejemplo)'};giftL().push(g);giftM().push({id:uid(),gift:g.id,ts:t0,amount,kind:'emision',ref:'Emisión (ejemplo)',user:u});if(used)giftM().push({id:uid(),gift:g.id,ts:t0+86400e3,amount:-used,kind:'canje',ref:'Canje parcial (ejemplo)',user:u});};
+ mk('GC-DEMO-0001',1000000,'','Regalo de ejemplo',300000);mk('GC-DEMO-0002',500000,L[1].id,custFull(L[1]),0);
+ gameL().push({id:uid(),sale:'',cust:L[0].id,ts:t0+2*86400e3,prize:'pz1',label:'+1 sello',kind:'stamps',v:1,via:'ruleta (ejemplo)',user:u});}
+
 /* ===== Personal: fichaje, horas, empleados ===== */
 let perTab='fichaje';
 const lastPunch=id=>S.punches.filter(p=>p.empId===id).sort((a,b)=>b.ts-a.ts)[0];
@@ -4815,7 +5196,7 @@ A.rubDel=el=>{if(!can('edit_products'))return toast('Sin permiso',1);const id=el
  if(prods.length){if(!others.length)return toast('Es '+(ownerMode()?'la única categoría':'el único rubro')+': creá otr'+(ownerMode()?'a':'o')+' antes de eliminarl'+(ownerMode()?'a':'o'),1);
   modal('Eliminar '+RW()+' «'+r.name+'»','<p>Tiene <b>'+prods.length+'</b> producto'+(prods.length===1?'':'s')+'. Elegí a qué '+RW()+' pasarlos:</p><label for="rd-d">Pasar los productos a</label><select id="rd-d">'+others.map(o=>'<option value="'+esc(o.id)+'">'+esc(o.name)+'</option>').join('')+'</select>'+(hist?'<p class="sm mut">Como tiene ventas o movimientos anteriores, no se borra: se archiva para conservar los reportes.</p>':''),{okText:hist?'Pasar y archivar':'Pasar y eliminar',onOk:w=>{fin(val('rd-d'));}});return;}
  confirmBox((hist?'Archivar ':'Eliminar ')+RW(),hist?'«'+r.name+'» tiene ventas o movimientos anteriores: no se borra, se archiva (deja de aparecer, el historial queda).':'Se elimina '+(ownerMode()?'la categoría':'el rubro')+' «'+r.name+'». No tiene productos ni movimientos.',()=>fin(null),hist?'Archivar':'Eliminar');};
-A.resetDemo=()=>confirmBox('Volver a los datos de ejemplo','Se borra lo que cargaste en esta demo (en este navegador) y vuelven los datos de ejemplo.',async()=>{S=DEF();demoExtras();if(typeof kiniSeedAsync==='function')await kiniSeedAsync();audit('RESET_DEMO','');save();pos.lines=[];pubReload();rerender();toast('Demo reiniciada');},'Borrar todo');
+A.resetDemo=()=>confirmBox('Volver a los datos de ejemplo','Se borra lo que cargaste en esta demo (en este navegador) y vuelven los datos de ejemplo.',async()=>{S=DEF();demoExtras();if(typeof kiniSeedAsync==='function')await kiniSeedAsync();if(typeof fidDemoSeed==='function'){fidDemoSeed();if(typeof operDemoSeed==='function')operDemoSeed();}audit('RESET_DEMO','');save();pos.lines=[];pubReload();rerender();toast('Demo reiniciada');},'Borrar todo');
 function loadExample(){if(openSess())return 'Ya hay una caja abierta: cerrala antes de cargar el ejemplo.';
  const sess={id:uid(),caja:S.tenant.caja,openedBy:'ADMIN',openedAt:now(),opening:0,closedAt:0};S.sessions.push(sess);
  const L=(pid,q)=>{const p=prod(pid);return{pid,name:p.name,rubro:p.rubro,qty:q,price:p.price,cost:p.cost,unit:p.unit,list:p.price};};
@@ -5559,7 +5940,8 @@ function dbData(){const[a,b]=dbRange();
 const sumT=a=>a.reduce((x,s)=>x+s.total,0);
 function dbBars(items,fmt,color){const mx=Math.max(1,...items.map(i=>i[1]));return `<div class="tw"><table><tbody>${items.map(([l,v,x])=>`<tr><td style="white-space:nowrap">${esc(l)}</td><td style="width:50%"><div class="bar" aria-hidden="true"><i style="width:${Math.round(v/mx*100)}%;${color?'background:'+color:''}"></i></div></td><td class="r">${fmt(v)}</td>${x!==undefined?`<td class="r mut">${x}</td>`:''}</tr>`).join('')}</tbody></table></div>`;}
 reg('inicio','Resumen','home',null,()=>{const D=dbData();const cv=can('view_cost');const today=dkey(now());
- const tot=sumT(D.sales),n=D.sales.length;const disc=D.sales.reduce((a,s)=>a+s.items.reduce((x,i)=>x+(i.disc||0),0),0);
+ const retT=(S.returns||[]).filter(r=>D.sales.some(x=>x.id===r.sale)).reduce((a,r)=>a+r.total,0); /* V26.54: devoluciones parciales de esas ventas */
+ const tot=sumT(D.sales)-retT,n=D.sales.length;const disc=D.sales.reduce((a,s)=>a+s.items.reduce((x,i)=>x+(i.disc||0),0),0);
  const prof=D.rows.reduce((a,r)=>a+lineTotal(r.it)-lineCost(r.it),0)-D.sales.reduce((a,s)=>a+(s.fee||0),0);
  const days=[];for(let k=D.a<addDays(today,-29)?addDays(today,-29):D.a;k<=D.b&&days.length<31;k=addDays(k,1))days.push(k);const d7=days.slice(-14);
  const byDay=d7.map(k=>[dmy(k)+' '+DIAS[dowOfKey(k)].slice(0,3),sumT(S.sales.filter(s=>s.status==='ok'&&dkey(s.ts)===k))]);
@@ -5580,7 +5962,7 @@ reg('inicio','Resumen','home',null,()=>{const D=dbData();const cv=can('view_cost
  <div class="card noprint" style="margin-bottom:1rem"><div class="row"><b>Filtros</b>${sel('dbp',Object.entries(dbPerTxt),dbF.per)}${sel('dbm',[['','Todos los medios'],...Object.entries(MET)],dbF.met)}${sel('dbd',[['','Con y sin ARCA'],['arca','Sólo con ARCA'],['int','Sólo internos']],dbF.doc)}${sel('dbr',[['',ownerMode()?'Todas las categorías':'Todos los rubros'],...S.rubros.filter(r=>r.kind==='rubro').map(r=>[r.id,r.name])],dbF.rub)}<button class="btn sm" data-act="dbReset">Restablecer</button>
   <span class="sp"></span><button class="btn sm gold" data-act="nav" data-id="vender">Ir a Vender →</button></div><p class="sm mut" style="margin:.4rem 0 0">Período: <b>${dbPerTxt[dbF.per]}</b>${D.a!=='0000-00-00'?' ('+dmy(D.a)+' a '+dmy(D.b)+')':''} · sólo ventas confirmadas (sin anuladas ni cobros pendientes) · ${dbF.doc?(dbF.doc==='arca'?'sólo comprobantes con ARCA':'sólo tickets internos'):'comprobantes con y sin ARCA, sin mezclar en los totales de ARCA'}</p></div>
  ${oldOpen?`<div class="errbox">La caja se abrió el ${dmy(dkey(sess.openedAt))} y sigue abierta: hay días con ventas sin cierre. <a href="#panel/arqueo">Ir al arqueo</a></div>`:''}
- <div class="grid g4"><div class="card kpi"><b>${money(tot)}</b><span>Ventas netas (${n} operaciones)</span></div><div class="card kpi"><b>${money(n?Math.round(tot/n):0)}</b><span>Ticket promedio = ventas ÷ operaciones</span></div>${cv?`<div class="card kpi"><b>${money(prof)}</b><span>Margen bruto estimado (ventas − costo − comisiones; sin impuestos ni sueldos). ${IS_CLIENT?'Con los costos que cargaste':'Costos de la demo: de ejemplo'}</span></div>`:''}<div class="card kpi"><b>${money(disc)}</b><span>Descuentos otorgados (cupones y membresías)</span></div></div>
+ <div class="grid g4"><div class="card kpi"><b>${money(tot)}</b><span>Ventas netas (${n} operaciones${retT?' · − '+money(retT)+' devuelto':''})</span></div><div class="card kpi"><b>${money(n?Math.round(tot/n):0)}</b><span>Ticket promedio = ventas ÷ operaciones</span></div>${cv?`<div class="card kpi"><b>${money(prof)}</b><span>Margen bruto estimado (ventas − costo − comisiones; sin impuestos ni sueldos). ${IS_CLIENT?'Con los costos que cargaste':'Costos de la demo: de ejemplo'}</span></div>`:''}<div class="card kpi"><b>${money(disc)}</b><span>Descuentos otorgados (cupones y membresías)</span></div></div>
  <div class="grid g4" style="margin-top:1rem"><div class="card kpi"><b>${newSoc}</b><span>Socios nuevos del Club · total ${soc.length}</span></div><div class="card kpi"><b>${stamps}</b><span>Sellos entregados · ${redeem} premios canjeados</span></div><div class="card kpi"><b>${cpUse}</b><span>Cupones usados</span></div><div class="card kpi"><b>${money(deuda)}</b><span>Deuda en cuenta corriente (total actual)</span></div></div>
  ${dbChartsHTML(D,days,byRub,totR,byMet,tot,cv)}
  <div class="grid g2" style="margin-top:1rem"><div class="card"><h3>Productos más vendidos</h3>${top.length?`<div class="tw"><table><thead><tr><th>Producto</th><th class="r">Unid.</th><th class="r">Ventas</th></tr></thead><tbody>${top.map(([nm,v])=>`<tr><td>${esc(nm)}</td><td class="r">${numAR(v.q,3)}</td><td class="r">${money(v.t)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="mut">Sin datos suficientes.</p>'}</div>
@@ -6174,11 +6556,19 @@ const COLS=[
  {c:'cdet',key:'payDetails',once:1,pii:['ordName','ordDoc']},
  {c:'acuer',key:'agreements',del:1},
  {c:'cexc',key:'creditOv'},
- {c:'cexcu',key:'creditUse',once:1}];
+ {c:'cexcu',key:'creditUse',once:1},
+ /* V26.54 · 20-fidelizacion-operacion.sql */
+ {c:'fidmov',key:'fidmov',once:1},
+ {c:'giftmov',key:'giftmov',once:1},
+ {c:'gift',key:'gifts'},
+ {c:'juego',key:'games'},
+ {c:'devol',key:'returns',once:1},
+ {c:'merma',key:'mermas',once:1},
+ {c:'presup',key:'quotes'}];
 const BYC=Object.fromEntries(COLS.map(x=>[x.c,x]));
 const DELC=new Set(COLS.filter(x=>x.del).map(x=>x.c));
 const CFGIDS=['tenant','cfg','menu','loyalty','roles','integ','legal','payadj'];
-const ONCEC=new Set(['smov','audit','cierres','cnotas','otp','sellos','cusos','fiado','cortesx']);
+const ONCEC=new Set(['smov','audit','cierres','cnotas','otp','sellos','cusos','fiado','cortesx','fidmov','giftmov','devol','merma','juego']);
 const r3=n=>Math.round(n*1000)/1000;
 function stripOf(col,it){const d=JSON.parse(JSON.stringify(it));(col.strip||[]).forEach(k=>delete d[k]);return d;}
 function cfgWire(id){switch(id){
@@ -7461,7 +7851,7 @@ function pubReload(){const f=document.getElementById('pubframe');if(f)f.srcdoc=b
 window.RAVE={get S(){return S;},set S(v){S=v;},sha256,arqueoCalc,buildReport,reportText,loadExample,parseNum,cents,money,parseCSV,sugPrice,punch,clubJoin,parseBirth,safeUrl,verifyAudit,verifyClosure,webhook,commitSale,addMov,validRubro,get user(){return user;},set user(v){user=v;},showMenu,route,A,pos,
  applyBenefit,allocDisc,verifyStampCode,commitStamp,stampsOf,debtOf,fiadoPay,custById,cardCode,redeemReward,memberActive,pubCatalog,pubCoupons,pubCouponInfo,parseScale,escposTicket,ticketText,printSale,demoExtras,legalDocs,addByCode,posBen,pubCard,pubCardCode,pubCardLogin};
 (async()=>{if(typeof csIsRoute==='function'&&csIsRoute()){csBoot();return;} /* V26.49 · pantalla del cliente: modo mínimo, sin estado */
- if(CLOUD.on||(window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente')){S=DEF();S.users=[];if(CLOUD.on){await cloudBoot();}else{route();}return;}const st=await loadState();if(st&&st.v===3){S=mergeDefaults(st);}else{S=DEF();demoExtras();}if(typeof kiniSeedAsync==='function'){try{await kiniSeedAsync();}catch(e){}}route();try{devBoot();}catch(e){console.warn('devBoot',e);}})();
+ if(CLOUD.on||(window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente')){S=DEF();S.users=[];if(CLOUD.on){await cloudBoot();}else{route();}return;}const st=await loadState();if(st&&st.v===3){S=mergeDefaults(st);}else{S=DEF();demoExtras();}if(typeof kiniSeedAsync==='function'){try{await kiniSeedAsync();}catch(e){}}try{if(typeof fidDemoSeed==='function'){fidDemoSeed();if(typeof operDemoSeed==='function')operDemoSeed();}}catch(e){console.warn('fidDemo',e);}route();try{devBoot();}catch(e){console.warn('devBoot',e);}})();
 setTimeout(()=>{if(typeof csIsRoute==='function'&&csIsRoute())return;try{cardMirrorInit();}catch(e){console.warn('cardMirror',e);}},0);
 
 </script>
