@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Mi Comercio · Demo de un solo dueño · Sistema VB</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-07 21:40 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-07 22:05 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#1f2a37;--gold:#2e8b74;--gold2:#23695a;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -1734,7 +1734,7 @@ function paCfgCard(){if(!isAdm())return'';const c=paConf();const R=c.rules||{};
   <td><select id="pa-k-${m}" aria-label="Porcentaje o monto para ${esc(MET[m]||m)}"><option value="pct" ${r.kind!=='fixed'?'selected':''}>%</option><option value="fixed" ${r.kind==='fixed'?'selected':''}>$ fijo</option></select></td></tr>`;};
  return `<div class="card" id="pa-cfg" style="margin-top:1rem"><h3 style="margin-top:0">Recargos y descuentos por medio de pago</h3>
  <p class="sm mut">Se aplican al cobrar, sobre el total después del cupón o la membresía. En un cobro mixto, cada medio lleva su propio ajuste. La parte a cuenta corriente no lleva ajuste. Sólo el administrador los cambia y cada cambio queda en Auditoría.</p>
- ${typeof CLOUD!=='undefined'&&CLOUD.on?'<div class="warnbox sm"><b>Con la nube:</b> antes de activarlo, corré <code>16-ajustes-medios-pago.sql</code> en Supabase (SQL Editor). Sin esa migración la nube rechaza esta configuración y las otras cajas no reciben las reglas. Si ya lo guardaste antes de correrla, guardalo de nuevo después.</div>':''}
+ ${typeof CLOUD!=='undefined'&&CLOUD.on&&!paConf().on?'<div class="warnbox sm"><b>Con la nube:</b> antes de activarlo, corré <code>16-ajustes-medios-pago.sql</code> en Supabase (SQL Editor). Sin esa migración la nube rechaza esta configuración y las otras cajas no reciben las reglas. Si ya lo guardaste antes de correrla, guardalo de nuevo después.</div>':''}
  <label class="chk"><input type="checkbox" id="pa-on" ${c.on?'checked':''}> Aplicar recargos y descuentos por medio de pago</label>
  <div class="tw"><table><thead><tr><th>Medio</th><th>Ajuste</th><th>Valor</th><th>Tipo</th></tr></thead><tbody>${PA_METHODS.map(row).join('')}</tbody></table></div>
  <label class="chk"><input type="checkbox" id="pa-st" ${c.stack?'checked':''}> Sumar el descuento por medio de pago al cupón o membresía (si no, se aplica sólo el beneficio)</label>
@@ -4716,7 +4716,13 @@ const FID_DEF={
   trivia:[{q:'¿Cuántos sellos necesitás para tu premio?',o:['5','La meta del Club','Ninguno'],ok:1},{q:'¿Con qué podés pagar en el local además de efectivo?',o:['Sólo efectivo','Con el saldo de tu monedero','Con fichas'],ok:1}]}};
 const fidCfg=()=>{const c=(S.cfg&&S.cfg.fid)||{};const o={};for(const k in FID_DEF)o[k]=Object.assign({},FID_DEF[k],c[k]||{});return o;};
 function fidSet(k,v){S.cfg.fid=S.cfg.fid||{};S.cfg.fid[k]=Object.assign({},(S.cfg.fid[k]||{}),v);}
-const fidSqlNote=()=>typeof CLOUD!=='undefined'&&CLOUD.on?'<div class="warnbox sm">Con la nube: estas funciones necesitan que el administrador haya pegado una vez <b>20-fidelizacion-operacion.sql</b> en Supabase (si no, el servidor rechaza los movimientos y lo vas a ver en Nube → rechazos).</div>':'';
+/* el aviso de la migración sólo aparece si el servidor REALMENTE rechazó algo de estas funciones (antes se mostraba siempre) */
+const FID_COLS=['fidmov','giftmov','gift','juego','devol','merma','presup'];
+const fidSqlNote=()=>{if(typeof CLOUD==='undefined'||!CLOUD.on||typeof cl==='undefined'||!cl.rejects)return'';const R=cl.rejects.filter(r=>FID_COLS.includes(String(r.key||'').split('|')[0])&&/colecci|no permit|desconocid|no v[aá]lid/i.test(String(r.m||'')));
+ return R.length?'<div class="warnbox sm">El servidor rechazó '+R.length+' movimiento(s) de estas funciones: el administrador tiene que pegar <b>20-fidelizacion-operacion.sql</b> en Supabase (SQL Editor) y después tocar «Reenviar lo rechazado».<div class="row" style="margin-top:.4rem"><button class="btn sm" data-act="fidResend">Reenviar lo rechazado</button></div></div>':'';};
+/* reenvío: olvida la huella de lo rechazado para que la próxima sincronización lo vuelva a mandar */
+A.fidResend=async()=>{const R=cl.rejects.filter(r=>FID_COLS.includes(String(r.key||'').split('|')[0]));R.forEach(r=>{delete cl.fp[r.key];});cl.rejects=cl.rejects.filter(r=>!R.includes(r));
+ try{await cloudMetaSave();}catch(e){}await cloudSync(true);toast(cl.lastErr?cl.lastErr:'Reenviado. Si el SQL ya está en Supabase, el aviso no vuelve a aparecer.',!!cl.lastErr);rerender();};
 const fidOff=()=>typeof CLOUD!=='undefined'&&CLOUD.on&&typeof cl!=='undefined'&&!(cl.ready&&cl.online);
 const fidMov=()=>S.fidmov||(S.fidmov=[]);
 const giftL=()=>S.gifts||(S.gifts=[]);
