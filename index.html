@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Mi Comercio · Demo de un solo dueño · Sistema VB</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-07 04:35 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-07 21:40 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#1f2a37;--gold:#2e8b74;--gold2:#23695a;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -57,7 +57,7 @@ td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
 /* shell */
 #panel{display:flex;min-height:100vh}
 #side{width:240px;background:var(--ink);color:#e9e4da;padding:1rem .7rem;position:sticky;top:0;height:100vh;overflow:auto;flex:none}
-#side .brand{display:flex;gap:.6rem;align-items:center;padding:.3rem .5rem 1rem;color:#fff;font-family:Georgia,serif;font-weight:700;font-size:1.1rem}
+#side .brand{cursor:pointer;border-radius:10px;display:flex;gap:.6rem;align-items:center;padding:.3rem .5rem 1rem;color:#fff;font-family:Georgia,serif;font-weight:700;font-size:1.1rem}
 #side .brand i{width:36px;height:36px;border-radius:10px;background:var(--gold);color:#1b1100;display:grid;place-items:center;font-style:normal}
 #side a{display:flex;gap:.65rem;align-items:center;min-height:44px;padding:.45rem .7rem;border-radius:12px;color:#d8d1c3;text-decoration:none;cursor:pointer;font-weight:500}
 #side a:hover{background:#34312d}#side a.on{background:var(--gold);color:#000;font-weight:700}
@@ -852,7 +852,7 @@ const NAV=[['inicio','Resumen'],['vender','Operación'],['pedidos','Operación']
 function showPanel(id){if(!SCREENS[id]||(SCREENS[id].perm&&!can(SCREENS[id].perm))||(SCREENS[id].show&&!SCREENS[id].show()))id='inicio';curScreen=id;$('#panel').hidden=false;
  const order=NAV.map(x=>x[0]);const secOf=Object.fromEntries(NAV);
  const nav=Object.entries(SCREENS).filter(([k,s])=>(!s.perm||can(s.perm))&&(!s.show||s.show())).sort((a,b)=>{const i=order.indexOf(a[0]),j=order.indexOf(b[0]);return (i<0?99:i)-(j<0?99:j);});let sec='';
- $('#side').innerHTML=`<div class="brand"><img src="${LOGO_MENU}" alt="Mi Comercio" style="width:48px;height:27px;object-fit:contain;border-radius:6px"><span>Sistema VB</span></div>`+nav.map(([k,s])=>{const sc=secOf[k]||'Otros';const h=(sc!==sec)?(sec=sc,`<div class="sec">${esc(sc)}</div>`):'';return h+`<a data-act="nav" data-id="${k}" class="${k===id?'on':''}" tabindex="0" role="link">${ico(s.icon)}<span>${esc(s.t)}</span></a>`;}).join('')+`<div class="sec">Desarrollado por</div><div class="sm" style="padding:0 .7rem;color:#a99f8f"><b style="color:#eee">${VB.name}</b><br><i>“${VB.lema}”</i><br><a style="color:#c9963e" href="${vbWa()}" target="_blank" rel="noopener noreferrer">Único celular ${VB.phone}</a><br><a style="color:#c9963e" href="mailto:${VB.mail}">${VB.mail}</a></div>`;
+ $('#side').innerHTML=`<a class="brand" href="#panel/inicio" title="Ir al Resumen" aria-label="Ir al Resumen" style="text-decoration:none"><img src="${LOGO_MENU}" alt="Mi Comercio" style="width:48px;height:27px;object-fit:contain;border-radius:6px"><span>Sistema VB</span></a>`+nav.map(([k,s])=>{const sc=secOf[k]||'Otros';const h=(sc!==sec)?(sec=sc,`<div class="sec">${esc(sc)}</div>`):'';return h+`<a data-act="nav" data-id="${k}" class="${k===id?'on':''}" tabindex="0" role="link">${ico(s.icon)}<span>${esc(s.t)}</span></a>`;}).join('')+`<div class="sec">Desarrollado por</div><div class="sm" style="padding:0 .7rem;color:#a99f8f"><b style="color:#eee">${VB.name}</b><br><i>“${VB.lema}”</i><br><a style="color:#c9963e" href="${vbWa()}" target="_blank" rel="noopener noreferrer">Único celular ${VB.phone}</a><br><a style="color:#c9963e" href="mailto:${VB.mail}">${VB.mail}</a></div>`;
  const s=openSess();
  $('#top').innerHTML=`<button class="btn sm" id="burger" data-act="burger" aria-label="Abrir menú">☰</button><b style="font-family:Georgia,serif">${esc(S.tenant.name)}</b>${(window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente')?'':'<span class="demo-b">DEMO DE EVALUACIÓN</span>'}<span id="cloudtag" class="tag"></span><span class="tag ${s?'ok':'warn'}">${s?'Caja '+S.tenant.caja+' abierta':'Caja cerrada'}</span><span class="tag ${S.simOffline?'bad':'ok'}">${S.simOffline?'APIs externas caídas (simulado)':'Operativo'}</span><span id="devtag" class="tag"></span><span class="sp"></span><span class="sm mut">${esc(user.name)} · ${esc(user.role)}</span>${typeof asBtn==='function'?asBtn():''}${themeBtn()}<a class="btn sm" href="#menu">Ver menú público</a><button class="btn sm" data-act="logout">Salir</button>`;
  const sc=SCREENS[id];$('#view').innerHTML=sc.render();sc.after&&sc.after();$('#side').classList.remove('open');window.scrollTo(0,0);try{document.documentElement.style.setProperty('--topH',($('#top').offsetHeight||56)+'px');}catch(e){}if(typeof devTag==='function')devTag();if(typeof cloudBadge==='function')cloudBadge();if(typeof asPaint==='function')asPaint();if(typeof xfPermNotice==='function')xfPermNotice();if(typeof expPending==='function')expPending();}
@@ -1467,6 +1467,7 @@ function commitSale(method,arca,channel,lines,opts){
  if(cr.ov){(S.creditUse=S.creditUse||[]).push({id:uid(),ov:cr.ov,sale:sale.id,amt:fiadoAmt,ts:now(),user:user?user.name:'sistema'});audit('EXCEPCION_CREDITO_USO',sale.n+' · '+custFull(cust)+' · '+money(fiadoAmt)+' (supera '+cr.probs.join(' ').slice(0,120)+')');}
  if(ben.kind==='coupon'&&ben.couponId){const cp=S.coupons.find(x=>x.id===ben.couponId);if(cp)cp.uses.push({ts:now(),sale:sale.id,cust:cust?cust.id:''});}
  if(opts.receptor&&arca&&typeof arcaRcpStore==='function')arcaRcpStore(sale.id,opts.receptor);
+ if(arca&&cust&&typeof arcaRcpToCust==='function')arcaRcpToCust(cust);
  if(stampRes&&stampRes.ok){commitStamp(cust.id,stampRes,'venta '+sale.n);sale.stamped=true;}
  audit('VENTA',sale.n+' · '+salePayLabel(sale)+' · '+money(total)+(sale.benefit?' · '+ben.label+' -'+money(ben.disc):'')+' · '+(arca?'Con ARCA (pend. CAE)':'Sin ARCA')+(cust?' · cliente '+cust.num:'')+(pc.vuelto?' · vuelto '+money(pc.vuelto):''));
  if(fiadoAmt>0)audit('CTA_CTE_DEBITO',sale.n+' · '+custFull(cust)+' · débito '+money(fiadoAmt)+' · estado '+PSTATE_TXT[sale.pstate]);
@@ -3965,10 +3966,10 @@ A.cuEdit=el=>{const c=el.dataset.id?custById(el.dataset.id):null;const isAdm=can
  <div class="grid g2"><div><label for="cu-w">WhatsApp (con código de área)</label><input id="cu-w" inputmode="tel" placeholder="387 1234567" value="${esc(c?c.wa.replace(/^\+549/,''):'')}" ${sd}></div><div><label for="cu-b">Fecha de nacimiento${ownerMode()?' (sólo si participa del Club)':''}</label><input id="cu-b" type="date" value="${esc(c?c.birth:'')}" ${sd}></div></div>
  <div class="grid g2"><div><label for="cu-d">DNI (opcional: sirve para sumar sellos en el mostrador)</label><input id="cu-d" inputmode="numeric" maxlength="10" placeholder="Ej.: 30123456" autocomplete="off" value="${esc(c?(c.dni||''):'')}" ${sd}></div>${c&&cardIdOk(c.id)?'<div><label>Tarjeta NFC</label><button class="btn sm" type="button" data-act="cuNfc" data-id="'+c.id+'">Grabar etiqueta NFC</button></div>':''}</div>
  ${c?`<div class="grid g2"><div><label for="cu-e">Correo (opcional)</label><input id="cu-e" type="email" maxlength="100" autocomplete="off" value="${esc(c.email||'')}" ${sd}></div>${adm&&c.status!=='baja'?`<div><label for="cu-st">Estado</label><select id="cu-st"><option value="activo" ${c.status!=='suspendido'?'selected':''}>Activo</option><option value="suspendido" ${c.status==='suspendido'?'selected':''}>Suspendido (sin cuenta corriente ni campañas)</option></select></div>`:''}</div>`:''}
- ${!c&&ownerMode()&&typeof wsOn==='function'&&wsOn()?`<div class="card" style="margin:.6rem 0"><h3 style="margin-top:0">Mayorista y crédito</h3><div class="grid g2"><div ${(typeof wsOnly==='function'&&wsOnly())?'hidden':''}><label for="wc-ch">Canal habitual</label><select id="wc-ch"><option value="mayorista" selected>Mayorista</option><option value="minorista">Minorista</option></select></div><div><label for="wc-tx">CUIT ${(typeof wsOnly==='function'&&wsOnly())?'(opcional)':'(obligatorio para vender como mayorista)'}</label><input id="wc-tx" inputmode="numeric" maxlength="13" autocomplete="off" placeholder="20-12345678-6"></div></div><div class="grid g2"><div><label for="wc-tm">Plazo máximo de pago (días)</label><input id="wc-tm" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="Sin plazo"></div><div><label for="cu-lim">Límite de crédito ($)</label>${numIn('cu-lim',0,'0',can('config')||can('void')?'':'disabled')}</div></div><div class="grid g2"><div><label for="wc-zn">Zona de cobranza</label><input id="wc-zn" maxlength="30" autocomplete="off"></div><div><label for="wc-sl">Vendedor asignado</label><input id="wc-sl" maxlength="30" autocomplete="off"></div></div></div>`:''}
+ ${!c&&ownerMode()&&typeof wsOn==='function'&&wsOn()?`<div class="card" style="margin:.6rem 0"><h3 style="margin-top:0">Mayorista y crédito</h3><div class="grid g2"><div ${(typeof wsOnly==='function'&&wsOnly())?'hidden':''}><label for="wc-ch">Canal habitual</label><select id="wc-ch"><option value="mayorista" selected>Mayorista</option><option value="minorista">Minorista</option></select></div><div><p class="sm mut" style="margin-top:1.6rem">El CUIT se carga en «Datos para facturar (ARCA)».</p></div></div><div class="grid g2"><div><label for="wc-tm">Plazo máximo de pago (días)</label><input id="wc-tm" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="Sin plazo"></div><div><label for="cu-lim">Límite de crédito ($)</label>${numIn('cu-lim',0,'0',can('config')||can('void')?'':'disabled')}</div></div><div class="grid g2"><div><label for="wc-zn">Zona de cobranza</label><input id="wc-zn" maxlength="30" autocomplete="off"></div><div><label for="wc-sl">Vendedor asignado</label><input id="wc-sl" maxlength="30" autocomplete="off"></div></div></div>`:''}
  <label class="chk"><input type="checkbox" id="cu-c1" ${c?(c.consent.club?'checked':''):(ownerMode()?'':'checked')} ${sd}> Participa del Club Mi Comercio (tratamiento de datos)</label><label class="chk"><input type="checkbox" id="cu-c2" ${c&&c.consent.comm?'checked':''} ${sd}> Aceptó recibir promociones por WhatsApp</label>
  ${c&&adm?`<label for="cu-proof">Constancia al OTORGAR un consentimiento (cómo y cuándo lo dio el titular; revocar no la necesita)</label><input id="cu-proof" maxlength="140" autocomplete="off" placeholder="Ej.: lo aceptó por escrito en el mostrador el 20/10" value="">${c.consent.proof?`<p class="sm mut">Última constancia: ${esc(c.consent.by||'')} · ${esc(c.consent.proof)}</p>`:''}`:''}
- ${c&&typeof wsCustCard==='function'?wsCustCard(c):''}${c&&typeof fidCustCard==='function'?fidCustCard(c):''}${c?`<div class="card" style="margin:.6rem 0"><div class="row"><b class="sp">Cuenta corriente</b><span>Debe ${money(debtOf(c.id))}${typeof ccKindsHTML==='function'?ccKindsHTML(c.id):''}</span></div>${ccLedgerHTML(c.id)}<label for="cu-lim">Límite de crédito ($) — sólo administración</label>${numIn('cu-lim',c.limit||0,'0',can('config')||can('void')?'':'disabled')}<div class="row" style="margin-top:.5rem"><button class="btn sm" data-act="cuPay" data-id="${c.id}">Registrar cobro de deuda</button><button class="btn sm" data-act="cuWa" data-id="${c.id}" ${typeof waOk==='function'&&waOk(c)?'':'disabled title="Sin WhatsApp cargado"'}>WhatsApp${debtOf(c.id)>0?' (avisar saldo)':''}</button><button class="btn sm" data-act="cuMember" data-id="${c.id}">Membresía</button><button class="btn sm" data-act="cuRedeem" data-id="${c.id}">Canjear premio (${Math.min(stampsOf(c.id),S.loyalty.goal)}/${S.loyalty.goal})</button></div></div>
+ ${typeof fiscCardHTML==='function'?fiscCardHTML(c):''}${c&&typeof wsCustCard==='function'?wsCustCard(c):''}${c&&typeof fidCustCard==='function'?fidCustCard(c):''}${c?`<div class="card" style="margin:.6rem 0"><div class="row"><b class="sp">Cuenta corriente</b><span>Debe ${money(debtOf(c.id))}${typeof ccKindsHTML==='function'?ccKindsHTML(c.id):''}</span></div>${ccLedgerHTML(c.id)}<label for="cu-lim">Límite de crédito ($) — sólo administración</label>${numIn('cu-lim',c.limit||0,'0',can('config')||can('void')?'':'disabled')}<div class="row" style="margin-top:.5rem"><button class="btn sm" data-act="cuPay" data-id="${c.id}">Registrar cobro de deuda</button><button class="btn sm" data-act="cuWa" data-id="${c.id}" ${typeof waOk==='function'&&waOk(c)?'':'disabled title="Sin WhatsApp cargado"'}>WhatsApp${debtOf(c.id)>0?' (avisar saldo)':''}</button><button class="btn sm" data-act="cuMember" data-id="${c.id}">Membresía</button><button class="btn sm" data-act="cuRedeem" data-id="${c.id}">Canjear premio (${Math.min(stampsOf(c.id),S.loyalty.goal)}/${S.loyalty.goal})</button></div></div>
  <label for="cu-nt">Notas internas</label><input id="cu-nt" maxlength="120" value="${esc(c.notes||'')}"><div class="row" style="margin-top:.6rem">${adm&&c.status!=='baja'&&c.secret?`<button class="btn sm" data-act="cuCardLink" data-id="${c.id}">Enviar tarjeta (enlace y Wallet)</button>`:''}${custDelAdm()&&c.status!=='baja'?`<button class="btn sm red" data-act="cuBaja" data-id="${c.id}">Dar de baja (anonimizar)</button>`:''}${custDelAdm()&&!c.elim?`<button class="btn sm red" data-act="cuDel" data-id="${c.id}">Eliminar socio</button>`:''}${!custDelAdm()&&c.status!=='baja'?'<span class="sm mut">La baja y la eliminación las hace sólo el administrador.</span>':''}</div>`:''}`,
  {wide:true,okText:'Guardar',onOk:w=>{const nm=val('cu-n').trim(),ls=val('cu-l').trim();const OW=ownerMode(),club=$('#cu-c1',w).checked;
   if(OW){if(nm.length<2)return w._err('Escribí el nombre o la razón social.'),false;}else if(nm.length<2||ls.length<2)return w._err('Nombre y apellido son obligatorios.'),false;
@@ -3992,7 +3993,9 @@ A.cuEdit=el=>{const c=el.dataset.id?custById(el.dataset.id):null;const isAdm=can
    if(!adm&&(changed||clubChg))return w._err('WhatsApp, correo, DNI, nacimiento y consentimientos los cambia sólo el administrador.'),false;
    let proof='';if(grant){proof=($('#cu-proof',w)?val('cu-proof'):'').trim();if(proof.length<10)return w._err('Para otorgar el consentimiento escribí la constancia: cómo y cuándo lo dio el titular (mínimo 10 letras).'),false;}
    let lim=c.limit||0;if($('#cu-lim',w)&&!$('#cu-lim',w).disabled){lim=cents(val('cu-lim')===''?'0':val('cu-lim'));if(isNaN(lim)||lim<0)return w._err('Límite inválido.'),false;}
+   w._custId=c.id;const ff=typeof fiscRead==='function'?fiscRead(w):null;if(ff&&ff.err)return w._err(ff.err),false;
    if(typeof wsCustSave==='function'){const we=wsCustSave(c,w);if(we)return w._err(we),false;}
+   if(ff)fiscApply(c,ff,'ficha');
    const chg=[];if(nm!==c.name||ls!==c.last)chg.push('nombre cambiado');if(waN!==c.wa)chg.push('WhatsApp cambiado '+maskTail(waN));if(val('cu-b')!==(c.birth||''))chg.push('nacimiento cambiado');
    if((c.dni||'')!==dn)chg.push('DNI '+(dn?'cargado/cambiado '+maskTail(dn):'borrado'));if(em!==(c.email||''))chg.push('correo '+(em?'cambiado':'borrado'));
    const nt=($('#cu-nt',w)?val('cu-nt'):c.notes||'').trim();if(nt!==(c.notes||''))chg.push('observaciones cambiadas');
@@ -4003,10 +4006,10 @@ A.cuEdit=el=>{const c=el.dataset.id?custById(el.dataset.id):null;const isAdm=can
    if(lim!==(c.limit||0)){audit('LIMITE_CREDITO','socio '+pad4(c.num)+' '+money(c.limit||0)+' → '+money(lim));c.limit=lim;}
    const st=$('#cu-st',w)?val('cu-st'):c.status;if(st!==c.status&&c.status!=='baja'){audit('CLIENTE_ESTADO','socio '+pad4(c.num)+' · '+c.status+' → '+st);c.status=st;}
    if(chg.length)audit('CLIENTE_EDITADO','socio '+pad4(c.num)+' · '+chg.join(' · '));}
-  else{let tmp=null,lim0=0;if(OW&&$('#wc-ch',w)&&typeof wsCustSave==='function'){tmp={name:nm,last:ls,channel:'minorista'};const we=wsCustSave(tmp,w);if(we)return w._err(we),false;}
+  else{w._custId='';const ff=typeof fiscRead==='function'?fiscRead(w):null;if(ff&&ff.err)return w._err(ff.err),false;let tmp=null,lim0=0;if(OW&&$('#wc-ch',w)&&typeof wsCustSave==='function'){tmp={name:nm,last:ls,channel:'minorista'};const we=wsCustSave(tmp,w);if(we)return w._err(we),false;}
    if($('#cu-lim',w)&&!$('#cu-lim',w).disabled){lim0=cents(val('cu-lim')===''?'0':val('cu-lim'));if(isNaN(lim0)||lim0<0)return w._err('Límite inválido.'),false;}
    const n=custCreate({name:nm,last:ls,birth:val('cu-b'),wa:val('cu-w'),comm:$('#cu-c2',w).checked,dni:dn,club:OW?club:true},'mostrador');
-   if(tmp)Object.assign(n,{channel:tmp.channel,taxid:tmp.taxid,term:tmp.term,zone:tmp.zone,seller:tmp.seller});if(lim0){n.limit=lim0;audit('LIMITE_CREDITO','socio '+pad4(n.num)+' $ 0 → '+money(lim0));}
+   if(tmp)Object.assign(n,{channel:tmp.channel,taxid:tmp.taxid,term:tmp.term,zone:tmp.zone,seller:tmp.seller});if(ff)fiscApply(n,ff,'alta');if(lim0){n.limit=lim0;audit('LIMITE_CREDITO','socio '+pad4(n.num)+' $ 0 → '+money(lim0));}
    audit('ALTA_CLIENTE','mostrador · '+(OW?'cliente':'socio')+' '+pad4(n.num)+(tmp&&tmp.channel==='mayorista'?' · mayorista':''));}
   save();pubRefresh();rerender();toast('Cliente guardado');}});};
 A.cuPay=el=>{const c=custById(el.dataset.id);if(!c)return;if(!openSess()&&true)toast('Sin caja abierta sólo se registra el cobro no efectivo.');
@@ -4483,7 +4486,7 @@ function wsCustCard(c){if(!wsOn()||!c)return'';const ed=custAdm()?'':'disabled';
  return`<div class="card" style="margin:.6rem 0"><h3 style="margin-top:0">Mayorista y crédito</h3>
  <div class="grid g2" ${wsOnly()?'hidden':''}><div><label for="wc-ch">Canal habitual</label><select id="wc-ch" ${ed}><option value="minorista" ${!wsIsWh(c)?'selected':''}>Minorista</option><option value="mayorista" ${wsIsWh(c)?'selected':''}>Mayorista</option></select></div>
  </div>
- <div class="grid g2"><div><label for="wc-tx">CUIT ${wsOnly()?'(opcional)':'(obligatorio para vender como mayorista)'}</label><input id="wc-tx" inputmode="numeric" maxlength="13" autocomplete="off" placeholder="20-12345678-6" value="${esc(c.taxid||'')}" ${ed}></div>
+ <div class="grid g2"><div><p class="sm mut" style="margin-top:1.6rem">CUIT ${wsOnly()?'(opcional)':'(obligatorio para vender como mayorista)'}: se carga en «Datos para facturar (ARCA)».</p></div>
  <div><label for="wc-tm">Plazo máximo de pago (días)</label><input id="wc-tm" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="Sin plazo" value="${c.term>0?esc(String(c.term)):''}" ${ed}></div></div>
  <div class="grid g2"><div><label for="wc-zn">Zona de cobranza</label><input id="wc-zn" maxlength="30" autocomplete="off" value="${esc(c.zone||'')}" ${ed}></div><div><label for="wc-sl">Vendedor asignado</label><input id="wc-sl" maxlength="30" autocomplete="off" value="${esc(c.seller||'')}" ${ed}></div></div>
  <p class="sm mut">Antigüedad de saldos: ${ag.map(b=>`${b.k} d: <b>${money(b.t)}</b>`).join(' · ')}</p>
@@ -4491,7 +4494,7 @@ function wsCustCard(c){if(!wsOn()||!c)return'';const ed=custAdm()?'':'disabled';
  ${wsReview(c.id).length?`<div class="warnbox sm">${wsReview(c.id).length} venta(s) a cuenta corriente marcadas para revisión por el servidor (${esc(wsReview(c.id).map(s=>s.n).slice(-5).join(', '))}).</div>`:''}
  ${can('credit_ov')?`<button class="btn sm" type="button" data-act="wsCredOv" data-id="${c.id}" data-need="0">Autorizar excepción de crédito</button>`:''}</div>`;}
 function wsCustSave(c,w){if(!wsOn()||!$('#wc-ch',w)||$('#wc-ch',w).disabled)return'';
- const ch=(wsOnly()||val('wc-ch')==='mayorista')?'mayorista':'minorista',tx=val('wc-tx').replace(/\D/g,''),tm=val('wc-tm').trim()===''?0:Math.round(parseNum(val('wc-tm'))),zn=val('wc-zn').trim().slice(0,30),sl=val('wc-sl').trim().slice(0,30);
+ const ch=(wsOnly()||val('wc-ch')==='mayorista')?'mayorista':'minorista',tx=($('#fc-tx',w)&&!$('#fc-tx',w).disabled?val('fc-tx'):(c.taxid||'')).replace(/\D/g,''),tm=val('wc-tm').trim()===''?0:Math.round(parseNum(val('wc-tm'))),zn=val('wc-zn').trim().slice(0,30),sl=val('wc-sl').trim().slice(0,30);
  if(tx&&!arcaCuitOk(tx))return'El CUIT no es válido (11 dígitos con dígito verificador correcto).';
  if(ch==='mayorista'&&!tx&&!wsOnly())return'Para marcar al cliente como mayorista cargá su CUIT.';
  if(isNaN(tm)||tm<0||tm>365)return'El plazo va de 1 a 365 días (o vacío).';
@@ -4951,6 +4954,53 @@ function fidDemoSeed(){if(IS_CLIENT||S.fidDemo)return;const L=S.customers.filter
  const mk=(code,amount,cust,holder,used)=>{const g={id:uid(),code,ts:t0,exp:now()+150*86400000,cust:cust||'',holder,buyer:'',amount,method:'efectivo',mov:'',status:'activa',user:u,origin:'ejemplo',msg:'¡Que lo disfrutes! (ejemplo)'};giftL().push(g);giftM().push({id:uid(),gift:g.id,ts:t0,amount,kind:'emision',ref:'Emisión (ejemplo)',user:u});if(used)giftM().push({id:uid(),gift:g.id,ts:t0+86400e3,amount:-used,kind:'canje',ref:'Canje parcial (ejemplo)',user:u});};
  mk('GC-DEMO-0001',1000000,'','Regalo de ejemplo',300000);mk('GC-DEMO-0002',500000,L[1].id,custFull(L[1]),0);
  gameL().push({id:uid(),sale:'',cust:L[0].id,ts:t0+2*86400e3,prize:'pz1',label:'+1 sello',kind:'stamps',v:1,via:'ruleta (ejemplo)',user:u});}
+
+/* ===== V26.55 · Datos para facturar de cada cliente (condición frente a ARCA) y precarga en el cobro =====
+   Pedido del dueño: al elegir un cliente en el cobro con factura electrónica, los datos que ya están en su ficha
+   tienen que cargarse solos; y cada cliente tiene que tener su condición frente al IVA (ARCA).
+   · La ficha del cliente gana el bloque «Datos para facturar (ARCA)»: CUIT/CUIL, condición frente al IVA, razón social
+     y domicilio fiscal (el DNI sigue en el formulario principal). El CUIT es el MISMO campo que usa Mayorista (taxid).
+   · En el cobro con ARCA, al identificar al cliente se precargan documento, número, condición y razón social.
+     Siempre se puede corregir antes de cobrar; si se completan datos que la ficha no tenía, se guardan en la ficha
+     (sólo se completan campos vacíos; cambiar datos ya cargados lo hace el administrador desde la ficha).
+   · CUIT, razón social y domicilio viajan cifrados a la nube (como el resto de los datos personales). */
+const IVA_COND=[['','Sin cargar'],['5','Consumidor final'],['1','IVA Responsable Inscripto'],['6','Responsable Monotributo'],['4','IVA Sujeto Exento'],['13','Monotributista Social']];
+const ivaTxt=k=>(IVA_COND.find(x=>x[0]===String(k||''))||IVA_COND[0])[1];
+function fiscCardHTML(c){const ed=!c||(typeof custAdm==='function'?custAdm():can('config'));const dis=ed?'':'disabled';
+ return `<div class="card" style="margin:.6rem 0"><h3 style="margin-top:0">Datos para facturar (ARCA)</h3>
+ <p class="sm mut">Se usan solos al hacer una factura electrónica a este cliente. El DNI va arriba; para Factura A hace falta CUIT y «Responsable Inscripto».</p>
+ <div class="grid g2"><div><label for="fc-cond">Condición frente al IVA</label><select id="fc-cond" ${dis}>${IVA_COND.map(([k,t])=>`<option value="${k}" ${String((c&&c.ivaCond)||'')===k?'selected':''}>${t}</option>`).join('')}</select></div>
+ <div><label for="fc-tx">CUIT / CUIL</label><input id="fc-tx" inputmode="numeric" maxlength="13" autocomplete="off" placeholder="20-12345678-6" value="${esc((c&&c.taxid)||'')}" ${dis}></div>
+ <div><label for="fc-rz">Razón social (como figura en ARCA)</label><input id="fc-rz" maxlength="80" autocomplete="off" placeholder="Si se deja vacío, va el nombre" value="${esc((c&&c.razon)||'')}" ${dis}></div>
+ <div><label for="fc-dom">Domicilio fiscal (opcional)</label><input id="fc-dom" maxlength="100" autocomplete="off" value="${esc((c&&c.domFis)||'')}" ${dis}></div></div>
+ ${ed?'':'<p class="sm mut">Los datos fiscales ya cargados los cambia el administrador. En el cobro se pueden completar los que falten.</p>'}</div>`;}
+function fiscRead(w){const q=id=>w.querySelector('#'+id);if(!q('fc-cond')||q('fc-cond').disabled)return null;
+ const tx=q('fc-tx').value.replace(/\D/g,''),cond=q('fc-cond').value,rz=q('fc-rz').value.trim().replace(/[<>]/g,'').slice(0,80),dom=q('fc-dom').value.trim().replace(/[<>]/g,'').slice(0,100);
+ if(tx&&!arcaCuitOk(tx))return{err:'El CUIT/CUIL no es válido (11 dígitos con dígito verificador correcto).'};
+ if(cond==='1'&&!tx)return{err:'Un Responsable Inscripto necesita su CUIT para la Factura A.'};
+ return{tx,cond,rz,dom};}
+function fiscApply(c,f,origen){if(!c||!f)return;const chg=[];const set=(k,v,lbl,mask)=>{if(String(c[k]||'')!==String(v||'')){chg.push(lbl+(mask?(v?' cargado':' borrado'):': '+(v||'—')));c[k]=v;}};
+ set('taxid',f.tx,'CUIT',1);set('ivaCond',f.cond,'condición IVA',0);if(chg.length&&chg[chg.length-1].startsWith('condición'))chg[chg.length-1]='condición IVA: '+ivaTxt(f.cond);
+ set('razon',f.rz,'razón social',1);set('domFis',f.dom,'domicilio fiscal',1);
+ if(chg.length)audit('CLIENTE_FISCAL','socio '+pad4(c.num)+' · '+chg.join(' · ')+(origen?' · '+origen:''));}
+
+/* ---- cobro con ARCA: precarga del receptor desde la ficha ---- */
+function arcaRcpFromCust(c){const r={from:c.id,t:'99',n:'',c:'5',nm:'',hint:''};const tx=String(c.taxid||'').replace(/\D/g,'');const dn=String(c.dni||'').replace(/\D/g,'');
+ r.nm=(c.razon||custFull(c)||'').slice(0,80);
+ if(tx.length===11){r.t='80';r.n=tx;r.c=c.ivaCond||'1';if(!c.ivaCond)r.hint='La ficha no tiene la condición frente al IVA: revisala antes de facturar.';}
+ else if(dn){r.t='96';r.n=dn;r.c=c.ivaCond||'5';}
+ else{r.c=c.ivaCond||'5';r.hint='La ficha no tiene CUIT ni DNI: si los completás acá, quedan guardados en la ficha.';}
+ return r;}
+function arcaRcpAuto(){if(!pos.arca)return;const r=pos.rcp;
+ if(pos.cust){if(!r||r.from!==pos.cust){const c=custById(pos.cust);if(c)pos.rcp=arcaRcpFromCust(c);}}
+ else if(r&&r.from){pos.rcp={t:'99',n:'',c:'5',nm:''};}}
+/* después de cobrar: completa en la ficha lo que no tenía (no pisa lo cargado) */
+function arcaRcpToCust(cust){const r=pos.rcp;if(!cust||!r||r.t==='99'||r.from!==cust.id)return;const n=String(r.n||'').replace(/\D/g,'');const f={};
+ if((r.t==='80'||r.t==='86')&&n.length===11&&!cust.taxid&&arcaCuitOk(n)&&!S.customers.some(x=>x.id!==cust.id&&x.status!=='baja'&&x.taxid===n))f.taxid=n;
+ if(r.t==='96'&&/^\d{7,8}$/.test(n)&&!cust.dni&&!S.customers.some(x=>x.id!==cust.id&&x.status!=='baja'&&x.dni&&normDni(x.dni)===n))f.dni=n;
+ if(!cust.ivaCond&&r.c)f.ivaCond=r.c;if(!cust.razon&&r.nm&&r.nm!==custFull(cust))f.razon=r.nm.slice(0,80);
+ const k=Object.keys(f);if(!k.length)return;Object.assign(cust,f);
+ audit('CLIENTE_FISCAL','socio '+pad4(cust.num)+' · completado desde la factura: '+k.map(x=>({taxid:'CUIT',dni:'DNI',ivaCond:'condición IVA ('+ivaTxt(f.ivaCond)+')',razon:'razón social'}[x])).join(', '));}
 
 /* ===== Personal: fichaje, horas, empleados ===== */
 let perTab='fichaje';
@@ -6534,7 +6584,7 @@ const COLS=[
  {c:'movs',key:'movs'},
  {c:'cierres',key:'closures',strip:['notes'],once:1},
  {c:'rubros',key:'rubros',del:1},
- {c:'clientes',key:'customers',pii:['name','last','birth','wa','email','secret','notes','dni','cardSecrets','taxid'],del:1},
+ {c:'clientes',key:'customers',pii:['name','last','birth','wa','email','secret','notes','dni','cardSecrets','taxid','razon','domFis'],del:1},
  {c:'fiado',key:'fiadoPays',once:1},
  {c:'cortesx',key:'cortesX',once:1},
  {c:'emp',key:'employees',pii:['pin','dni'],del:1},
@@ -7103,9 +7153,9 @@ async function arcaEstado(force){if(!arcaOn())return null;if(!force&&ARC.st&&Dat
 /* ---------- receptor de la factura (en el cobro) ---------- */
 const ARC_DOC=[['99','Consumidor final (sin identificar)'],['96','DNI'],['80','CUIT'],['86','CUIL']];
 const ARC_COND=[['5','Consumidor final'],['1','IVA Responsable Inscripto'],['6','Responsable Monotributo'],['4','IVA Sujeto Exento'],['13','Monotributista Social']];
-function arcaRcpHtml(){if(!pos.arca)return'';const r=pos.rcp||(pos.rcp={t:'99',n:'',c:'5',nm:''});
+function arcaRcpHtml(){if(!pos.arca)return'';if(typeof arcaRcpAuto==='function')arcaRcpAuto();const r=pos.rcp||(pos.rcp={t:'99',n:'',c:'5',nm:''});
  const ident=r.t!=='99';
- return `<div class="card" style="margin:.5rem 0"><b class="sm">Receptor de la factura</b> <span class="sm mut">(si no se identifica, sale a Consumidor final)</span>
+ return `<div class="card" style="margin:.5rem 0"><b class="sm">Receptor de la factura</b> <span class="sm mut">${r.from?'(cargado de la ficha del cliente: revisalo)':'(si no se identifica, sale a Consumidor final)'}</span>${r.hint?`<div class="warnbox sm" style="margin:.3rem 0">${esc(r.hint)}</div>`:''}
  <div class="grid g2"><div><label for="rc-t">Documento</label><select id="rc-t">${ARC_DOC.map(([k,t])=>`<option value="${k}" ${r.t===k?'selected':''}>${t}</option>`).join('')}</select></div>
  <div><label for="rc-n">Número</label><input id="rc-n" inputmode="numeric" maxlength="13" autocomplete="off" placeholder="${r.t==='80'||r.t==='86'?'CUIT / CUIL (11 dígitos)':'DNI'}" value="${esc(r.n)}" ${ident?'':'disabled'}></div>
  <div><label for="rc-c">Condición frente al IVA</label><select id="rc-c">${ARC_COND.map(([k,t])=>`<option value="${k}" ${r.c===k?'selected':''}>${t}</option>`).join('')}</select></div>
