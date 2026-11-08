@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Mi Comercio · Demo de un solo dueño · Sistema VB</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-07 22:42 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-08 15:07 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#1f2a37;--gold:#2e8b74;--gold2:#23695a;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -870,6 +870,7 @@ function showLogin(){if(CLOUD_HOOK||(window.RAVE_BUILD&&window.RAVE_BUILD.varian
  <label for="lp">PIN</label><input id="lp" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN">
  <div class="merr" id="lerr" role="alert"></div>
  <div class="row" style="margin-top:.8rem"><button class="btn gold sp" data-act="login">Ingresar</button><a class="btn" href="#menu">Volver al menú</a></div>
+ <p class="sm mut" style="margin-top:.6rem">¿Olvidaste tu PIN? Pedíselo al <b>administrador del sistema</b>: lo cambia en Usuarios y permisos.</p>
  ${vbFooter(true)}</div>`;
  $('#lp').addEventListener('keydown',e=>{if(e.key==='Enter')A.login();});}
 A.login=()=>{const err=$('#lerr');if(now()<lockUntil){err.textContent='Demasiados intentos. Esperá '+Math.ceil((lockUntil-now())/1000)+' s.';return;}
@@ -6746,11 +6747,13 @@ function loginHtml(mode,msg,pre){const em=esc((pre&&pre.email)||(cl.meta&&cl.met
  if(mode==='ingresar')f=`${googleBtnHtml()}<label for="cl-em">Correo</label><input id="cl-em" type="email" autocomplete="username" value="${em}"><label for="cl-pw">Contraseña</label><input id="cl-pw" type="password" autocomplete="current-password">`;
  else if(mode==='crear')f=`<p class="sm mut">Para dueños. Vincular Business te da un <b>código de invitación</b> (se pide una sola vez).</p><label for="cl-nm">Nombre del comercio</label><input id="cl-nm" maxlength="80"><label for="cl-em">Correo</label><input id="cl-em" type="email" autocomplete="username" value="${em}"><label for="cl-pw">Contraseña (mínimo 10 caracteres)</label><input id="cl-pw" type="password" autocomplete="new-password"><label for="cl-co">Código de invitación de Vincular Business</label><input id="cl-co" autocomplete="off">`;
  else if(mode==='unirme')f=`<p class="sm mut">Para el equipo. El administrador te da un <b>código de acceso</b> y tu correo queda invitado.</p><label for="cl-em">Correo (el mismo con el que te invitaron)</label><input id="cl-em" type="email" autocomplete="username" value="${em}"><label for="cl-pw">Elegí tu contraseña (mínimo 10 caracteres)</label><input id="cl-pw" type="password" autocomplete="new-password"><label for="cl-co">Código de acceso</label><input id="cl-co" autocomplete="off">`;
- else f=`<p class="sm mut">Dejanos cómo contactarte y te ayudamos a volver a entrar. También podés escribir por WhatsApp.</p><label for="cl-sc">WhatsApp o correo</label><input id="cl-sc" maxlength="120"><label for="cl-sd">Contanos qué pasó</label><textarea id="cl-sd" rows="3" maxlength="500"></textarea>`;
+ else f=`<div class="card sm" style="margin:.4rem 0"><p style="margin-top:0"><b>¿Olvidaste tu contraseña?</b> Pedísela al <b>administrador de tu comercio</b> (no al soporte del desarrollador): él te vuelve a dar acceso desde <b>Usuarios y permisos → Equipo</b> (te quita y te invita de nuevo con un código de acceso nuevo).</p>
+ <p>También podés probar con <b>«Olvidé mi contraseña»</b> en «Ingresar»: te llega un correo para elegir otra${googleOn?', o entrá con <b>«Ingresar con Google»</b> si tu Gmail está asociado':''}.</p>
+ <p style="margin-bottom:0"><b>Si sos el administrador:</b> usá «Olvidé mi contraseña» y después tu <b>código de recuperación</b> (el que guardaste al crear el comercio) para volver a abrir los datos.</p></div>`;
  return `<div class="lbox"><div style="text-align:center"><img src="${LOGO_MENU}" alt="Mi Comercio" style="width:150px;border-radius:12px"><h1>Acceso del equipo</h1><p class="mut sm">${esc(S.tenant.legal||'Sistema VB')}</p></div>
- <div class="row" style="justify-content:center;gap:.4rem;margin:.4rem 0">${tab('ingresar','Ingresar')}${tab('crear','Crear comercio')}${tab('unirme','Tengo una invitación')}${tab('ayuda','Necesito ayuda')}</div>${f}
+ <div class="row" style="justify-content:center;gap:.4rem;margin:.4rem 0">${tab('ingresar','Ingresar')}${tab('crear','Crear comercio')}${tab('unirme','Tengo una invitación')}${tab('ayuda','Olvidé mi clave')}</div>${f}
  <div class="merr" id="lerr" role="alert">${esc(msg||'')}</div>
- <div class="row" style="margin-top:.8rem"><button class="btn gold sp" data-act="cloudGo" data-mode="${mode}" id="cl-go">${mode==='ingresar'?'Ingresar':mode==='ayuda'?'Enviar pedido':'Continuar'}</button><a class="btn" href="#menu">Volver al menú</a></div>
+ <div class="row" style="margin-top:.8rem">${mode==='ayuda'?'':`<button class="btn gold sp" data-act="cloudGo" data-mode="${mode}" id="cl-go">${mode==='ingresar'?'Ingresar':'Continuar'}</button>`}<a class="btn" href="#menu">Volver al menú</a></div>
  ${mode==='ingresar'?'<p class="sm" style="margin-top:.6rem"><a href="#" data-act="cloudForgot">Olvidé mi contraseña</a></p>':''}
  ${vbFooter(true)}</div>`;}
 let loginMode='ingresar';
@@ -6767,7 +6770,7 @@ function errTxt(e){if(e&&e.net)return'No hay conexión con la nube. Probá de nu
  if(/rate limit|too many/i.test(m))return'Demasiados intentos: esperá unos minutos.';return m;}
 A.cloudGo=async el=>{const mode=el.dataset.mode;lerr('');el.disabled=true;
  try{
-  if(mode==='ayuda'){const c=val('cl-sc').trim();await rpc('pedir_soporte',{p:{contacto:c,motivo:'clave',comercio:S.tenant.legal,detalle:val('cl-sd'),version:'cliente-1',equipo:navigator.userAgent.slice(0,100)}},{auth:false});lerr('');$('#login .lbox').insertAdjacentHTML('afterbegin','<div class="okbox">Recibimos tu pedido. Te contactamos pronto.</div>');return;}
+  if(mode==='ayuda')return; /* V26.59: la clave se le pide al administrador del comercio, no al soporte del desarrollador */
   const email=val('cl-em').trim().toLowerCase(),pass=val('cl-pw');
   if(!mailOk(email))return lerr('Escribí un correo válido.');
   if(mode==='ingresar'){if(!pass)return lerr('Escribí tu contraseña.');await cloudSignInFlow(email,pass,{});return;}
@@ -6886,7 +6889,7 @@ A.logout=async()=>{if(!CLOUD.on){audit('LOGOUT','');user=null;location.hash='#me
  S=DEF();S.users=[];user=null;loginMode='ingresar';location.hash='#menu';route();};
 A.cloudForgot=async()=>{const email=(val('cl-em')||'').trim().toLowerCase();if(!mailOk(email))return lerr('Escribí tu correo arriba y volvé a tocar "Olvidé mi contraseña".');
  try{await hreq('/auth/v1/recover?redirect_to='+encodeURIComponent(googleRedirectUrl()),{method:'POST',auth:false,body:{email}});}catch(e){if(e.net)return lerr(errTxt(e));}
- lerr('Si el correo está registrado, te mandamos un enlace para elegir otra contraseña (abrilo una sola vez, en este mismo equipo). '+(googleOn?'Más fácil: tocá «Ingresar con Google» con tu Gmail.':'Si no te llega, usá "Necesito ayuda".'));};
+ lerr('Si el correo está registrado, te mandamos un enlace para elegir otra contraseña (abrilo una sola vez, en este mismo equipo). '+(googleOn?'Más fácil: tocá «Ingresar con Google» con tu Gmail.':'Si no te llega, pedile al administrador de tu comercio que te vuelva a dar acceso (Usuarios y permisos → Equipo).'));};
 A.cloudNewPass=async()=>{const p=val('cl-pw');if(p.length<10)return lerr('La contraseña necesita al menos 10 caracteres.');
  try{cl.ses={access:cl.recoveryToken,refresh:'',exp:Date.now()+3000000};await hreq('/auth/v1/user',{method:'PUT',body:{password:p}});cl.ses=null;cl.recoveryToken=null;loginMode='ingresar';cloudLogin('Contraseña cambiada. Ingresá con la nueva.');}catch(e){lerr(errTxt(e));}};
 /* ---------- llave pública del Club (alta anónima desde el menú, cifrada de punta a punta) ---------- */
@@ -7010,7 +7013,7 @@ function cloudApiWrap(local){if(!CLOUD.on)return local;
 function teamCardHtml(){return `<div class="card" id="team-card" style="margin-top:1rem"><h3>Equipo (personas con acceso)</h3><div id="nb-team" class="sm mut">Cargando…</div>
  <h4>Invitar a una persona</h4><div class="grid g2"><div><label for="nb-em">Correo</label><input id="nb-em" type="email"></div><div><label for="nb-nm">Nombre</label><input id="nb-nm" maxlength="60"></div><div><label for="nb-rl">Rol</label><select id="nb-rl"><option value="mostrador">Mostrador</option><option value="supervisor">Supervisor</option><option value="operador">Operador</option><option value="admin">Administrador</option></select></div></div>
  <div class="row" style="margin-top:.5rem"><button class="btn gold" data-act="nbInvite">Generar código de acceso</button></div>
- <p class="sm mut">La persona entra a "Tengo una invitación", escribe ese correo, elige su contraseña y pega el código. Si olvida su contraseña: "Olvidé mi contraseña" y luego quitala y volvé a invitarla.</p>
+ <p class="sm mut">La persona entra a "Tengo una invitación", escribe ese correo, elige su contraseña y pega el código. <b>Si alguien olvida su contraseña, te la pide a vos</b> (no al soporte del desarrollador): que pruebe «Olvidé mi contraseña»; si no puede, quitala de esta lista y volvé a invitarla con un código nuevo.</p>
  <h4>Código de recuperación</h4><p class="sm">Permite volver a abrir los datos si el administrador pierde su contraseña. Si lo perdiste, generá uno nuevo (el anterior deja de servir).</p><button class="btn" data-act="nbRecov">Generar código nuevo</button></div>`;}
 async function teamInit(){if(!CLOUD.on||cl.rol!=='admin')return;const box=document.getElementById('nb-team');if(!box)return;
   try{const [m,inv]=await Promise.all([sel(`miembros?select=usuario_id,rol,nombre,email&comercio_id=eq.${cl.comercio.id}&order=creado`),rpc('invitaciones_de',{p_comercio:cl.comercio.id})]);
