@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Mi Comercio · Demo de un solo dueño · Sistema VB</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-09 23:16 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-09 23:49 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#1f2a37;--gold:#2e8b74;--gold2:#23695a;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -227,6 +227,21 @@ html[data-theme=dark] .cm-card,html[data-theme=dark] .cm-card *{color-scheme:lig
 /* V26.50 · línea seleccionada del ticket: el fondo acompaña el modo claro/oscuro (antes era un claro fijo y en oscuro no se leía) */
 .cline.sel{background:var(--selbg,#fbf5e8);border-radius:10px;padding:.5rem;box-shadow:inset 3px 0 0 var(--gold)}
 html[data-theme=dark]{--selbg:#2f2921}
+
+/* V26.61 · pestañas, avisos, atajos y buscador universal */
+.ux-tabs{display:flex;gap:.3rem;flex-wrap:wrap;border-bottom:1px solid var(--line);margin:-.2rem 0 1rem;padding-bottom:.35rem}
+.ux-tabs a{display:inline-flex;align-items:center;gap:.35rem;min-height:44px;padding:.4rem .9rem;border-radius:12px 12px 0 0;color:var(--ink);text-decoration:none;cursor:pointer;font-weight:600;border:1px solid transparent}
+.ux-tabs a:hover{background:var(--selbg,rgba(127,127,127,.12))}.ux-tabs a.on{border-color:var(--line);border-bottom:3px solid var(--gold);background:var(--card)}
+.ux-bdw{margin-left:auto;display:inline-flex}.ux-bd{min-width:20px;height:20px;padding:0 6px;border-radius:10px;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.ux-bd.red{background:#d63a2b;color:#fff}.ux-bd.amber{background:#f2b632;color:#2b1d00}
+.ux-bd.pulse{animation:uxp 1.4s ease-in-out infinite}@keyframes uxp{0%,100%{box-shadow:0 0 0 0 rgba(214,58,43,.7)}50%{box-shadow:0 0 0 6px rgba(214,58,43,0)}}
+.ux-kbd{font:700 .68rem ui-monospace,Menlo,Consolas,monospace;padding:.1rem .35rem;border-radius:6px;border:1px solid currentColor;opacity:.85;margin-left:.3rem}
+#side a.ux-pos:not(.on){border:1px solid var(--gold);color:#f3d79c}
+.ux-pal-ov{position:fixed;inset:0;z-index:9000;background:rgba(10,9,8,.5);display:flex;align-items:flex-start;justify-content:center;padding:10vh 16px 16px}
+.ux-pal{width:min(640px,100%);background:var(--card);color:var(--ink);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.45);padding:.8rem;border:1px solid var(--line)}
+.ux-pal input{width:100%;min-height:48px;font-size:1.05rem}#ux-res{max-height:55vh;overflow:auto;margin-top:.4rem}
+.ux-it{display:flex;gap:.6rem;align-items:center;min-height:48px;padding:.45rem .6rem;border-radius:10px;cursor:pointer}.ux-it:hover{background:var(--selbg,rgba(201,150,62,.12))}.ux-it.on{background:var(--selbg,rgba(201,150,62,.18));outline:2px solid var(--gold)}
+@media(prefers-reduced-motion:reduce){.ux-bd.pulse{animation:none}}
 .btn.gold,.fk.gold,.fk.gold small,.cmp .btn.gold,html[data-theme=dark] .btn.gold,html[data-theme=dark] .fk.gold,html[data-theme=dark] .fk.gold small{color:#000!important}html[data-theme=dark] .cmp-tab.on{color:#45ad92}
 </style>
 </head>
@@ -851,13 +866,13 @@ const NAV=[['inicio','Resumen'],['vender','Operación'],['pedidos','Operación']
  ['clientes','Clientes y fidelización'],['fidel','Clientes y fidelización'],['fidplus','Clientes y fidelización'],['crm','Clientes y fidelización'],['monedero','Clientes y fidelización'],['cupones','Clientes y fidelización'],
  ['personal','Equipo'],['tareas','Equipo'],['menuadmin','Menú y web'],['legal','Menú y web'],
  ['nube','Sistema'],['dispositivos','Sistema'],['impex','Sistema'],['integ','Sistema'],['roles','Sistema'],['auditoria','Sistema'],['config','Sistema']];
-function showPanel(id){if(!SCREENS[id]||(SCREENS[id].perm&&!can(SCREENS[id].perm))||(SCREENS[id].show&&!SCREENS[id].show()))id='inicio';curScreen=id;$('#panel').hidden=false;
+function showPanel(id){if(!SCREENS[id]||(SCREENS[id].perm&&!can(SCREENS[id].perm))||(SCREENS[id].show&&!SCREENS[id].show()))id='inicio';if(id==='inicio'&&typeof uxCompact==='function'&&uxCompact()&&SCREENS.vender&&can('sell'))id='vender';curScreen=id;$('#panel').hidden=false;
  const order=NAV.map(x=>x[0]);const secOf=Object.fromEntries(NAV);
  const nav=Object.entries(SCREENS).filter(([k,s])=>(!s.perm||can(s.perm))&&(!s.show||s.show())).sort((a,b)=>{const i=order.indexOf(a[0]),j=order.indexOf(b[0]);return (i<0?99:i)-(j<0?99:j);});let sec='';
- $('#side').innerHTML=`<a class="brand" href="#panel/inicio" title="Ir al Resumen" aria-label="Ir al Resumen" style="text-decoration:none"><img src="${LOGO_MENU}" alt="Mi Comercio" style="width:48px;height:27px;object-fit:contain;border-radius:6px"><span>Sistema VB</span></a>`+nav.map(([k,s])=>{const sc=secOf[k]||'Otros';const h=(sc!==sec)?(sec=sc,`<div class="sec">${esc(sc)}</div>`):'';return h+`<a data-act="nav" data-id="${k}" class="${k===id?'on':''}" tabindex="0" role="link">${ico(s.icon)}<span>${esc(s.t)}</span></a>`;}).join('')+`<div class="sec">Desarrollado por</div><div class="sm" style="padding:0 .7rem;color:#a99f8f"><b style="color:#eee">${VB.name}</b><br><i>“${VB.lema}”</i><br><a style="color:#c9963e" href="${vbWa()}" target="_blank" rel="noopener noreferrer">Celular ${VB.phone}</a><br>${VB.web?`<a style="color:#c9963e" href="${VB.web}" target="_blank" rel="noopener noreferrer">${VB.web.replace(/^https?:\/\//,'').replace(/\/$/,'')}</a><br>`:''}<a style="color:#c9963e" href="mailto:${VB.mail}">${VB.mail}</a></div>`;
+ $('#side').innerHTML=`<a class="brand" href="#panel/inicio" title="Ir al Resumen" aria-label="Ir al Resumen" style="text-decoration:none"><img src="${LOGO_MENU}" alt="Mi Comercio" style="width:48px;height:27px;object-fit:contain;border-radius:6px"><span>Sistema VB</span></a>`+(typeof uxSideHTML==='function'?uxSideHTML(nav,id,secOf):nav.map(([k,s])=>{const sc=secOf[k]||'Otros';const h=(sc!==sec)?(sec=sc,`<div class="sec">${esc(sc)}</div>`):'';return h+`<a data-act="nav" data-id="${k}" class="${k===id?'on':''}" tabindex="0" role="link">${ico(s.icon)}<span>${esc(s.t)}</span></a>`;}).join(''))+`<div class="sec">Desarrollado por</div><div class="sm" style="padding:0 .7rem;color:#a99f8f"><b style="color:#eee">${VB.name}</b><br><i>“${VB.lema}”</i><br><a style="color:#c9963e" href="${vbWa()}" target="_blank" rel="noopener noreferrer">Celular ${VB.phone}</a><br>${VB.web?`<a style="color:#c9963e" href="${VB.web}" target="_blank" rel="noopener noreferrer">${VB.web.replace(/^https?:\/\//,'').replace(/\/$/,'')}</a><br>`:''}<a style="color:#c9963e" href="mailto:${VB.mail}">${VB.mail}</a></div>`;
  const s=openSess();
- $('#top').innerHTML=`<button class="btn sm" id="burger" data-act="burger" aria-label="Abrir menú">☰</button><b style="font-family:Georgia,serif">${esc(S.tenant.name)}</b>${(window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente')?'':'<span class="demo-b">DEMO DE EVALUACIÓN</span>'}<span id="cloudtag" class="tag"></span><span class="tag ${s?'ok':'warn'}">${s?'Caja '+S.tenant.caja+' abierta':'Caja cerrada'}</span><span class="tag ${S.simOffline?'bad':'ok'}">${S.simOffline?'APIs externas caídas (simulado)':'Operativo'}</span><span id="devtag" class="tag"></span><span class="sp"></span><span class="sm mut">${esc(user.name)} · ${esc(user.role)}</span>${typeof asBtn==='function'?asBtn():''}${themeBtn()}<a class="btn sm" href="#menu">Ver menú público</a><button class="btn sm" data-act="logout">Salir</button>`;
- const sc=SCREENS[id];$('#view').innerHTML=sc.render();sc.after&&sc.after();$('#side').classList.remove('open');window.scrollTo(0,0);try{document.documentElement.style.setProperty('--topH',($('#top').offsetHeight||56)+'px');}catch(e){}if(typeof devTag==='function')devTag();if(typeof cloudBadge==='function')cloudBadge();if(typeof asPaint==='function')asPaint();if(typeof xfPermNotice==='function')xfPermNotice();if(typeof expPending==='function')expPending();}
+ $('#top').innerHTML=`<button class="btn sm" id="burger" data-act="burger" aria-label="Abrir menú">☰</button><b style="font-family:Georgia,serif">${esc(S.tenant.name)}</b>${(window.RAVE_BUILD&&window.RAVE_BUILD.variant==='cliente')?'':'<span class="demo-b">DEMO DE EVALUACIÓN</span>'}<span id="cloudtag" class="tag"></span><span class="tag ${s?'ok':'warn'}">${s?'Caja '+S.tenant.caja+' abierta':'Caja cerrada'}</span><span class="tag ${S.simOffline?'bad':'ok'}">${S.simOffline?'APIs externas caídas (simulado)':'Operativo'}</span><span id="devtag" class="tag"></span><span class="sp"></span><span class="sm mut">${esc(user.name)} · ${esc(user.role)}</span>${typeof uxSearchBtn==='function'?uxSearchBtn():''}${typeof asBtn==='function'?asBtn():''}${themeBtn()}<a class="btn sm" href="#menu">Ver menú público</a><button class="btn sm" data-act="logout">Salir</button>`;
+ const sc=SCREENS[id];$('#view').innerHTML=sc.render();if(typeof uxAfter==='function')uxAfter(id);sc.after&&sc.after();$('#side').classList.remove('open');window.scrollTo(0,0);try{document.documentElement.style.setProperty('--topH',($('#top').offsetHeight||56)+'px');}catch(e){}if(typeof devTag==='function')devTag();if(typeof cloudBadge==='function')cloudBadge();if(typeof asPaint==='function')asPaint();if(typeof xfPermNotice==='function')xfPermNotice();if(typeof expPending==='function')expPending();}
 A.nav=el=>go(el.dataset.id);A.burger=()=>$('#side').classList.toggle('open');
 A.logout=()=>{audit('LOGOUT','');if(typeof asReset==='function')asReset();user=null;location.hash='#menu';};
 const rerender=()=>{if(!$('#panel').hidden)showPanel(curScreen);};
@@ -946,6 +961,96 @@ function sortEnhanceAll(){document.querySelectorAll('table:not([data-sx])').forE
 let _sortQ=0;
 new MutationObserver(()=>{if(_sortQ)return;_sortQ=requestAnimationFrame(()=>{_sortQ=0;try{sortEnhanceAll();}catch(e){console.warn('sort',e);}});}).observe(document.body,{childList:true,subtree:true});
 document.addEventListener('DOMContentLoaded',sortEnhanceAll);
+
+/* ===== V26.61 · Experiencia de uso: pestañas, modo mostrador, buscador universal (Ctrl + K), avisos en la barra y atajos =====
+   Pedido del dueño (prompt «rediseño UX»), adaptado a este sistema (HTML único + JavaScript; no se cambia de framework):
+   · Pestañas horizontales: «Gestión de caja» (Caja actual · Cajas y sucursales · Arqueo / cierre · Historial cerrado) y
+     «Club» (Clientes · Sellos · Niveles y cumpleaños · Monedero · Cupones y membresías). En la barra lateral es UNA entrada.
+     Las rutas de siempre (#panel/caja, #panel/arqueo…) siguen funcionando.
+   · Modo mostrador: los roles mostrador y operador ven sólo lo del mostrador (Vender, Pedidos, Gestión de caja y, si tienen
+     el permiso, Club, Conversaciones y Tareas). Es una simplificación de la pantalla: los permisos los sigue validando el sistema.
+   · Ctrl + K (o el botón «Buscar»): clientes, artículos (nombre, código de barras, PLU) y pantallas, tolerante a errores de tipeo.
+   · Avisos en la barra: pedidos PedidosYa recibidos (rojo, titila), stock bajo o negativo (amarillo), conversaciones sin
+     responder (rojo), cobros a conciliar / caja de días anteriores (amarillo). Se actualizan solos cada 5 s.
+   · F1 lleva a Vender desde cualquier pantalla (dentro de Vender, F1 sigue siendo Efectivo). La tecla está impresa en la barra. */
+const UX_GROUPS={
+ caja:{t:()=>'Gestión de caja',icon:'cash',items:[['caja','Caja actual'],['cajasx','Cajas y sucursales'],['arqueo','Arqueo / cierre'],['cierres','Historial cerrado']]},
+ club:{t:()=>IS_CLIENT?'Club Mi Comercio':'Club de clientes',icon:'users',items:[['clientes','Clientes'],['fidel','Sellos'],['fidplus','Niveles y cumpleaños'],['monedero','Monedero'],['cupones','Cupones y membresías']]}};
+const uxGroupOf=id=>Object.keys(UX_GROUPS).find(g=>UX_GROUPS[g].items.some(x=>x[0]===id))||'';
+const uxVis=id=>{const s=SCREENS[id];return !!s&&(!s.perm||can(s.perm))&&(!s.show||s.show());};
+const uxGroupItems=g=>UX_GROUPS[g].items.filter(([k])=>uxVis(k));
+const UX_COMPACT_OK=['vender','pedidos','caja','cajasx','arqueo','cierres','clientes','fidel','fidplus','monedero','cupones','crm','tareas'];
+function uxCompact(){if(!user)return false;const r=String(user.role||'');if(r==='admin'||r==='supervisor')return false;return !(S.cfg&&S.cfg.ux&&S.cfg.ux.fullNav);}
+let uxLast={};
+function uxBadges(){const b={};const t=now();
+ try{const n=(S.pya||[]).filter(o=>o.status==='recibido').length;if(n)b.pedidos={n,c:'red',pulse:1,t:n+' pedido(s) PedidosYa sin aceptar'};}catch(e){}
+ try{if(can('edit_products')||can('sell')){const L=S.products.filter(p=>p.active&&!p.archived&&!p.noStock&&stockOf(p)<=5);const neg=L.filter(p=>stockOf(p)<0).length;if(L.length)b.inventario={n:L.length,c:neg?'red':'amber',t:L.length+' artículo(s) con stock bajo'+(neg?' ('+neg+' en negativo)':'')};}}catch(e){}
+ try{if(typeof convs==='function'&&typeof crmCfg==='function'&&crmCfg().on){const n=convs().filter(c=>c.state!=='resuelta'&&c.unread).length;if(n)b.crm={n,c:'red',pulse:1,t:n+' conversación(es) sin responder'};}}catch(e){}
+ try{const old=(S.sessions||[]).filter(s=>!s.closedAt&&!s.closed&&s.openedAt&&dkey(s.openedAt)<dkey(t)).length;if(old)b.caja={n:old,c:'amber',t:'Caja abierta de un día anterior'};}catch(e){}
+ try{if(typeof quotes==='function'){const n=quotes().filter(q=>qtState(q)==='vigente'&&q.exp-t<2*864e5).length;if(n)b.presup={n,c:'amber',t:n+' presupuesto(s) por vencer'};}}catch(e){}
+ return b;}
+function uxBadgeHTML(x){return x?`<span class="ux-bd ${x.c}${x.pulse?' pulse':''}" title="${esc(x.t)}" aria-label="${esc(x.t)}">${x.n>99?'99+':x.n}</span>`:'';}
+function uxEntryBadge(k){const B=uxLast;const g=UX_GROUPS[k];if(!g)return B[k];
+ const L=g.items.map(([i])=>B[i]).filter(Boolean);if(!L.length)return null;const n=L.reduce((a,x)=>a+x.n,0);return{n,c:L.some(x=>x.c==='red')?'red':'amber',pulse:L.some(x=>x.pulse),t:L.map(x=>x.t).join(' · ')};}
+/* barra lateral: agrupa, filtra en modo mostrador y agrega avisos y atajos */
+function uxSideHTML(nav,id,secOf){uxLast=uxBadges();const comp=uxCompact();let sec='';const seen=new Set();let h='';
+ for(const [k,s] of nav){if(comp&&!UX_COMPACT_OK.includes(k))continue;const g=uxGroupOf(k);let key=k,title=s.t,icon=s.icon,target=k,on=k===id;
+  if(g){if(seen.has(g))continue;seen.add(g);const items=uxGroupItems(g).filter(([i])=>!comp||UX_COMPACT_OK.includes(i));if(!items.length)continue;key=g;title=UX_GROUPS[g].t();icon=UX_GROUPS[g].icon;
+   target=items.some(([i])=>i===id)?id:items[0][0];on=items.some(([i])=>i===id);}
+  const sc=comp?'Mostrador':(secOf[k]||'Otros');if(sc!==sec){sec=sc;h+=`<div class="sec">${esc(sc)}</div>`;}
+  const kb=k==='vender'?'<kbd class="ux-kbd" aria-hidden="true">F1</kbd>':'';
+  h+=`<a data-act="nav" data-id="${target}" data-ux="${key}" class="${on?'on':''}${k==='vender'?' ux-pos':''}" tabindex="0" role="link"${k==='vender'?' aria-keyshortcuts="F1"':''}>${ico(icon)}<span class="sp">${esc(title)}</span>${kb}<span class="ux-bdw">${uxBadgeHTML(uxEntryBadge(key))}</span></a>`;}
+ if(comp)h+=`<div class="sm" style="padding:.5rem .7rem;color:#a99f8f">Modo mostrador: se ven sólo las tareas del mostrador. Buscá cualquier otra cosa con <b>Ctrl + K</b>.</div>`;
+ return h;}
+setInterval(()=>{try{if(!user||!$('#side')||$('#panel').hidden)return;const B=uxBadges();if(JSON.stringify(B)===JSON.stringify(uxLast))return;uxLast=B;
+ $$('#side a[data-ux]').forEach(a=>{const w=a.querySelector('.ux-bdw');if(w)w.innerHTML=uxBadgeHTML(uxEntryBadge(a.dataset.ux));});}catch(e){}},5000);
+/* pestañas arriba de cada pantalla agrupada */
+function uxTabs(id){const g=uxGroupOf(id);if(!g)return'';const items=uxGroupItems(g).filter(([i])=>!uxCompact()||UX_COMPACT_OK.includes(i));if(items.length<2)return'';
+ return `<div class="ux-tabs" role="tablist" aria-label="${esc(UX_GROUPS[g].t())}">${items.map(([k,t])=>`<a role="tab" data-act="nav" data-id="${k}" tabindex="0" aria-selected="${k===id}" class="${k===id?'on':''}">${esc(t)}${uxBadgeHTML(uxLast[k])}</a>`).join('')}</div>`;}
+function uxAfter(id){const t=uxTabs(id);if(t){$('#view').insertAdjacentHTML('afterbegin',t);}}
+document.addEventListener('keydown',e=>{const a=e.target.closest&&e.target.closest('.ux-tabs a');if(!a)return;
+ if(e.key==='Enter'||e.key===' '){e.preventDefault();A.nav(a);return;}
+ if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const L=[...a.parentNode.querySelectorAll('a')];const i=L.indexOf(a);const n=L[(i+(e.key==='ArrowRight'?1:-1)+L.length)%L.length];n.focus();}});
+/* atajo F1 → Vender (fuera de Vender) */
+document.addEventListener('keydown',e=>{if(e.key!=='F1'||!user||$('#panel').hidden||curScreen==='vender'||$('#modal-root .ov')||!uxVis('vender'))return;e.preventDefault();go('vender');});
+
+/* ---------- buscador universal (Ctrl + K) ---------- */
+const uxN=t=>String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+function uxLev1(a,b){if(Math.abs(a.length-b.length)>1)return false;let i=0,j=0,d=0;while(i<a.length&&j<b.length){if(a[i]===b[j]){i++;j++;continue;}if(++d>1)return false;if(a.length>b.length)i++;else if(b.length>a.length)j++;else{i++;j++;}}return d+(a.length-i)+(b.length-j)<=1;}
+function uxScore(q,text){const t=uxN(text);if(!q)return 0;const i=t.indexOf(q);if(i>=0)return 100-Math.min(i,40)+(i===0?20:0);
+ const qs=q.split(/\s+/).filter(Boolean);const ws=t.split(/[^a-z0-9]+/).filter(Boolean);
+ if(qs.length&&qs.every(x=>ws.some(w=>w.startsWith(x)||(x.length>=4&&(uxLev1(x,w)||uxLev1(x,w.slice(0,x.length)))))))return 60;
+ let p=0,gaps=0;for(const ch of q.replace(/\s+/g,'')){const k=t.indexOf(ch,p);if(k<0)return 0;gaps+=k-p;p=k+1;}return gaps<=q.length*2?Math.max(1,40-gaps):0;}
+function uxIndex(){const out=[];const comp=uxCompact();
+ Object.entries(SCREENS).forEach(([k,s])=>{if(!uxVis(k))return;const g=uxGroupOf(k);const tab=g?(UX_GROUPS[g].items.find(x=>x[0]===k)||[])[1]:'';
+  out.push({k:'p',id:k,t:g?UX_GROUPS[g].t()+' › '+tab:s.t,s:'Pantalla',x:s.t+' '+(tab||'')+' '+(g?UX_GROUPS[g].t():''),ic:'🧭',hidden:comp&&!UX_COMPACT_OK.includes(k)});});
+ if(can('customers'))S.customers.filter(c=>c.status!=='baja').forEach(c=>out.push({k:'c',id:c.id,t:custFull(c),s:'Cliente · N.º '+pad4(c.num),x:custFull(c)+' '+pad4(c.num)+' '+(c.dni||'')+' '+String(c.wa||'').replace(/\D/g,'').slice(-10),ic:'👤'}));
+ if(can('sell')||can('edit_products'))S.products.filter(p=>!p.archived).forEach(p=>out.push({k:'a',id:p.id,t:p.name+(p.sub?' '+p.sub:''),s:'Artículo · '+money(p.price)+(p.barcode?' · '+p.barcode:'')+(p.active?'':' · inactivo'),x:p.name+' '+(p.sub||'')+' '+(p.barcode||'')+' '+(p.plu||'')+' '+((p.pres||[]).map(x=>x.barcode||'').join(' ')),ic:'📦',code:p.barcode||''}));
+ return out;}
+function uxSearch(q){q=uxN(q).trim();const I=uxIndex();if(!q)return I.filter(x=>x.k==='p').slice(0,8);
+ const digits=/^\d{4,}$/.test(q);
+ return I.map(x=>{let sc=uxScore(q,x.x);if(digits&&x.k==='a'){if(x.code===q||(' '+uxN(x.x)+' ').includes(' '+q+' '))sc+=300;else if(uxN(x.x).includes(q))sc+=100;}if(x.k==='p')sc+=5;return{x,sc};}).filter(r=>r.sc>=30).sort((a,b)=>b.sc-a.sc).slice(0,12).map(r=>r.x);}
+let uxPal=null;
+function uxOpen(){if(!user||$('#panel').hidden)return;if(uxPal){uxPal.querySelector('input').focus();return;}
+ const w=document.createElement('div');w.className='ux-pal-ov';w.innerHTML=`<div class="ux-pal" role="dialog" aria-modal="true" aria-label="Buscador universal">
+  <input id="ux-q" role="combobox" aria-expanded="true" aria-controls="ux-res" aria-autocomplete="list" placeholder="Buscar cliente, artículo, código de barras o pantalla…" autocomplete="off" spellcheck="false">
+  <div id="ux-res" role="listbox" aria-label="Resultados"></div><p class="sm mut" style="margin:.4rem .2rem 0">↑ ↓ para elegir · Enter para abrir · Esc para cerrar</p></div>`;
+ document.body.appendChild(w);uxPal=w;let sel=0,res=[];const inp=w.querySelector('input'),box=w.querySelector('#ux-res');
+ const paint=()=>{res=uxSearch(inp.value);if(sel>=res.length)sel=0;box.innerHTML=res.length?res.map((r,i)=>`<div role="option" id="ux-o${i}" aria-selected="${i===sel}" class="ux-it${i===sel?' on':''}" data-i="${i}"><span aria-hidden="true">${r.ic}</span><span class="sp"><b>${esc(r.t)}</b><br><span class="sm mut">${esc(r.s)}${r.hidden?' · fuera del modo mostrador':''}</span></span></div>`).join(''):'<p class="sm mut" style="padding:.6rem">Sin resultados.</p>';
+  inp.setAttribute('aria-activedescendant',res.length?'ux-o'+sel:'');const o=box.querySelector('.on');if(o)o.scrollIntoView({block:'nearest'});};
+ const pick=i=>{const r=res[i];if(!r)return;uxClose();uxGo(r);};
+ inp.addEventListener('input',()=>{sel=0;paint();});
+ inp.addEventListener('keydown',e=>{if(e.key==='ArrowDown'){e.preventDefault();sel=Math.min(res.length-1,sel+1);paint();}else if(e.key==='ArrowUp'){e.preventDefault();sel=Math.max(0,sel-1);paint();}
+  else if(e.key==='Enter'){e.preventDefault();pick(sel);}else if(e.key==='Escape'){e.preventDefault();uxClose();}});
+ box.addEventListener('click',e=>{const o=e.target.closest('[data-i]');if(o)pick(+o.dataset.i);});
+ w.addEventListener('mousedown',e=>{if(e.target===w)uxClose();});paint();inp.focus();}
+function uxClose(){if(uxPal){uxPal.remove();uxPal=null;}}
+function uxGo(r){if(r.k==='p'){go(r.id);return;}
+ if(r.k==='c'){go('clientes');setTimeout(()=>{try{A.cuEdit({dataset:{id:r.id}});}catch(e){}},150);return;}
+ if(r.k==='a'){if(uxVis('vender')){go('vender');setTimeout(()=>{try{A.padd({dataset:{id:r.id}});}catch(e){}},150);}else{go('inventario');}}}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.altKey&&(e.key==='k'||e.key==='K')){if(!user||$('#panel').hidden)return;e.preventDefault();uxPal?uxClose():uxOpen();}});
+A.uxSearch=()=>uxOpen();
+const uxSearchBtn=()=>`<button class="btn sm" data-act="uxSearch" aria-keyshortcuts="Control+K" title="Buscador universal (Ctrl + K)" aria-label="Buscar (Ctrl + K)">🔍<kbd class="ux-kbd">Ctrl K</kbd></button>`;
 
 /* ===== Cálculos: arqueo, reparto, reporte ===== */
 function hoursOn(empId,day){const ps=S.punches.filter(p=>p.empId===empId&&dkey(p.ts)===day).sort((a,b)=>a.ts-b.ts);let ms=0,open=null,flag=false;
