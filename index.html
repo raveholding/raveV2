@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#242220">
 <title>Mi Negocio · Sistema de gestión genérico · Sistema VB</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23242220'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%23c9963e' font-family='Georgia,serif' font-weight='700'%3ER%3C/text%3E%3C/svg%3E">
-<script>window.RAVE_BUILD={"ver": "2026-11-10 05:23 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
+<script>window.RAVE_BUILD={"ver": "2026-11-10 11:50 UTC", "variant": "demo", "db": "rave-solo-demo-v1", "publicUrl": "https://raveholding.github.io/raveV2/", "profile": "solo"};window.RAVE_CLOUD={"url": "", "key": "", "slug": ""};</script>
 <style>
 :root{--ink:#1f2a37;--gold:#2e8b74;--gold2:#23695a;--bg:#f6f3ee;--card:#fff;--line:#e6e0d6;--mut:#6d675f;--red:#c0392b;--redbg:#fdecea;--ok:#1e7a46;--okbg:#e6f4ec;--warnbg:#fff4dc;--r:16px}
 *{box-sizing:border-box}
@@ -315,6 +315,17 @@ html[data-theme=dark]{--selbg:#2f2921}
 .hk-pin{display:flex;flex-direction:column;align-items:center;gap:.8rem}.hk-dots{display:flex;gap:.8rem}.hk-dots i{width:22px;height:22px;border-radius:50%;border:2px solid var(--ink)}.hk-dots i.on{background:var(--ink)}
 .hk-pad{display:grid;grid-template-columns:repeat(3,88px);gap:.6rem}.hk-pad button{min-height:72px;font-size:1.8rem;border-radius:16px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
 @media(max-width:760px){.hr-kb{grid-template-columns:repeat(6,minmax(150px,1fr))}.hk-pad{grid-template-columns:repeat(3,72px)}}
+
+/* V26.65 · navegador de secciones */
+#ux-secnav{position:sticky;top:0;z-index:5;background:var(--bg,var(--card));padding:.55rem 0 .5rem;margin:0 0 1rem;border-bottom:1px solid var(--line)}
+.ux-secq{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}.ux-secq input{flex:1 1 260px;min-width:0;min-height:44px;font-size:1rem}
+.ux-chips{display:flex;gap:.4rem;overflow-x:auto;padding:.5rem 0 .1rem;scrollbar-width:thin}
+.ux-chip{flex:0 0 auto;min-height:44px;padding:.35rem .8rem;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font:inherit;font-size:.9rem;white-space:nowrap}
+.ux-chip:hover,.ux-chip:focus-visible{border-color:var(--gold);outline:none}.ux-chip.on{background:var(--gold);border-color:var(--gold);color:#000;font-weight:600}
+.ux-hid{display:none!important}.ux-flash{box-shadow:0 0 0 3px var(--gold)!important;transition:box-shadow .3s}
+.sr-only{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media(max-width:900px){#ux-secnav{position:static}}
+.hr-off{max-width:760px;border-left:6px solid var(--gold)}
 .btn.gold,.fk.gold,.fk.gold small,.cmp .btn.gold,html[data-theme=dark] .btn.gold,html[data-theme=dark] .fk.gold,html[data-theme=dark] .fk.gold small{color:#000!important}html[data-theme=dark] .cmp-tab.on{color:#5cc2a8}html[data-theme=dark]{--gold2:#5cc2a8}
 </style>
 </head>
@@ -1236,6 +1247,31 @@ const uxAfterBase=uxAfter;
 uxAfter=function(id){uxAfterBase(id);try{const v=$('#view');const row=[...v.children].find(x=>x.querySelector&&(x.matches('h1')||x.querySelector(':scope > h1')));
  const ins=(html)=>{if(!html)return;if(row)row.insertAdjacentHTML('afterend',html);else v.insertAdjacentHTML('afterbegin',html);};
  ins(uxCashHero(id));ins(uxDescHTML(id));v.classList.remove('ux-in');void v.offsetWidth;v.classList.add('ux-in');}catch(e){}};
+
+/* ---------- V26.65 · navegador de secciones en pantallas largas (Configuración, Menú público, Integraciones, Periféricos…) ----------
+   Arriba de la pantalla: buscador «¿Qué querés configurar?» que filtra las tarjetas por su texto (sin tildes) y una fila de
+   accesos fija con cada sección («Todas» primero). Nada se esconde al entrar: por defecto se ven todas, así que nada deja de
+   funcionar. La sección elegida y la búsqueda se recuerdan mientras se use la pantalla (también después de guardar). */
+const uxNavState={};
+const uxNorm=t=>String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+function uxSecCards(v){const out=[];[...v.children].forEach(c=>{if(c.id==='ux-secnav')return;if(c.classList.contains('card')&&c.querySelector('h2,h3'))out.push(c);else if(c.classList.contains('grid'))[...c.children].forEach(k=>{if(k.classList&&k.classList.contains('card')&&k.querySelector('h2,h3'))out.push(k);});});return out;}
+function uxSecApply(id){const v=$('#view');if(!v)return;const st=uxNavState[id]||{sec:'all',q:''};const cards=uxSecCards(v);const q=uxNorm(st.q).trim();let shown=0;
+ cards.forEach((c,i)=>{const okS=st.sec==='all'||st.sec===String(i);const okQ=!q||q.split(/\s+/).every(w=>uxNorm(c.textContent).includes(w)||[...c.querySelectorAll('input,select,textarea')].some(x=>uxNorm(x.placeholder||x.value||'').includes(w)));const vis=okS&&okQ;c.classList.toggle('ux-hid',!vis);if(vis)shown++;});
+ [...v.children].forEach(c=>{if(c.classList&&c.classList.contains('grid')&&c.querySelector(':scope>.card')){const any=[...c.children].some(k=>!k.classList.contains('ux-hid'));c.classList.toggle('ux-hid',!any);}});
+ const nav=$('#ux-secnav');if(!nav)return;nav.querySelectorAll('[data-sec]').forEach(b=>{const on=b.dataset.sec===st.sec;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');});
+ const r=$('#ux-sec-res');if(r)r.textContent=(q||st.sec!=='all')?(shown?shown+' de '+cards.length+' secciones':'No hay opciones con «'+st.q+'». Probá con otra palabra.'):cards.length+' secciones';}
+function uxSecBuild(){const v=$('#view');if(!v||!curScreen)return;const id=curScreen;const cards=uxSecCards(v);const old=$('#ux-secnav');
+ if(cards.length<5||id==='crm'||id==='centro'){if(old)old.remove();return;}
+ const sig=id+'|'+cards.map(c=>(c.querySelector('h2,h3').textContent||'').trim()).join('|');if(old&&old.dataset.sig===sig){uxSecApply(id);return;}if(old)old.remove();
+ const st=uxNavState[id]||(uxNavState[id]={sec:'all',q:''});
+ const chips=cards.map((c,i)=>{const t=(c.querySelector('h2,h3').textContent||'').replace(/\s+/g,' ').trim();return `<button type="button" class="ux-chip" data-sec="${i}" title="${esc(t)}">${esc(t.length>34?t.slice(0,32)+'…':t)}</button>`;}).join('');
+ const nav=document.createElement('div');nav.id='ux-secnav';nav.dataset.sig=sig;nav.setAttribute('role','search');
+ nav.innerHTML=`<div class="ux-secq"><label for="ux-sec-q" class="sr-only">Buscar en esta pantalla</label><input id="ux-sec-q" type="search" autocomplete="off" placeholder="¿Qué querés configurar? Ej.: ticket, alias, cuotas, horario…" value="${esc(st.q)}"><span id="ux-sec-res" class="sm mut" aria-live="polite"></span></div><div class="ux-chips" role="group" aria-label="Secciones de esta pantalla"><button type="button" class="ux-chip" data-sec="all">Todas</button>${chips}</div>`;
+ const first=[...v.children].find(c=>c.classList&&(c.classList.contains('card')||c.classList.contains('grid')||c.classList.contains('warnbox')));v.insertBefore(nav,first||null);
+ nav.addEventListener('click',e=>{const b=e.target.closest('[data-sec]');if(!b)return;st.sec=b.dataset.sec;uxSecApply(id);if(st.sec!=='all'){const c=uxSecCards(v)[+st.sec];if(c){c.classList.add('ux-flash');setTimeout(()=>c.classList.remove('ux-flash'),900);}}window.scrollTo({top:Math.max(0,v.getBoundingClientRect().top+window.scrollY-70),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});});
+ const q=nav.querySelector('#ux-sec-q');q.addEventListener('input',()=>{st.q=q.value;if(st.q)st.sec='all';uxSecApply(id);});q.addEventListener('keydown',e=>{if(e.key==='Escape'){q.value='';st.q='';uxSecApply(id);}});
+ uxSecApply(id);}
+(()=>{let t=0;const mo=new MutationObserver(m=>{if(m.every(r=>r.target.closest&&r.target.closest('#ux-secnav')))return;clearTimeout(t);t=setTimeout(uxSecBuild,60);});const hook=()=>{const v=document.getElementById('view');if(v)mo.observe(v,{childList:true});else setTimeout(hook,300);};hook();})();
 
 /* ===== Cálculos: arqueo, reparto, reporte ===== */
 function hoursOn(empId,day){const ps=S.punches.filter(p=>p.empId===empId&&dkey(p.ts)===day).sort((a,b)=>a.ts-b.ts);let ms=0,open=null,flag=false;
@@ -6290,13 +6326,13 @@ function hrAjustes(){const c=hrCfg();const m=c.methods;const chk=(id,on,t,dis)=>
  <div class="card"><h3>Contador</h3><label for="hc-an">Nombre</label><input id="hc-an" value="${esc(c.acct.name)}" maxlength="60"><label for="hc-am">Correo</label><input id="hc-am" value="${esc(c.acct.mail)}" maxlength="80"><label for="hc-aw">WhatsApp (con código de país)</label><input id="hc-aw" value="${esc(c.acct.wa)}" inputmode="tel" maxlength="20"></div></div>
  <div class="row" style="margin-top:1rem"><button class="btn gold" data-act="hrCfgSave">Guardar ajustes</button>${IS_CLIENT?'<button class="btn" data-act="hrToggle">Apagar Recursos Humanos</button>':''}</div>`;}
 const HR_VIEW={inicio:hrInicio,legajos:hrLegajos,calendario:hrCalendario,fichaje:hrFichaje,reportes:hrReportes,solicitudes:hrSolicitudes,vacaciones:hrVacaciones,nomina:hrNomina,documentos:hrDocumentos,reclutamiento:hrReclutamiento,tablero:hrTablero,alertas:hrAlertasTab,avisos:hrAvisos,ajustes:hrAjustes};
-reg('rrhh','Recursos Humanos','users','hr',()=>{hrInit();hrPlanSync('revisión al abrir');if(!hrTabOk(hrTab))hrTab='inicio';const full=hrTier()==='full';
+reg('rrhh','Recursos Humanos','users','hr',()=>{if(!hrOn())return `<h1>Recursos Humanos</h1><div class="card hr-off"><h2>Recursos Humanos está apagado</h2><p>Con <b>${S.employees.filter(e=>e.active).length}</b> legajo(s) activo(s) el comercio queda en el <b>${S.employees.filter(e=>e.active).length>HR_LIMIT?'Plan Completo':'Plan Micro'}</b>: fichaje en modo kiosco con PIN, QR, NFC o celular; ficha del empleado con contacto de emergencia y documentos; calendario de turnos y licencias; reporte de horas y ausencias para el contador; alertas y avisos al personal. Desde 11 legajos activos se suman solos el portal del empleado, aprobaciones, nómina, vacaciones, documentos con vencimientos y reclutamiento.</p><p class="sm mut">«Personal y fichaje» sigue funcionando igual. Activarlo no borra ni cambia datos; se puede apagar cuando quieras.</p><div class="row"><button class="btn gold" data-act="hrToggle">Activar Recursos Humanos</button><button class="btn" data-act="nav" data-id="personal">Ver Personal y fichaje</button></div></div>`;hrInit();hrPlanSync('revisión al abrir');if(!hrTabOk(hrTab))hrTab='inicio';const full=hrTier()==='full';
  return `<div class="row"><h1 class="sp">Recursos Humanos</h1><span class="tag ${full?'ok':''} hr-badge">${HR_PLAN_N[hrTier()]} · ${hrActive()} activos</span></div>
  <nav class="hr-tabs" role="tablist" aria-label="Secciones de Recursos Humanos">${HR_TABS.filter(([k])=>hrTabOk(k)).map(([k,t,f])=>`<button role="tab" class="${hrTab===k?'on':''}" aria-selected="${hrTab===k}" data-act="hrTab" data-t="${k}">${f&&HR_FULL[f]&&!full?'🔒 ':''}${t}${k==='alertas'&&hrAlerts().length?` <span class="ux-bd amber">${hrAlerts().length}</span>`:''}</button>`).join('')}</nav>${HR_VIEW[hrTab]()}`;},
  ()=>{const q=$('#hr-q');q&&q.addEventListener('input',()=>{hrQ=q.value;clearTimeout(q._t);q._t=setTimeout(()=>{rerender();const z=$('#hr-q');if(z){z.focus();z.setSelectionRange(z.value.length,z.value.length);}},250);});
   ['hr-rf','hr-rt'].forEach(id=>{const el=$('#'+id);el&&el.addEventListener('change',()=>{hrRep={from:val('hr-rf'),to:val('hr-rt')};rerender();});});
   const pe=$('#hr-per');pe&&pe.addEventListener('change',()=>{hrPer=pe.value;rerender();});const dd=$('#hr-dd');dd&&dd.addEventListener('change',()=>{hrDash=+dd.value||30;rerender();});},'Equipo');
-SCREENS.rrhh.show=()=>hrOn();
+SCREENS.rrhh.show=()=>hrOn()||isAdm(); /* V26.65: el administrador lo ve siempre (apagado muestra cómo activarlo) */
 A.hrTab=el=>{hrTab=el.dataset.t;if(curScreen!=='rrhh')go('rrhh');else rerender();};
 document.addEventListener('keydown',e=>{const b=e.target.closest&&e.target.closest('.hr-tabs [role=tab]');if(!b||!['ArrowRight','ArrowLeft'].includes(e.key))return;const L=[...document.querySelectorAll('.hr-tabs [role=tab]')];const i=L.indexOf(b);const n=L[(i+(e.key==='ArrowRight'?1:-1)+L.length)%L.length];n.focus();n.click();});
 A.hrToggle=()=>{if(!isAdm())return toast('Sólo el administrador',1);const c=hrCfg();c.on=!c.on;hrInit();if(c.on)hrPlanSync('activación del módulo');audit('RRHH_MODULO',c.on?'activado':'apagado');save();if(!c.on&&curScreen==='rrhh')go('personal');else rerender();};
